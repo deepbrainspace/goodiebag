@@ -1,0 +1,61 @@
+{
+  "name": "nx-surrealdb",
+  "sourceRoot": "tools/plugins/nx-surrealdb/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "cache": false,
+      "options": {
+        "outputPath": "dist/tools/plugins/nx-surrealdb",
+        "main": "tools/plugins/nx-surrealdb/src/index.ts",
+        "tsConfig": "tools/plugins/nx-surrealdb/tsconfig.lib.json",
+        "assets": [
+          {
+            "input": "tools/plugins/nx-surrealdb/src/generators/migration/files",
+            "glob": "**/*",
+            "output": "src/generators/migration/files"
+          },
+          {
+            "input": "tools/plugins/nx-surrealdb",
+            "glob": "{package.json,generators.json,executors.json,README.md,LICENSE.md}",
+            "output": "./"
+          },
+          {
+            "input": "tools/plugins/nx-surrealdb/src",
+            "glob": "**/*/schema.json",
+            "output": "src"
+          },
+          {
+            "input": "tools/plugins/nx-surrealdb/src/schema",
+            "glob": "**/*",
+            "output": "src/schema"
+          }
+        ],
+        "updateBuildableProjectDepsInPackageJson": true,
+        "buildableProjectDepsInPackageJsonType": "dependencies"
+      },
+      "configurations": {
+        "production": {}
+      }
+    },
+    "copy-schema": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "mkdir -p dist/tools/plugins/nx-surrealdb/src/schema && cp tools/plugins/nx-surrealdb/src/schema/system_migrations.surql dist/tools/plugins/nx-surrealdb/src/schema/"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "cache": false,
+      "options": {
+        "jestConfig": "tools/plugins/nx-surrealdb/jest.config.ts"
+      }
+    }
+  }
+}

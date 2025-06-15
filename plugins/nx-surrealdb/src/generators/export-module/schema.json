@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "version": 2,
+  "title": "Export Module Generator",
+  "description": "Export a migration module as a reusable package",
+  "type": "object",
+  "properties": {
+    "module": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "description": "Module to export by name (e.g., 'auth'), number (e.g., 10), or full directory name (e.g., '010_auth')",
+      "$default": {
+        "$source": "argv",
+        "index": 0
+      }
+    },
+    "outputPath": {
+      "type": "string",
+      "description": "Output path for the exported module package",
+      "default": "exported-modules"
+    },
+    "includeConfig": {
+      "type": "boolean",
+      "description": "Include module configuration and dependencies in export",
+      "default": true
+    },
+    "packageFormat": {
+      "type": "string",
+      "enum": ["tar", "zip", "directory"],
+      "description": "Export format (tar, zip, or directory)",
+      "default": "tar"
+    },
+    "initPath": {
+      "type": "string",
+      "description": "Path to migrations directory",
+      "default": "database"
+    },
+    "configPath": {
+      "type": "string",
+      "description": "Path to configuration file (config.json or config.yaml)",
+      "default": ""
+    },
+    "version": {
+      "type": "string",
+      "description": "Version for the exported module package",
+      "default": "1.0.0"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description for the exported module",
+      "default": ""
+    }
+  },
+  "required": ["module"],
+  "additionalProperties": false
+}

@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "version": 2,
+  "title": "Import Module Generator",
+  "description": "Import a migration module package into the current project",
+  "type": "object",
+  "properties": {
+    "module": {
+      "type": "string",
+      "description": "Name of the module to import",
+      "$default": {
+        "$source": "argv",
+        "index": 0
+      }
+    },
+    "packagePath": {
+      "type": "string",
+      "description": "Path to the exported module package (directory, tar.gz, or zip file)",
+      "$default": {
+        "$source": "argv", 
+        "index": 1
+      }
+    },
+    "targetModule": {
+      "type": "string",
+      "description": "Target module name (if different from source)",
+      "default": ""
+    },
+    "targetNumber": {
+      "type": "number",
+      "description": "Target module number for gapped numbering (e.g., 030, 040)",
+      "default": 0
+    },
+    "initPath": {
+      "type": "string",
+      "description": "Path to migrations directory",
+      "default": "database"
+    },
+    "configPath": {
+      "type": "string",
+      "description": "Path to configuration file (config.json or config.yaml)",
+      "default": ""
+    },
+    "overwrite": {
+      "type": "boolean",
+      "description": "Overwrite existing module if it exists",
+      "default": false
+    },
+    "skipDependencyCheck": {
+      "type": "boolean",
+      "description": "Skip validation of module dependencies",
+      "default": false
+    },
+    "mergeConfig": {
+      "type": "boolean",
+      "description": "Merge module configuration with existing config",
+      "default": true
+    }
+  },
+  "required": ["module", "packagePath"],
+  "additionalProperties": false
+}

@@ -1,0 +1,24 @@
+{
+  "executors": {
+    "migrate": {
+      "implementation": "../../../dist/tools/plugins/nx-surrealdb/src/executors/migrate/executor.js",
+      "schema": "../../../dist/tools/plugins/nx-surrealdb/src/executors/migrate/schema.json",
+      "description": "Apply pending migrations to SurrealDB with dependency resolution"
+    },
+    "rollback": {
+      "implementation": "../../../dist/tools/plugins/nx-surrealdb/src/executors/rollback/executor.js",
+      "schema": "../../../dist/tools/plugins/nx-surrealdb/src/executors/rollback/schema.json",
+      "description": "Rollback applied migrations from SurrealDB with dependency safety checks"
+    },
+    "status": {
+      "implementation": "../../../dist/tools/plugins/nx-surrealdb/src/executors/status/executor.js",
+      "schema": "../../../dist/tools/plugins/nx-surrealdb/src/executors/status/schema.json",
+      "description": "Show migration status and dependency information for SurrealDB"
+    },
+    "reset": {
+      "implementation": "../../../dist/tools/plugins/nx-surrealdb/src/executors/reset/executor.js",
+      "schema": "../../../dist/tools/plugins/nx-surrealdb/src/executors/reset/schema.json",
+      "description": "Reset migration tracking table and clear all migration history"
+    }
+  }
+}

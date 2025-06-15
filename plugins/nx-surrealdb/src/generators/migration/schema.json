@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "title": "Migration Generator",
+  "description": "Generate a new SurrealDB migration",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the migration"
+    },
+    "project": {
+      "type": "string",
+      "description": "Project name"
+    },
+    "module": {
+      "type": ["string", "number"],
+      "description": "Target module for the migration (e.g., '010_auth', '10', 'auth')"
+    },
+    "migrationsDir": {
+      "type": "string",
+      "description": "Path to migrations directory",
+      "default": "migrations"
+    },
+    "createModule": {
+      "type": "boolean",
+      "description": "Create new module if it doesn't exist",
+      "default": false
+    }
+  },
+  "required": ["name", "project"]
+}

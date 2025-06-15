@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "version": 2,
+  "title": "Rollback executor",
+  "description": "Rollback applied migrations from SurrealDB with dependency safety checks",
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "string",
+      "description": "SurrealDB connection URL (e.g., ws://localhost:8000)",
+      "default": ""
+    },
+    "user": {
+      "type": "string",
+      "description": "SurrealDB username",
+      "default": ""
+    },
+    "pass": {
+      "type": "string",
+      "description": "SurrealDB password",
+      "default": ""
+    },
+    "namespace": {
+      "type": "string",
+      "description": "SurrealDB namespace",
+      "default": ""
+    },
+    "database": {
+      "type": "string",
+      "description": "SurrealDB database",
+      "default": ""
+    },
+    "module": {
+      "type": ["string", "number"],
+      "description": "Target specific module by name (e.g., 'auth'), number (e.g., 10), full directory name (e.g., '010_auth'), or comma-separated list (e.g., '010,020,auth')",
+      "default": ""
+    },
+    "filename": {
+      "type": ["string", "number"],
+      "description": "Target specific rollback file by number (e.g., 1), name (e.g., 'auth'), full filename (e.g., '0001_authentication_down.surql'), or comma-separated list (e.g., '1,2,auth')",
+      "default": ""
+    },
+    "envFile": {
+      "type": "string",
+      "description": "Path to environment file relative to workspace root",
+      "default": ""
+    },
+    "useTransactions": {
+      "type": "boolean",
+      "description": "Wrap rollbacks in database transactions",
+      "default": true
+    },
+    "initPath": {
+      "type": "string",
+      "description": "Path to migrations directory",
+      "default": "database"
+    },
+    "schemaPath": {
+      "type": "string",
+      "description": "Path to custom schema file",
+      "default": ""
+    },
+    "force": {
+      "type": "boolean",
+      "description": "Force rollback even if safety checks fail (bypass dependency validation)",
+      "default": false
+    },
+    "configPath": {
+      "type": "string",
+      "description": "Path to configuration file (config.json or config.yaml)",
+      "default": ""
+    },
+    "dryRun": {
+      "type": "boolean",
+      "description": "Show what rollbacks would be applied without executing them",
+      "default": false
+    },
+    "steps": {
+      "type": "number",
+      "description": "Number of migration steps to rollback (default: 1, use 0 for all)",
+      "default": 1
+    },
+    "detailed": {
+      "type": "boolean",
+      "description": "Show detailed rollback information including execution details",
+      "default": false
+    },
+    "debug": {
+      "type": "boolean",
+      "description": "Enable debug logging for troubleshooting",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

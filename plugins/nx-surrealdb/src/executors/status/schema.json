@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "version": 2,
+  "title": "Status executor",
+  "description": "Show migration status and dependency information for SurrealDB",
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "string",
+      "description": "SurrealDB connection URL (e.g., ws://localhost:8000)",
+      "default": ""
+    },
+    "user": {
+      "type": "string",
+      "description": "SurrealDB username",
+      "default": ""
+    },
+    "pass": {
+      "type": "string",
+      "description": "SurrealDB password",
+      "default": ""
+    },
+    "namespace": {
+      "type": "string",
+      "description": "SurrealDB namespace",
+      "default": ""
+    },
+    "database": {
+      "type": "string",
+      "description": "SurrealDB database",
+      "default": ""
+    },
+    "module": {
+      "type": ["string", "number"],
+      "description": "Show status for specific module by name (e.g., 'auth'), number (e.g., 10), full directory name (e.g., '010_auth'), or comma-separated list (e.g., '010,020,auth')",
+      "default": ""
+    },
+    "filename": {
+      "type": ["string", "number"],
+      "description": "Show status for specific migration file by number (e.g., 1), name (e.g., 'auth'), full filename (e.g., '0001_authentication_up.surql'), or comma-separated list (e.g., '1,2,auth')",
+      "default": ""
+    },
+    "envFile": {
+      "type": "string",
+      "description": "Path to environment file relative to workspace root",
+      "default": ""
+    },
+    "initPath": {
+      "type": "string",
+      "description": "Path to migrations directory",
+      "default": "database"
+    },
+    "schemaPath": {
+      "type": "string",
+      "description": "Path to custom schema file",
+      "default": ""
+    },
+    "configPath": {
+      "type": "string",
+      "description": "Path to configuration file (config.json or config.yaml)",
+      "default": ""
+    },
+    "detailed": {
+      "type": "boolean",
+      "description": "Show detailed migration information including file names and checksums",
+      "default": false
+    },
+    "json": {
+      "type": "boolean",
+      "description": "Output status information in JSON format",
+      "default": false
+    },
+    "debug": {
+      "type": "boolean",
+      "description": "Show debug information about migration records and database queries",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

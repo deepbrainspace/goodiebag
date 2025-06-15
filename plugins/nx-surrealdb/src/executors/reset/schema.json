@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "version": 2,
+  "title": "Reset Migration Tracking",
+  "description": "Reset migration tracking table and clear all migration history",
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "string",
+      "description": "SurrealDB connection URL"
+    },
+    "user": {
+      "type": "string",
+      "description": "SurrealDB username"
+    },
+    "pass": {
+      "type": "string",
+      "description": "SurrealDB password"
+    },
+    "namespace": {
+      "type": "string",
+      "description": "SurrealDB namespace"
+    },
+    "database": {
+      "type": "string", 
+      "description": "SurrealDB database"
+    },
+    "envFile": {
+      "type": "string",
+      "description": "Path to environment file",
+      "default": ".env"
+    },
+    "confirm": {
+      "type": "boolean",
+      "description": "Skip confirmation prompt (use with caution)",
+      "default": false
+    },
+    "dryRun": {
+      "type": "boolean",
+      "description": "Show what would be deleted without actually deleting",
+      "default": false
+    },
+    "debug": {
+      "type": "boolean",
+      "description": "Enable debug logging for troubleshooting",
+      "default": false
+    }
+  },
+  "required": ["url", "user", "pass", "namespace", "database"]
+}
