@@ -1,0 +1,244 @@
+{
+  "packages/nx-surrealdb": {
+    "root": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "packages/nx-surrealdb/package.json",
+      "nx/core/package-json"
+    ],
+    "tags.npm:public": [
+      "packages/nx-surrealdb/package.json",
+      "nx/core/package-json"
+    ],
+    "tags.npm:nx": [
+      "packages/nx-surrealdb/package.json",
+      "nx/core/package-json"
+    ],
+    "tags.npm:plugin": [
+      "packages/nx-surrealdb/package.json",
+      "nx/core/package-json"
+    ],
+    "tags.npm:surrealdb": [
+      "packages/nx-surrealdb/package.json",
+      "nx/core/package-json"
+    ],
+    "tags.npm:migrations": [
+      "packages/nx-surrealdb/package.json",
+      "nx/core/package-json"
+    ],
+    "tags.npm:database": [
+      "packages/nx-surrealdb/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups": [
+      "packages/nx-surrealdb/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.description": [
+      "packages/nx-surrealdb/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js": [
+      "packages/nx-surrealdb/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.packageName": [
+      "packages/nx-surrealdb/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.packageMain": [
+      "packages/nx-surrealdb/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.isInPackageManagerWorkspaces": [
+      "packages/nx-surrealdb/package.json",
+      "nx/core/package-json"
+    ],
+    "targets": [
+      "packages/nx-surrealdb/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.nx-release-publish": [
+      "packages/nx-surrealdb/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.nx-release-publish.executor": [
+      "packages/nx-surrealdb/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.nx-release-publish.dependsOn": [
+      "packages/nx-surrealdb/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.nx-release-publish.options": [
+      "packages/nx-surrealdb/package.json",
+      "nx/core/package-json"
+    ],
+    "sourceRoot": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.executor": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.outputs": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.cache": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.configurations": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.outputPath": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.main": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.tsConfig": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.assets": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.updateBuildableProjectDepsInPackageJson": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.buildableProjectDepsInPackageJsonType": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.configurations.production": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.copy-schema": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.copy-schema.executor": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.copy-schema.options": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.copy-schema.options.command": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.cache": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.publish": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.publish.executor": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.publish.dependsOn": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.publish.options": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.publish.options.command": [
+      "packages/nx-surrealdb/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.dependsOn": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.build.inputs": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.build.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.inputs": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.inputs": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  }
+}

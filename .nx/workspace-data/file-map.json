@@ -1,0 +1,370 @@
+{
+  "version": "6.0",
+  "nxVersion": "21.2.0",
+  "pathMappings": {},
+  "nxJsonPlugins": [],
+  "fileMap": {
+    "nonProjectFiles": [
+      {
+        "file": ".gitignore",
+        "hash": "13125744229463403708"
+      },
+      {
+        "file": "nx.json",
+        "hash": "7664530955825728799"
+      },
+      {
+        "file": "tsconfig.base.json",
+        "hash": "2027505224822103088"
+      },
+      {
+        "file": ".github/workflows/release.yml",
+        "hash": "11894420956785165942"
+      },
+      {
+        "file": "pnpm-lock.yaml",
+        "hash": "646582880799218735"
+      },
+      {
+        "file": "package.json",
+        "hash": "9257173419040009703"
+      },
+      {
+        "file": "SETUP.md",
+        "hash": "9241801139891916143"
+      },
+      {
+        "file": "README.md",
+        "hash": "10524867129576283596"
+      },
+      {
+        "file": ".github/workflows/publish.yml",
+        "hash": "5669164838802351796"
+      },
+      {
+        "file": ".circleci/config.yml",
+        "hash": "767088894346267669"
+      },
+      {
+        "file": ".github/workflows/ci.yml",
+        "hash": "2369440739613850906"
+      }
+    ],
+    "projectFileMap": {
+      "nx-surrealdb": [
+        {
+          "file": "packages/nx-surrealdb/ARCHITECTURE.md",
+          "hash": "8439425797781399335"
+        },
+        {
+          "file": "packages/nx-surrealdb/CLAUDE.md",
+          "hash": "15274229990161605592"
+        },
+        {
+          "file": "packages/nx-surrealdb/README.md",
+          "hash": "2091100785178542207"
+        },
+        {
+          "file": "packages/nx-surrealdb/ROADMAP.md",
+          "hash": "16854798521048990867"
+        },
+        {
+          "file": "packages/nx-surrealdb/eslint.config.mjs",
+          "hash": "321170378038553130"
+        },
+        {
+          "file": "packages/nx-surrealdb/executors.json",
+          "hash": "3083869996648687198"
+        },
+        {
+          "file": "packages/nx-surrealdb/generators.json",
+          "hash": "10267889303069817325"
+        },
+        {
+          "file": "packages/nx-surrealdb/jest.config.ts",
+          "hash": "8964921638985676086"
+        },
+        {
+          "file": "packages/nx-surrealdb/package.json",
+          "hash": "3775497171618732700",
+          "deps": [
+            "npm:@nx/plugin",
+            "npm:@nx/jest",
+            "npm:@nx/eslint",
+            "npm:@types/node",
+            "npm:typescript",
+            "npm:eslint",
+            "npm:tslib",
+            "npm:@nx/devkit",
+            "npm:dotenv",
+            "npm:chalk"
+          ]
+        },
+        {
+          "file": "packages/nx-surrealdb/packages/nx-surrealdb/dist/ARCHITECTURE.md",
+          "hash": "8439425797781399335"
+        },
+        {
+          "file": "packages/nx-surrealdb/packages/nx-surrealdb/dist/README.md",
+          "hash": "2091100785178542207"
+        },
+        {
+          "file": "packages/nx-surrealdb/packages/nx-surrealdb/dist/executors.json",
+          "hash": "3083869996648687198"
+        },
+        {
+          "file": "packages/nx-surrealdb/packages/nx-surrealdb/dist/generators.json",
+          "hash": "10267889303069817325"
+        },
+        {
+          "file": "packages/nx-surrealdb/packages/nx-surrealdb/dist/package.json",
+          "hash": "14483893124174508276"
+        },
+        {
+          "file": "packages/nx-surrealdb/packages/nx-surrealdb/dist/src/executors/migrate/schema.json",
+          "hash": "4135961525873271911"
+        },
+        {
+          "file": "packages/nx-surrealdb/packages/nx-surrealdb/dist/src/executors/reset/schema.json",
+          "hash": "6997921283967263114"
+        },
+        {
+          "file": "packages/nx-surrealdb/packages/nx-surrealdb/dist/src/executors/rollback/schema.json",
+          "hash": "8080120164991625718"
+        },
+        {
+          "file": "packages/nx-surrealdb/packages/nx-surrealdb/dist/src/executors/status/schema.json",
+          "hash": "6862319117117555632"
+        },
+        {
+          "file": "packages/nx-surrealdb/packages/nx-surrealdb/dist/src/generators/export-module/schema.json",
+          "hash": "9043398367389084825"
+        },
+        {
+          "file": "packages/nx-surrealdb/packages/nx-surrealdb/dist/src/generators/import-module/schema.json",
+          "hash": "16682120477815137335"
+        },
+        {
+          "file": "packages/nx-surrealdb/packages/nx-surrealdb/dist/src/generators/migration/files/__timestamp_____name___down.surql",
+          "hash": "80181613961742048"
+        },
+        {
+          "file": "packages/nx-surrealdb/packages/nx-surrealdb/dist/src/generators/migration/files/__timestamp_____name___up.surql",
+          "hash": "14870411695089110441"
+        },
+        {
+          "file": "packages/nx-surrealdb/packages/nx-surrealdb/dist/src/generators/migration/schema.json",
+          "hash": "789820334722252992"
+        },
+        {
+          "file": "packages/nx-surrealdb/packages/nx-surrealdb/dist/src/schema/system_migrations.surql",
+          "hash": "11212805276866679314"
+        },
+        {
+          "file": "packages/nx-surrealdb/pnpm-lock.yaml",
+          "hash": "3176766061518955684"
+        },
+        {
+          "file": "packages/nx-surrealdb/project.json",
+          "hash": "13820696723267179788"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/executors/migrate/executor.spec.ts",
+          "hash": "7233985975063668058"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/executors/migrate/executor.ts",
+          "hash": "609281042681651240"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/executors/migrate/schema.json",
+          "hash": "4135961525873271911"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/executors/reset/executor.ts",
+          "hash": "1110260892363228992"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/executors/reset/schema.json",
+          "hash": "6997921283967263114"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/executors/rollback/executor.spec.ts",
+          "hash": "11627655712551789889"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/executors/rollback/executor.ts",
+          "hash": "9671001967045049091"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/executors/rollback/schema.json",
+          "hash": "8080120164991625718"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/executors/status/executor.spec.ts",
+          "hash": "2301279638989713212"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/executors/status/executor.ts",
+          "hash": "2820599293985205946"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/executors/status/schema.json",
+          "hash": "6862319117117555632"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/generators/export-module/generator.spec.ts",
+          "hash": "9054861989298283149"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/generators/export-module/generator.ts",
+          "hash": "3929474535926184234"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/generators/export-module/schema.json",
+          "hash": "9043398367389084825"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/generators/import-module/generator.spec.ts",
+          "hash": "11745070178060713704"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/generators/import-module/generator.ts",
+          "hash": "6479956627587052592"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/generators/import-module/schema.json",
+          "hash": "16682120477815137335"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/generators/migration/files/__timestamp_____name___down.surql",
+          "hash": "80181613961742048"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/generators/migration/files/__timestamp_____name___up.surql",
+          "hash": "14870411695089110441"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/generators/migration/generator.spec.ts",
+          "hash": "15503383258542507567"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/generators/migration/generator.ts",
+          "hash": "710300949225486048"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/generators/migration/schema.json",
+          "hash": "789820334722252992"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/index.ts",
+          "hash": "7841439387350866680"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/configuration/config-loader.spec.ts",
+          "hash": "4787222269025172467"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/configuration/config-loader.ts",
+          "hash": "12421208666947844115"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/configuration/types.ts",
+          "hash": "12973752860520581186"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/domain/dependency-resolver.spec.ts",
+          "hash": "1956904679511388592"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/domain/dependency-resolver.ts",
+          "hash": "12499094078610217754"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/domain/migration-repository.spec.ts",
+          "hash": "5886074649276892834"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/domain/migration-repository.ts",
+          "hash": "11138590976659786375"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/domain/migration-service.spec.ts",
+          "hash": "2588890905958038984"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/domain/migration-service.ts",
+          "hash": "2509843895622761102"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/domain/module-lock-manager.ts",
+          "hash": "7845979427967476033"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/filesystem/migration-file-processor.spec.ts",
+          "hash": "3520138467981086275"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/filesystem/migration-file-processor.ts",
+          "hash": "17260128634318243903"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/filesystem/pattern-resolver.spec.ts",
+          "hash": "17168369432775569918"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/filesystem/pattern-resolver.ts",
+          "hash": "8753798593392275422"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/filesystem/tree-utils.spec.ts",
+          "hash": "2003030158785913314"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/filesystem/tree-utils.ts",
+          "hash": "7267654995964093772"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/index.ts",
+          "hash": "6645131097001584963"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/infrastructure/client.spec.ts",
+          "hash": "5133719408796484945"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/infrastructure/client.ts",
+          "hash": "16444896514484343841"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/infrastructure/debug.ts",
+          "hash": "4870391651549622931"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/infrastructure/env.ts",
+          "hash": "17322667388365026268"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/lib/infrastructure/project.ts",
+          "hash": "6599866941545325537"
+        },
+        {
+          "file": "packages/nx-surrealdb/src/schema/system_migrations.surql",
+          "hash": "11212805276866679314"
+        },
+        {
+          "file": "packages/nx-surrealdb/tsconfig.json",
+          "hash": "6468116266833766108"
+        },
+        {
+          "file": "packages/nx-surrealdb/tsconfig.lib.json",
+          "hash": "2336233161562068049"
+        },
+        {
+          "file": "packages/nx-surrealdb/tsconfig.spec.json",
+          "hash": "15299885844839321973"
+        }
+      ]
+    }
+  }
+}

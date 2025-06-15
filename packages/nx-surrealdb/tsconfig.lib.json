@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../../dist/tools/plugins/nx-surrealdb",
+    "outDir": "./dist",
     "rootDir": "src",
     "declaration": true,
     "types": ["node"],
@@ -9,8 +9,9 @@
     "target": "es2020",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "skipLibCheck": true
   },
   "include": ["src/**/*"],
-  "exclude": ["**/*.spec.ts"]
+  "exclude": ["**/*.spec.ts", "node_modules"]
 }

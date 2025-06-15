@@ -1,0 +1,21 @@
+{
+  "run": {
+    "command": "nx test nx-surrealdb",
+    "startTime": "2025-06-15T20:48:29.518Z",
+    "endTime": "2025-06-15T20:48:29.758Z",
+    "inner": false
+  },
+  "tasks": [
+    {
+      "taskId": "nx-surrealdb:test",
+      "target": "test",
+      "projectName": "nx-surrealdb",
+      "hash": "462484048075973257",
+      "startTime": "2025-06-15T20:48:29.540Z",
+      "endTime": "2025-06-15T20:48:29.755Z",
+      "params": "",
+      "cacheStatus": "cache-miss",
+      "status": 1
+    }
+  ]
+}

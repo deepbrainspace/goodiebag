@@ -1,0 +1,103 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5.2.0
+  nx: nrwl/nx@1.6.2
+
+parameters:
+  main-branch:
+    type: string
+    default: main
+
+workflows:
+  ci:
+    jobs:
+      - install-deps
+      - test:
+          requires:
+            - install-deps
+      - build:
+          requires:
+            - test
+      - publish:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - main
+                - develop
+            tags:
+              only: /^v.*/
+
+jobs:
+  install-deps:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: pnpm
+          cache-version: v2
+      - nx/set-shas:
+          main-branch-name: << pipeline.parameters.main-branch >>
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+  test:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - attach_workspace:
+          at: .
+      - nx/set-shas:
+          main-branch-name: << pipeline.parameters.main-branch >>
+      - run:
+          name: Run affected tests
+          command: npx nx affected --target=test --parallel=3 --ci --code-coverage
+      - run:
+          name: Run affected linting
+          command: npx nx affected --target=lint --parallel=3 --ci
+      - store_test_results:
+          path: coverage
+      - store_artifacts:
+          path: coverage
+
+  build:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - attach_workspace:
+          at: .
+      - nx/set-shas:
+          main-branch-name: << pipeline.parameters.main-branch >>
+      - run:
+          name: Build affected packages
+          command: npx nx affected --target=build --parallel=3 --ci
+      - persist_to_workspace:
+          root: .
+          paths:
+            - packages/*/dist
+
+  publish:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Authenticate with npm
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+      - run:
+          name: Publish to npm
+          command: |
+            if [ "$CIRCLE_TAG" ]; then
+              cd packages/nx-surrealdb
+              npm publish --provenance
+            elif [ "$CIRCLE_BRANCH" = "main" ]; then
+              cd packages/nx-surrealdb
+              npm version patch --no-git-tag-version
+              npm publish --tag beta --provenance
+            fi

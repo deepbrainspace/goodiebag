@@ -1,0 +1,23 @@
+{
+  "name": "@idance/nx-plugins",
+  "version": "1.0.0",
+  "description": "Collection of NX plugins for iDance projects",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "build": "nx run-many --target=build --all",
+    "test": "nx run-many --target=test --all",
+    "lint": "nx run-many --target=lint --all",
+    "publish:all": "nx run-many --target=publish --all"
+  },
+  "devDependencies": {
+    "@nx/devkit": "^20.8.2",
+    "@nx/js": "^20.8.2",
+    "@nx/plugin": "^20.8.2",
+    "@nx/workspace": "^20.8.2",
+    "nx": "^20.8.2",
+    "nx-cloud": "latest",
+    "typescript": "^5.8.3"
+  }
+}
