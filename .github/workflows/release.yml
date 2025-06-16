@@ -17,9 +17,9 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Phase 1: Detection & Analysis
-  detect-and-analyze:
-    name: 🔍 Detect & Analyze Changes
+  # Phase 1: Detect affected packages (reuse CI logic)
+  detect-affected:
+    name: 🔍 Detect Affected Packages
     runs-on: ubuntu-latest
     outputs:
       packages: ${{ steps.detect.outputs.packages }}
@@ -71,129 +71,19 @@ jobs:
             echo "🎯 Found $PACKAGE_COUNT affected packages: $AFFECTED"
           fi
 
-      - name: Analyze changes for all packages
-        if: steps.detect.outputs.has-packages == 'true'
-        run: |
-          echo "📊 Analyzing changes for release..."
-          
-          # Create analysis for each affected package
-          echo '${{ steps.detect.outputs.packages }}' | jq -r '.[]' | while read package; do
-            echo "Analyzing $package..."
-            
-            PACKAGE_PATH="packages/$package"
-            if [ ! -d "$PACKAGE_PATH" ]; then
-              echo "❌ Package path not found: $PACKAGE_PATH"
-              continue
-            fi
-            
-            CURRENT_VERSION=$(jq -r '.version' $PACKAGE_PATH/package.json)
-            PACKAGE_NAME=$(jq -r '.name' $PACKAGE_PATH/package.json)
-            SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
-            
-            # For main branch releases, use SHA-based versioning
-            if [ "${{ github.ref_name }}" = "main" ]; then
-              NEW_VERSION="sha.${SHORT_SHA}"
-              BUMP_TYPE="sha"
-            else
-              # For develop branch, use prerelease versioning
-              NEW_VERSION="${CURRENT_VERSION}-dev.${SHORT_SHA}"
-              BUMP_TYPE="prerelease"
-            fi
-            
-            # Get recent commits for this package
-            RECENT_COMMITS=$(git log --oneline -n 5 -- $PACKAGE_PATH/ | head -5 || echo "- Initial release")
-            
-            # Create release info
-            mkdir -p .release-info
-            cat > .release-info/release-$package.json << EOF
-            {
-              "package": "$package",
-              "name": "$PACKAGE_NAME",
-              "currentVersion": "$CURRENT_VERSION",
-              "newVersion": "$NEW_VERSION",
-              "bumpType": "$BUMP_TYPE",
-              "sha": "${{ github.sha }}",
-              "shortSha": "${SHORT_SHA}",
-              "branch": "${{ github.ref_name }}",
-              "commits": $(echo "$RECENT_COMMITS" | jq -R -s 'split("\n") | map(select(length > 0))'),
-              "packagePath": "$PACKAGE_PATH"
-            }
-          EOF
-            
-            echo "✅ Release info created for $package: $NEW_VERSION"
-          done
-
-      - name: Upload release analysis
-        if: steps.detect.outputs.has-packages == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-analysis
-          path: .release-info/
-          retention-days: 1
-
-  # Phase 2: Build (Parallel per Package)
-  build:
-    name: 🏗️ Build
-    needs: detect-and-analyze
-    if: needs.detect-and-analyze.outputs.has-packages == 'true'
-    strategy:
-      matrix:
-        package: ${{ fromJSON(needs.detect-and-analyze.outputs.packages) }}
-      fail-fast: false
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 9.0.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Cache NX
-        uses: actions/cache@v4
-        with:
-          path: .nx/cache
-          key: nx-${{ runner.os }}-release-${{ matrix.package }}-${{ github.sha }}
-          restore-keys: |
-            nx-${{ runner.os }}-release-${{ matrix.package }}-
-
-      - name: Build ${{ matrix.package }}
-        run: |
-          echo "🏗️ Building ${{ matrix.package }} for release..."
-          pnpm nx build ${{ matrix.package }}
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-${{ matrix.package }}
-          path: |
-            packages/${{ matrix.package }}/dist/
-            packages/${{ matrix.package }}/package.json
-          retention-days: 1
-
-  # Phase 3: Version & Publish (Parallel per Package)
+  # Phase 2: Apply cached builds (from CI) and publish (parallel per package)
   publish:
     name: 📦 Publish
-    needs: [detect-and-analyze, build]
-    if: needs.detect-and-analyze.outputs.has-packages == 'true'
+    needs: detect-affected
+    if: needs.detect-affected.outputs.has-packages == 'true'
     strategy:
       matrix:
-        package: ${{ fromJSON(needs.detect-and-analyze.outputs.packages) }}
+        package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
       fail-fast: false
     runs-on: ubuntu-latest
     outputs:
       published-${{ matrix.package }}: ${{ steps.publish.outputs.success }}
+      version-${{ matrix.package }}: ${{ steps.publish.outputs.version }}
     
     steps:
       - name: Checkout repository
@@ -213,33 +103,43 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Download release analysis
-        uses: actions/download-artifact@v4
+      - name: Cache NX (restore from CI)
+        uses: actions/cache@v4
         with:
-          name: release-analysis
-          path: .release-info/
+          path: .nx/cache
+          key: nx-${{ runner.os }}-build-${{ matrix.package }}-${{ github.sha }}
+          restore-keys: |
+            nx-${{ runner.os }}-build-${{ matrix.package }}-
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-${{ matrix.package }}
-          path: packages/${{ matrix.package }}/
+      - name: Build ${{ matrix.package }} (use cache)
+        run: |
+          echo "🏗️ Building ${{ matrix.package }} (should hit cache)..."
+          pnpm nx build ${{ matrix.package }}
 
-      - name: Apply version and publish ${{ matrix.package }}
+      - name: Generate SHA version and publish
         id: publish
         run: |
           echo "📦 Publishing ${{ matrix.package }}..."
           
-          # Read release info
-          RELEASE_INFO=$(cat .release-info/release-${{ matrix.package }}.json)
-          NEW_VERSION=$(echo $RELEASE_INFO | jq -r '.newVersion')
-          PACKAGE_NAME=$(echo $RELEASE_INFO | jq -r '.name')
-          PACKAGE_PATH=$(echo $RELEASE_INFO | jq -r '.packagePath')
-          BUMP_TYPE=$(echo $RELEASE_INFO | jq -r '.bumpType')
+          # Get package info
+          PACKAGE_PATH="packages/${{ matrix.package }}"
+          CURRENT_VERSION=$(jq -r '.version' $PACKAGE_PATH/package.json)
+          PACKAGE_NAME=$(jq -r '.name' $PACKAGE_PATH/package.json)
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          
+          # Generate SHA-based version
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            NEW_VERSION="sha.${SHORT_SHA}"
+            NPM_TAG="next"
+          else
+            NEW_VERSION="${CURRENT_VERSION}-dev.${SHORT_SHA}"
+            NPM_TAG="dev"
+          fi
           
           echo "📋 Package: $PACKAGE_NAME"
-          echo "📋 Version: $NEW_VERSION"
-          echo "📋 Type: $BUMP_TYPE"
+          echo "📋 Current Version: $CURRENT_VERSION"
+          echo "📋 New Version: $NEW_VERSION"
+          echo "📋 npm tag: $NPM_TAG"
           
           # Update package.json version
           cd $PACKAGE_PATH
@@ -248,16 +148,12 @@ jobs:
           # Configure npm
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
           
-          # Determine npm tag
-          if [ "$BUMP_TYPE" = "sha" ]; then
-            NPM_TAG="next"
-          else
-            NPM_TAG="dev"
-          fi
-          
           # Publish to npm
-          echo "📤 Publishing to npm with tag: $NPM_TAG"
+          echo "📤 Publishing to npm..."
           npm publish --tag $NPM_TAG --access public
+          
+          # Create tarball for GitHub release
+          npm pack
           
           echo "success=true" >> $GITHUB_OUTPUT
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
@@ -267,11 +163,6 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Create package tarball
-        run: |
-          cd packages/${{ matrix.package }}
-          npm pack
-          
       - name: Upload package tarball
         uses: actions/upload-artifact@v4
         with:
@@ -279,26 +170,20 @@ jobs:
           path: packages/${{ matrix.package }}/*.tgz
           retention-days: 30
 
-  # Phase 4: GitHub Releases (Parallel per Package)
+  # Phase 3: GitHub Releases (parallel per package)
   github-release:
     name: 🏷️ GitHub Release
-    needs: [detect-and-analyze, publish]
-    if: needs.detect-and-analyze.outputs.has-packages == 'true'
+    needs: [detect-affected, publish]
+    if: needs.detect-affected.outputs.has-packages == 'true'
     strategy:
       matrix:
-        package: ${{ fromJSON(needs.detect-and-analyze.outputs.packages) }}
+        package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
       fail-fast: false
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Download release analysis
-        uses: actions/download-artifact@v4
-        with:
-          name: release-analysis
-          path: .release-info/
 
       - name: Download package tarball
         uses: actions/download-artifact@v4
@@ -310,24 +195,26 @@ jobs:
         run: |
           echo "🏷️ Creating GitHub release for ${{ matrix.package }}..."
           
-          # Read release info
-          RELEASE_INFO=$(cat .release-info/release-${{ matrix.package }}.json)
-          NEW_VERSION=$(echo $RELEASE_INFO | jq -r '.newVersion')
-          PACKAGE_NAME=$(echo $RELEASE_INFO | jq -r '.name')
-          BUMP_TYPE=$(echo $RELEASE_INFO | jq -r '.bumpType')
-          SHORT_SHA=$(echo $RELEASE_INFO | jq -r '.shortSha')
+          # Get package info
+          PACKAGE_PATH="packages/${{ matrix.package }}"
+          PACKAGE_NAME=$(jq -r '.name' $PACKAGE_PATH/package.json)
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          
+          # Generate version (same logic as publish job)
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            NEW_VERSION="sha.${SHORT_SHA}"
+            RELEASE_TYPE="Development Release"
+          else
+            CURRENT_VERSION=$(jq -r '.version' $PACKAGE_PATH/package.json)
+            NEW_VERSION="${CURRENT_VERSION}-dev.${SHORT_SHA}"
+            RELEASE_TYPE="Development Preview"
+          fi
           
           # Create tag name
           TAG_NAME="${{ matrix.package }}-${NEW_VERSION}"
           
-          # Determine release type
-          if [ "$BUMP_TYPE" = "sha" ]; then
-            RELEASE_TYPE="Development Release"
-            PRERELEASE="true"
-          else
-            RELEASE_TYPE="Development Preview"
-            PRERELEASE="true"
-          fi
+          # Get recent commits for release notes
+          RECENT_COMMITS=$(git log --oneline -n 5 -- $PACKAGE_PATH/ | head -5 || echo "- Initial release")
           
           # Generate release notes
           cat > release-notes.md << EOF
@@ -353,7 +240,7 @@ jobs:
           
           ### Recent Changes
           
-          $(echo $RELEASE_INFO | jq -r '.commits[]' | head -5 | sed 's/^/- /')
+          $(echo "$RECENT_COMMITS" | sed 's/^/- /')
           
           ---
           
@@ -371,18 +258,18 @@ jobs:
           gh release create $TAG_NAME $TARBALL \
             --title "${{ matrix.package }} $NEW_VERSION" \
             --notes-file release-notes.md \
-            --prerelease=$PRERELEASE \
+            --prerelease=true \
             --target ${{ github.sha }}
           
           echo "✅ GitHub release created: $TAG_NAME"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # Phase 5: Finalize (Commit version changes back)
+  # Phase 4: Commit version updates back to repo
   finalize:
-    name: 🔄 Finalize Release
-    needs: [detect-and-analyze, publish, github-release]
-    if: needs.detect-and-analyze.outputs.has-packages == 'true'
+    name: 🔄 Commit Version Updates
+    needs: [detect-affected, publish, github-release]
+    if: needs.detect-affected.outputs.has-packages == 'true'
     runs-on: ubuntu-latest
     
     steps:
@@ -397,63 +284,55 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Download release analysis
-        uses: actions/download-artifact@v4
-        with:
-          name: release-analysis
-          path: .release-info/
-
-      - name: Commit version updates
+      - name: Update package versions and commit
         run: |
-          echo "🔄 Committing version updates..."
+          echo "🔄 Updating package versions..."
           
-          # Check if we have any release info files
-          if [ ! -d ".release-info" ] || [ -z "$(ls -A .release-info)" ]; then
-            echo "No release info found, skipping version commits"
-            exit 0
-          fi
-          
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
           CHANGED_FILES=""
+          RELEASED_PACKAGES=""
           
-          # Update package.json files with new versions
-          for release_file in .release-info/release-*.json; do
-            if [ -f "$release_file" ]; then
-              RELEASE_INFO=$(cat $release_file)
-              PACKAGE=$(echo $RELEASE_INFO | jq -r '.package')
-              NEW_VERSION=$(echo $RELEASE_INFO | jq -r '.newVersion')
-              PACKAGE_PATH=$(echo $RELEASE_INFO | jq -r '.packagePath')
-              
-              if [ -f "$PACKAGE_PATH/package.json" ]; then
-                echo "Updating $PACKAGE_PATH/package.json to version $NEW_VERSION"
-                cd $PACKAGE_PATH
-                npm version $NEW_VERSION --no-git-tag-version
-                cd - > /dev/null
-                CHANGED_FILES="$CHANGED_FILES $PACKAGE_PATH/package.json"
-              fi
+          # Update each affected package
+          echo '${{ needs.detect-affected.outputs.packages }}' | jq -r '.[]' | while read package; do
+            PACKAGE_PATH="packages/$package"
+            PACKAGE_NAME=$(jq -r '.name' $PACKAGE_PATH/package.json)
+            CURRENT_VERSION=$(jq -r '.version' $PACKAGE_PATH/package.json)
+            
+            # Generate same version as publish job
+            if [ "${{ github.ref_name }}" = "main" ]; then
+              NEW_VERSION="sha.${SHORT_SHA}"
+            else
+              NEW_VERSION="${CURRENT_VERSION}-dev.${SHORT_SHA}"
             fi
+            
+            echo "Updating $PACKAGE_PATH/package.json to $NEW_VERSION"
+            cd $PACKAGE_PATH
+            npm version $NEW_VERSION --no-git-tag-version
+            cd - > /dev/null
+            
+            echo "$PACKAGE_PATH/package.json" >> changed_files.txt
+            echo "- $PACKAGE_NAME@$NEW_VERSION" >> released_packages.txt
           done
           
-          # Commit if we have changes
-          if [ -n "$CHANGED_FILES" ]; then
-            git add $CHANGED_FILES
-            git commit -m "chore: release versions
-
+          # Check if we have changes to commit
+          if [ -f changed_files.txt ] && [ -s changed_files.txt ]; then
+            git add $(cat changed_files.txt)
+            
+            # Create commit message
+            cat > commit_message.txt << EOF
+          chore: release versions
+          
           📦 Automated version updates from release pipeline
           
           Packages released:
-          $(for file in .release-info/release-*.json; do
-            if [ -f "$file" ]; then
-              RELEASE_INFO=$(cat $file)
-              PACKAGE_NAME=$(echo $RELEASE_INFO | jq -r '.name')
-              NEW_VERSION=$(echo $RELEASE_INFO | jq -r '.newVersion')
-              echo "- $PACKAGE_NAME@$NEW_VERSION"
-            fi
-          done)
+          $(cat released_packages.txt)
           
           🤖 Generated with Enhanced Parallel Pipeline
           
-          Co-Authored-By: github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+          Co-Authored-By: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+          EOF
             
+            git commit -F commit_message.txt
             git push origin ${{ github.ref_name }}
             echo "✅ Version updates committed and pushed"
           else
@@ -463,8 +342,8 @@ jobs:
   # No affected packages notification
   no-packages:
     name: ℹ️ No Packages to Release
-    needs: detect-and-analyze
-    if: needs.detect-and-analyze.outputs.has-packages == 'false'
+    needs: detect-affected
+    if: needs.detect-affected.outputs.has-packages == 'false'
     runs-on: ubuntu-latest
     
     steps:
