@@ -82,6 +82,8 @@ npm install @deepbrainspace/nx-surrealdb --save-dev
 # Clone and install
 git clone https://github.com/deepbrainspace/goodiebag.git
 cd goodiebag
+git clone https://github.com/deepbrainspace/goodiebag.git
+cd goodiebag
 pnpm install
 
 # Build all packages
@@ -121,6 +123,7 @@ nx affected --target=test    # Only tests affected packages
 **🏗️ Complete Ecosystem Architecture:**
 
 ```
+goodiebag/
 goodiebag/
 ├── packages/              # 📦 Publishable to npm
 │   ├── nx-surrealdb/     # NX plugin for SurrealDB migrations
