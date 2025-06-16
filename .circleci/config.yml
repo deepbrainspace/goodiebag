@@ -12,10 +12,10 @@ parameters:
 workflows:
   ci:
     jobs:
-      - install-deps
+      - dependencies
       - lint:
           requires:
-            - install-deps
+            - dependencies
       - test:
           requires:
             - lint
@@ -34,7 +34,7 @@ workflows:
               only: /^v.*/
 
 jobs:
-  install-deps:
+  dependencies:
     docker:
       - image: cimg/node:20.11
     steps:
