@@ -1,28 +1,63 @@
-import baseConfig from '../../../eslint.config.mjs';
+import js from '@eslint/js';
+import tseslint from '@typescript-eslint/eslint-plugin';
+import tsparser from '@typescript-eslint/parser';
+import jsonParser from 'jsonc-eslint-parser';
+import globals from 'globals';
 
 export default [
-  ...baseConfig,
+  js.configs.recommended,
   {
-    files: ['**/*.json'],
-    rules: {
-      '@nx/dependency-checks': [
-        'error',
-        {
-          ignoredFiles: ['{projectRoot}/eslint.config.{js,cjs,mjs}'],
-        },
-      ],
-    },
+    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     languageOptions: {
-      parser: await import('jsonc-eslint-parser'),
+      parser: tsparser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+      globals: {
+        ...globals.node,
+        ...globals.es2021,
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
+    },
+    rules: {
+      ...tseslint.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
   {
-    files: ['**/package.json'],
-    rules: {
-      '@nx/nx-plugin-checks': 'error',
-    },
+    files: ['**/*.spec.ts', '**/*.test.ts'],
     languageOptions: {
-      parser: await import('jsonc-eslint-parser'),
+      parser: tsparser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+      globals: {
+        ...globals.node,
+        ...globals.jest,
+        ...globals.es2021,
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
+    },
+    rules: {
+      ...tseslint.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'warn',
+    },
+  },
+  {
+    files: ['**/*.json'],
+    languageOptions: {
+      parser: jsonParser,
+    },
+    rules: {
+      // Basic JSON validation only
     },
   },
 ];
