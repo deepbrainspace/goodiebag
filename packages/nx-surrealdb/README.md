@@ -838,6 +838,53 @@ MigrationService (Business Logic)
 4. Ensure all tests pass: `nx test nx-surrealdb`
 5. Submit a pull request
 
+## Development & Contributing
+
+### Local Development
+
+```bash
+# Build the plugin
+nx build nx-surrealdb
+
+# Run tests
+nx test nx-surrealdb
+
+# Run linting
+nx lint nx-surrealdb
+
+# Test locally by copying to node_modules
+cp -r dist/* node_modules/@deepbrainspace/nx-surrealdb/
+```
+
+### CI/CD Pipeline
+
+This package uses an optimized CircleCI pipeline for fast, reliable releases:
+
+```
+   dependencies
+       ├── lint ──┐
+       └── test ──┼── build ──┬── npm-publish
+                  │           └── github-release
+```
+
+**Quality Gates:**
+- ✅ ESLint with zero warnings policy
+- ✅ Jest tests with 278+ test cases
+- ✅ TypeScript compilation
+- ✅ Build artifact validation
+
+**Automated Publishing:**
+- **Beta releases**: Every merge to `main` → `npm publish --tag beta` + GitHub prerelease
+- **Production releases**: Git tags → `npm publish` + GitHub release with artifacts
+
+### Architecture
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed system design, including:
+- Repository Pattern implementation
+- Domain-Driven Design principles
+- Component interaction diagrams
+- Data flow documentation
+
 ## License
 
 MIT License - see LICENSE file for details.
