@@ -138,15 +138,22 @@ Our CircleCI pipeline demonstrates production-grade monorepo CI/CD with intellig
    - **npm-publish**: Independent versioning and publishing per package
    - **github-release**: Individual GitHub releases with package-specific tags
 
-### Triggers
+### Release Triggers
 
-- **Production Release**: Push git tag (e.g., `v1.0.0`)
-  - Publishes to npm with production tag
-  - Creates GitHub release with version tag
+- **Production Release**: Push package-specific tag
+  ```bash
+  git tag nx-surrealdb-v1.2.0 && git push origin nx-surrealdb-v1.2.0
+  git tag mcp-server-claude-v2.1.0 && git push origin mcp-server-claude-v2.1.0
+  git tag goodiebag-dev-v1.0.0 && git push origin goodiebag-dev-v1.0.0
+  ```
+  - Only publishes the specific package mentioned in the tag
+  - Sets exact version from tag
+  - Creates GitHub release with package-specific tag
+
 - **Beta Release**: Merge to `main` branch
-  - Auto-bumps patch version
-  - Publishes to npm with `beta` tag
-  - Creates GitHub prerelease
+  - Auto-bumps patch version for affected packages only
+  - Publishes affected packages to npm with `beta` tag
+  - Creates GitHub prereleases for each affected package
 
 ### Performance & Efficiency Benefits
 
@@ -163,11 +170,11 @@ Our CircleCI pipeline demonstrates production-grade monorepo CI/CD with intellig
 For testing artifacts before CI/CD or emergency releases:
 
 ```bash
-# 1. Build the package
-nx build nx-surrealdb
+# 1. Build specific package
+nx build package-name
 
-# 2. Navigate to package directory
-cd packages/nx-surrealdb
+# 2. Navigate to package directory  
+cd packages/package-name
 
 # 3. Create and test tarball locally
 npm pack
@@ -175,17 +182,34 @@ tar -tzf *.tgz  # Inspect contents
 
 # 4. Test installation locally
 cd /tmp && npm init -y
-npm install /path/to/nx-plugins/packages/nx-surrealdb/*.tgz
+npm install /path/to/goodie-bag/packages/package-name/*.tgz
 
 # 5. Manual publish (if needed)
 npm login
 npm publish                    # Production
 npm publish --tag beta        # Beta release
 
-# 6. Create GitHub release with artifact
-gh release create v1.0.0 *.tgz \
-  --title "Release v1.0.0" \
+# 6. Create package-specific tag for CI/CD
+git tag package-name-v1.0.0
+git push origin package-name-v1.0.0  # Triggers automated release
+
+# 7. Or manual GitHub release
+gh release create package-name-v1.0.0 *.tgz \
+  --title "Release package-name v1.0.0" \
   --notes "Manual release description"
+```
+
+### Release Examples
+
+```bash
+# Release NX plugin
+git tag nx-surrealdb-v1.2.0 && git push origin nx-surrealdb-v1.2.0
+
+# Release MCP server  
+git tag mcp-server-claude-v2.1.0 && git push origin mcp-server-claude-v2.1.0
+
+# Release website
+git tag goodiebag-dev-v1.0.0 && git push origin goodiebag-dev-v1.0.0
 ```
 
 ### Environment Variables
@@ -250,10 +274,32 @@ This project follows [Semantic Versioning](https://semver.org/):
 
 ### Adding New Packages
 Ready to add your next utility to the goodie-bag? The monorepo automatically handles:
-1. **Create** `packages/your-package/` directory
-2. **Add** `publish` target to `project.json`  
+1. **Create** `packages/your-package/` or `apps/your-app/` directory
+2. **Add** appropriate targets to `project.json` (`publish` for packages, `deploy` for apps)
 3. **Commit** changes
-4. **Done!** CI/CD automatically detects and manages the new package
+4. **Done!** CI/CD automatically detects and manages the new package/app
+
+### Future: Claude Code Release MCP
+
+**Coming to the goodie-bag:** An MCP server for intelligent release management! 🚀
+
+```bash
+# Interactive release through Claude Code
+> @release list packages
+> @release create nx-surrealdb --version 1.2.0 --type patch
+> @release preview nx-surrealdb
+> @release publish nx-surrealdb-v1.2.0
+```
+
+**Planned Features:**
+- **Interactive Package Selection**: Choose what to release via Claude Code
+- **Smart Version Management**: Semantic version suggestions based on changes
+- **Release Validation**: Check tests, dependencies, and compatibility
+- **Automated Tag Creation**: Generate proper `package-name-vX.Y.Z` tags
+- **Preview Mode**: See what will be released before committing
+- **Batch Releases**: Release multiple packages with dependency ordering
+
+This would eliminate manual tag creation and provide a conversational release interface directly in Claude Code!
 
 ## License
 
