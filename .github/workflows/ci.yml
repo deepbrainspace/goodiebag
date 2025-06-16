@@ -1,4 +1,4 @@
-name: CI - Enhanced Parallel Pipeline
+name: CI
 
 on:
   pull_request:
@@ -11,10 +11,10 @@ on:
       - 'pnpm-lock.yaml'
       - 'nx.json'
       - 'tsconfig*.json'
-      - '.github/workflows/ci-enhanced.yml'
+      - '.github/workflows/ci.yml'
 
 concurrency:
-  group: ci-enhanced-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

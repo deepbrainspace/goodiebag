@@ -1,4 +1,4 @@
-name: Release - Enhanced Parallel Pipeline
+name: Release
 
 on:
   push:
@@ -13,7 +13,7 @@ on:
       - 'pnpm-lock.yaml'
 
 concurrency:
-  group: release-enhanced-${{ github.ref }}
+  group: release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
