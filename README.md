@@ -1,6 +1,6 @@
 # DeepBrain NX Plugins
 
-A monorepo of specialized NX plugins for DeepBrain projects, featuring robust CI/CD, comprehensive testing, and production-ready tooling.
+A monorepo of specialized NX plugins for ANY projects that wants to incorporate NX, featuring robust CI/CD, comprehensive testing, and production-ready tooling.
 
 ## Repository Overview
 
@@ -100,9 +100,6 @@ Our CircleCI pipeline is optimized for speed and reliability with parallel job e
        └── test ──┼── build ──┬── npm-publish
                   │           └── github-release
 ```
-       └── test ──┼── build ──┬── npm-publish
-                  │           └── github-release
-```
 
 ### Pipeline Stages
 
@@ -131,6 +128,53 @@ Our CircleCI pipeline is optimized for speed and reliability with parallel job e
 - **Independent failure modes** for publishing vs releases
 - **Early failure detection** with lint-first approach
 - **Artifact redundancy** via both npm registry and GitHub releases
+
+### Manual Release Process
+
+For testing artifacts before CI/CD or emergency releases:
+
+```bash
+# 1. Build the package
+nx build nx-surrealdb
+
+# 2. Navigate to package directory
+cd packages/nx-surrealdb
+
+# 3. Create and test tarball locally
+npm pack
+tar -tzf *.tgz  # Inspect contents
+
+# 4. Test installation locally
+cd /tmp && npm init -y
+npm install /path/to/nx-plugins/packages/nx-surrealdb/*.tgz
+
+# 5. Manual publish (if needed)
+npm login
+npm publish                    # Production
+npm publish --tag beta        # Beta release
+
+# 6. Create GitHub release with artifact
+gh release create v1.0.0 *.tgz \
+  --title "Release v1.0.0" \
+  --notes "Manual release description"
+```
+
+### Environment Variables
+
+Required for CI/CD and manual publishing. Copy `.env.example` to `.env` and fill in your values:
+
+```bash
+# Copy template and edit
+cp .env.example .env
+# Edit .env with your actual tokens
+
+# Required tokens:
+NPM_TOKEN=npm_xxxxxxxxxxxx        # npm publishing
+GITHUB_TOKEN=ghp_xxxxxxxxxxxx    # GitHub releases
+NX_CLOUD_ACCESS_TOKEN=xxxxxxx    # Optional: distributed caching
+```
+
+**🔐 Security Note**: The `.env` file is encrypted with [git-crypt](https://github.com/AGWA/git-crypt) when committed to the repository. Use `.env.example` as a template for local development.
 
 Both npm packages and GitHub release artifacts are created, providing multiple distribution channels and backup options.
 
