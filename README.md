@@ -100,10 +100,6 @@ Our CircleCI pipeline is optimized for speed and reliability with parallel job e
        └── test ──┼── build ──┬── npm-publish
                   │           └── github-release
 ```
-
-```
-   dependencies
-       ├── lint ──┐
        └── test ──┼── build ──┬── npm-publish
                   │           └── github-release
 ```
