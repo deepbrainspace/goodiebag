@@ -13,9 +13,12 @@ workflows:
   ci:
     jobs:
       - install-deps
-      - test:
+      - lint:
           requires:
             - install-deps
+      - test:
+          requires:
+            - lint
       - build:
           requires:
             - test
@@ -60,6 +63,18 @@ jobs:
           paths:
             - .
 
+  lint:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - attach_workspace:
+          at: .
+      - nx/set-shas:
+          main-branch-name: << pipeline.parameters.main-branch >>
+      - run:
+          name: Run affected linting
+          command: npx nx affected --target=lint --parallel=3 --ci
+
   test:
     docker:
       - image: cimg/node:20.11
@@ -71,9 +86,6 @@ jobs:
       - run:
           name: Run affected tests
           command: npx nx affected --target=test --parallel=3 --ci --code-coverage
-      - run:
-          name: Run affected linting
-          command: npx nx affected --target=lint --parallel=3 --ci
       - store_test_results:
           path: coverage
       - store_artifacts:
