@@ -18,6 +18,11 @@
             "output": "src/generators/migration/files"
           },
           {
+            "input": "packages/nx-surrealdb/src/generators/init/files",
+            "glob": "**/*",
+            "output": "src/generators/init/files"
+          },
+          {
             "input": "packages/nx-surrealdb",
             "glob": "{package.json,generators.json,executors.json,README.md,LICENSE.md,ARCHITECTURE.md}",
             "output": "./"
@@ -59,7 +64,7 @@
       "executor": "nx:run-commands",
       "dependsOn": ["build"],
       "options": {
-        "command": "cd packages/nx-surrealdb && npm publish"
+        "command": "cd packages/nx-surrealdb && pnpm publish"
       }
     }
   }
