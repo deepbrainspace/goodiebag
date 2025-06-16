@@ -2,7 +2,7 @@
 
 A collection of NX plugins for DeepBrain projects, featuring database migrations and tooling.
 
-<!-- Test CircleCI pipeline -->
+<!-- Test CircleCI pipeline - attempt 2 -->
 
 ## Packages
 
