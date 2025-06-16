@@ -1,0 +1,142 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5.2.0
+  nx: nrwl/nx@1.7.0
+
+parameters:
+  main-branch:
+    type: string
+    default: main
+
+workflows:
+  # CD workflow - runs on main/develop merges
+  cd:
+    jobs:
+      - dependencies:
+          filters:
+            branches:
+              only:
+                - main
+                - develop
+      - publish-sha-version:
+          name: publish-main-sha
+          npm-tag-suffix: ""
+          requires:
+            - dependencies
+          filters:
+            branches:
+              only:
+                - main
+      - publish-sha-version:
+          name: publish-dev-sha
+          npm-tag-suffix: "-dev"
+          requires:
+            - dependencies
+          filters:
+            branches:
+              only:
+                - develop
+
+jobs:
+  dependencies:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm
+          command: |
+            sudo corepack enable
+            corepack prepare pnpm@9.0.0 --activate
+      - restore_cache:
+          keys:
+            - pnpm-deps-v2-{{ checksum "pnpm-lock.yaml" }}
+            - pnpm-deps-v2-
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - save_cache:
+          key: pnpm-deps-v2-{{ checksum "pnpm-lock.yaml" }}
+          paths:
+            - ~/.pnpm-store
+            - node_modules
+      - nx/set-shas:
+          main-branch-name: << pipeline.parameters.main-branch >>
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+  # SHA-based publishing for main/develop branches
+  publish-sha-version:
+    parameters:
+      npm-tag-suffix:
+        type: string
+        default: ""
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - attach_workspace:
+          at: .
+      - nx/set-shas:
+          main-branch-name: << pipeline.parameters.main-branch >>
+      - run:
+          name: Install GitHub CLI
+          command: |
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+            sudo apt update
+            sudo apt install gh -y
+      - run:
+          name: Authenticate with registries
+          command: |
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+            pnpm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+            echo "$GITHUB_TOKEN" | gh auth login --with-token
+      - run:
+          name: Publish packages with SHA versions
+          command: |
+            # Get affected packages
+            AFFECTED_PACKAGES=$(npx nx show projects --affected --with-target=build --json | jq -r '.[]')
+            
+            if [ -z "$AFFECTED_PACKAGES" ]; then
+              echo "No packages affected - nothing to publish"
+              exit 0
+            fi
+            
+            echo "Affected packages: $AFFECTED_PACKAGES"
+            
+            # Build affected packages (will use NX Cloud cache if available)
+            npx nx affected --target=build --parallel=3 --ci
+            
+            # Get SHA for versioning
+            SHORT_SHA=$(git rev-parse --short HEAD)
+            SUFFIX="<< parameters.npm-tag-suffix >>"
+            
+            echo "Using SHA version: $SHORT_SHA with suffix: $SUFFIX"
+            
+            # Publish each affected package
+            for package in $AFFECTED_PACKAGES; do
+              echo "Publishing package: $package"
+              PACKAGE_PATH=$(npx nx show project $package --json | jq -r '.root')
+              cd "$PACKAGE_PATH"
+              
+              # Set SHA as version
+              pnpm version "$SHORT_SHA" --no-git-tag-version
+              
+              # Publish with SHA as npm tag
+              pnpm publish --tag "${SHORT_SHA}${SUFFIX}" --no-git-checks
+              
+              # Create GitHub release
+              pnpm pack
+              TARBALL=$(ls *.tgz)
+              RELEASE_TAG="${package}-${SHORT_SHA}${SUFFIX}"
+              
+              gh release create "$RELEASE_TAG" "$TARBALL" \
+                --title "Release ${package} ${SHORT_SHA}${SUFFIX}" \
+                --notes "SHA-based release of @deepbrainspace/${package} from commit ${SHORT_SHA}" \
+                --prerelease
+              
+              cd - > /dev/null
+            done
