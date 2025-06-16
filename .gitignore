@@ -82,8 +82,7 @@ test-project/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variable files
-.env
+# dotenv environment vvariable files
 .env.development.local
 .env.test.local
 .env.production.local
