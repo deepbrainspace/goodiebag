@@ -18,9 +18,14 @@
             "output": "src/generators/migration/files"
           },
           {
-            "input": "./src/generators/init/files",
+            "input": "packages/nx-surrealdb/src/generators/init/files",
             "glob": "**/*",
             "output": "src/generators/init/files"
+          },
+          {
+            "input": "packages/nx-surrealdb",
+            "glob": "{package.json,generators.json,executors.json,README.md,LICENSE.md,ARCHITECTURE.md}",
+            "output": "./"
           },
           {
             "input": "./src",
