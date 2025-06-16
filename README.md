@@ -1,6 +1,8 @@
 # Goodie-Bag 🎒
 
-[![CircleCI](https://dl.circleci.com/status-badge/img/circleci/L1L7Dg2J95eoimkWR3ScDb/BZ3H2kcEVycJ4TGq4s17of/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/circleci/L1L7Dg2J95eoimkWR3ScDb/BZ3H2kcEVycJ4TGq4s17of/tree/main)
+[![CI](https://dl.circleci.com/status-badge/img/circleci/L1L7Dg2J95eoimkWR3ScDb/c8be0d2d-a616-459e-8c35-e4a9390c9c3c/tree/main.svg?style=svg&label=CI)](https://dl.circleci.com/status-badge/redirect/circleci/L1L7Dg2J95eoimkWR3ScDb/c8be0d2d-a616-459e-8c35-e4a9390c9c3c/tree/main)
+[![CD Main](https://dl.circleci.com/status-badge/img/circleci/L1L7Dg2J95eoimkWR3ScDb/1b1eb493-6500-43df-9f43-4344e3c8b673/tree/main.svg?style=svg&label=CD%20Main)](https://dl.circleci.com/status-badge/redirect/circleci/L1L7Dg2J95eoimkWR3ScDb/1b1eb493-6500-43df-9f43-4344e3c8b673/tree/main)
+[![CD Tags](https://dl.circleci.com/status-badge/img/circleci/L1L7Dg2J95eoimkWR3ScDb/1b1eb493-6500-43df-9f43-4344e3c8b673/tree/main.svg?style=svg&label=CD%20Tags)](https://dl.circleci.com/status-badge/redirect/circleci/L1L7Dg2J95eoimkWR3ScDb/1b1eb493-6500-43df-9f43-4344e3c8b673/tree/main)
 
 A streamlined monorepo of developer utilities, NX plugins, MCP servers, and tools - featuring intelligent CI/CD, comprehensive testing, and production-ready automation.
 
