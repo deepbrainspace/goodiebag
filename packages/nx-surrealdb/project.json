@@ -13,27 +13,27 @@
         "tsConfig": "packages/nx-surrealdb/tsconfig.lib.json",
         "assets": [
           {
-            "input": "packages/nx-surrealdb/src/generators/migration/files",
+            "input": "./src/generators/migration/files",
             "glob": "**/*",
             "output": "src/generators/migration/files"
           },
           {
-            "input": "packages/nx-surrealdb/src/generators/init/files",
+            "input": "./src/generators/init/files",
             "glob": "**/*",
             "output": "src/generators/init/files"
           },
           {
-            "input": "packages/nx-surrealdb",
+            "input": ".",
             "glob": "{package.json,generators.json,executors.json,README.md,LICENSE.md,ARCHITECTURE.md}",
             "output": "./"
           },
           {
-            "input": "packages/nx-surrealdb/src",
+            "input": "./src",
             "glob": "**/*/schema.json",
             "output": "src"
           },
           {
-            "input": "packages/nx-surrealdb/src/schema",
+            "input": "./src/schema",
             "glob": "**/*",
             "output": "src/schema"
           }
@@ -41,12 +41,6 @@
       },
       "configurations": {
         "production": {}
-      }
-    },
-    "copy-schema": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "mkdir -p packages/nx-surrealdb/dist/src/schema && cp packages/nx-surrealdb/src/schema/system_migrations.surql packages/nx-surrealdb/dist/src/schema/"
       }
     },
     "lint": {
