@@ -2,6 +2,8 @@
 
 A collection of NX plugins for DeepBrain projects, featuring database migrations and tooling.
 
+<!-- Test CircleCI pipeline -->
+
 ## Packages
 
 ### @deepbrainspace/nx-surrealdb
