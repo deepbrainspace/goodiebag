@@ -214,7 +214,7 @@ async function validateDependencies(
   const moduleName = Object.keys(moduleConfig)[0];
   const config = moduleConfig[moduleName];
   
-  if (!config.depends || config.depends.length === 0) {
+  if (!config.dependencies || config.dependencies.length === 0) {
     logger.info(`✅ Module has no dependencies`);
     return;
   }
@@ -236,7 +236,7 @@ async function validateDependencies(
     logger.warn(`⚠️ No target configuration found - cannot validate dependencies`);
   }
   
-  logger.info(`✅ All dependencies satisfied: ${config.depends.join(', ')}`);
+  logger.info(`✅ All dependencies satisfied: ${config.dependencies.join(', ')}`);
 }
 
 async function importMigrationFiles(

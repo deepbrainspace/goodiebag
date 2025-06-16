@@ -22,15 +22,15 @@ describe('DependencyResolver', () => {
       modules: {
         '000_admin': {
           name: 'Admin',
-          depends: []
+          dependencies: []
         },
         '010_auth': {
           name: 'Auth',
-          depends: ['000_admin']
+          dependencies: ['000_admin']
         },
         '020_schema': {
           name: 'Schema',
-          depends: ['010_auth']
+          dependencies: ['010_auth']
         }
       }
     };
@@ -87,10 +87,10 @@ describe('DependencyResolver', () => {
     beforeEach(async () => {
       MockConfigLoader.loadConfig.mockResolvedValue({
         modules: {
-          '000_admin': { name: 'Admin', depends: [] },
-          '010_auth': { name: 'Auth', depends: ['000_admin'] },
-          '020_schema': { name: 'Schema', depends: ['010_auth'] },
-          '030_messaging': { name: 'Messaging', depends: ['010_auth'] }
+          '000_admin': { name: 'Admin', dependencies: [] },
+          '010_auth': { name: 'Auth', dependencies: ['000_admin'] },
+          '020_schema': { name: 'Schema', dependencies: ['010_auth'] },
+          '030_messaging': { name: 'Messaging', dependencies: ['010_auth'] }
         }
       });
 
@@ -127,9 +127,9 @@ describe('DependencyResolver', () => {
     beforeEach(async () => {
       MockConfigLoader.loadConfig.mockResolvedValue({
         modules: {
-          '000_admin': { name: 'Admin', depends: [] },
-          '010_auth': { name: 'Auth', depends: ['000_admin'] },
-          '020_schema': { name: 'Schema', depends: ['010_auth'] }
+          '000_admin': { name: 'Admin', dependencies: [] },
+          '010_auth': { name: 'Auth', dependencies: ['000_admin'] },
+          '020_schema': { name: 'Schema', dependencies: ['010_auth'] }
         }
       });
 
@@ -155,9 +155,9 @@ describe('DependencyResolver', () => {
     beforeEach(async () => {
       MockConfigLoader.loadConfig.mockResolvedValue({
         modules: {
-          '000_admin': { name: 'Admin', depends: [] },
-          '010_auth': { name: 'Auth', depends: ['000_admin'] },
-          '020_schema': { name: 'Schema', depends: ['010_auth'] }
+          '000_admin': { name: 'Admin', dependencies: [] },
+          '010_auth': { name: 'Auth', dependencies: ['000_admin'] },
+          '020_schema': { name: 'Schema', dependencies: ['010_auth'] }
         }
       });
 
@@ -197,9 +197,9 @@ describe('DependencyResolver', () => {
     beforeEach(async () => {
       MockConfigLoader.loadConfig.mockResolvedValue({
         modules: {
-          '000_admin': { name: 'Admin', depends: [] },
-          '010_auth': { name: 'Auth', depends: ['000_admin'] },
-          '020_schema': { name: 'Schema', depends: ['010_auth'] }
+          '000_admin': { name: 'Admin', dependencies: [] },
+          '010_auth': { name: 'Auth', dependencies: ['000_admin'] },
+          '020_schema': { name: 'Schema', dependencies: ['010_auth'] }
         }
       });
 
@@ -236,8 +236,8 @@ describe('DependencyResolver', () => {
     it('should detect circular dependencies', async () => {
       MockConfigLoader.loadConfig.mockResolvedValue({
         modules: {
-          '010_auth': { name: 'Auth', depends: ['020_schema'] },
-          '020_schema': { name: 'Schema', depends: ['010_auth'] }
+          '010_auth': { name: 'Auth', dependencies: ['020_schema'] },
+          '020_schema': { name: 'Schema', dependencies: ['010_auth'] }
         }
       });
 
@@ -251,7 +251,7 @@ describe('DependencyResolver', () => {
     it('should create and initialize resolver', async () => {
       MockConfigLoader.loadConfig.mockResolvedValue({
         modules: {
-          '000_admin': { name: 'Admin', depends: [] }
+          '000_admin': { name: 'Admin', dependencies: [] }
         }
       });
 

@@ -27,7 +27,7 @@ describe('import-module generator', () => {
       modules: {
         '000_admin': {
           name: 'Admin',
-          depends: []
+          dependencies: []
         }
       }
     }));
@@ -73,7 +73,7 @@ describe('import-module generator', () => {
           '010_auth': {
             name: 'Authentication',
             description: 'User authentication system',
-            depends: ['000_admin']
+            dependencies: ['000_admin']
           }
         });
       }
@@ -112,7 +112,7 @@ describe('import-module generator', () => {
     const config = JSON.parse(tree.read(configPath, 'utf-8'));
     expect(config.modules['010_auth']).toBeDefined();
     expect(config.modules['010_auth'].name).toBe('Authentication');
-    expect(config.modules['010_auth'].depends).toEqual(['000_admin']);
+    expect(config.modules['010_auth'].dependencies).toEqual(['000_admin']);
   });
 
   it('should create new configuration if none exists', async () => {
@@ -218,7 +218,7 @@ describe('import-module generator', () => {
           '010_auth': {
             name: 'Authentication',
             description: 'User authentication system',
-            depends: [] // No dependencies
+            dependencies: [] // No dependencies
           }
         });
       }

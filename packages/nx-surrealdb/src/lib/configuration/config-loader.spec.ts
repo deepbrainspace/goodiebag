@@ -17,11 +17,11 @@ describe('ConfigLoader', () => {
       modules: {
         '000_admin': {
           name: 'Admin',
-          depends: []
+          dependencies: []
         },
         '010_auth': {
           name: 'Auth',
-          depends: ['000_admin']
+          dependencies: ['000_admin']
         }
       }
     };
@@ -101,11 +101,11 @@ describe('ConfigLoader', () => {
         modules: {
           '000_admin': {
             name: 'Admin',
-            depends: []
+            dependencies: []
           },
           '010_auth': {
             name: 'Auth',
-            depends: ['000_admin']
+            dependencies: ['000_admin']
           }
         }
       };
@@ -129,7 +129,7 @@ describe('ConfigLoader', () => {
         modules: {
           'invalid_id': {
             name: 'Invalid',
-            depends: []
+            dependencies: []
           }
         }
       };
@@ -160,7 +160,7 @@ describe('ConfigLoader', () => {
         modules: {
           '010_auth': {
             name: 'Auth',
-            depends: ['999_nonexistent']
+            dependencies: ['999_nonexistent']
           }
         }
       };
@@ -176,11 +176,11 @@ describe('ConfigLoader', () => {
         modules: {
           '010_auth': {
             name: 'Auth',
-            depends: ['020_schema']
+            dependencies: ['020_schema']
           },
           '020_schema': {
             name: 'Schema',
-            depends: ['010_auth']
+            dependencies: ['010_auth']
           }
         }
       };
@@ -198,9 +198,9 @@ describe('ConfigLoader', () => {
       
       const config = ConfigLoader.createDefaultConfig(modules);
       
-      expect(config.modules['000_admin'].depends).toEqual([]);
-      expect(config.modules['010_auth'].depends).toEqual(['000_admin']);
-      expect(config.modules['020_schema'].depends).toEqual(['010_auth']);
+      expect(config.modules['000_admin'].dependencies).toEqual([]);
+      expect(config.modules['010_auth'].dependencies).toEqual(['000_admin']);
+      expect(config.modules['020_schema'].dependencies).toEqual(['010_auth']);
       expect(config.settings?.useTransactions).toBe(true);
     });
 
@@ -209,7 +209,7 @@ describe('ConfigLoader', () => {
       
       const config = ConfigLoader.createDefaultConfig(modules);
       
-      expect(config.modules['000_admin'].depends).toEqual([]);
+      expect(config.modules['000_admin'].dependencies).toEqual([]);
       expect(Object.keys(config.modules)).toHaveLength(1);
     });
 
@@ -237,7 +237,7 @@ describe('ConfigLoader', () => {
         modules: {
           '010_auth': {
             name: 'Auth',
-            depends: []
+            dependencies: []
           }
         }
       });

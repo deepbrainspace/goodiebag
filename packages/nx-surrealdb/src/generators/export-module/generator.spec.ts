@@ -45,7 +45,7 @@ describe('export-module generator', () => {
         '010_auth': {
           name: 'Authentication',
           description: 'User authentication system',
-          depends: ['000_admin']
+          dependencies: ['000_admin']
         }
       }
     }));
@@ -92,7 +92,7 @@ describe('export-module generator', () => {
         '010_auth': {
           name: 'Authentication',
           description: 'User authentication system',
-          depends: ['000_admin']
+          dependencies: ['000_admin']
         }
       }
     });
@@ -113,7 +113,7 @@ describe('export-module generator', () => {
             '010_auth': {
               name: 'Authentication',
               description: 'User authentication system',
-              depends: ['000_admin']
+              dependencies: ['000_admin']
             }
           }
         });
