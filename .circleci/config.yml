@@ -12,10 +12,13 @@ parameters:
 workflows:
   ci:
     jobs:
-      - install-deps
+      - dependencies
+      - lint:
+          requires:
+            - dependencies
       - test:
           requires:
-            - install-deps
+            - lint
       - build:
           requires:
             - test
@@ -31,7 +34,7 @@ workflows:
               only: /^v.*/
 
 jobs:
-  install-deps:
+  dependencies:
     docker:
       - image: cimg/node:20.11
     steps:
@@ -60,6 +63,18 @@ jobs:
           paths:
             - .
 
+  lint:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - attach_workspace:
+          at: .
+      - nx/set-shas:
+          main-branch-name: << pipeline.parameters.main-branch >>
+      - run:
+          name: Run affected linting
+          command: npx nx affected --target=lint --parallel=3 --ci
+
   test:
     docker:
       - image: cimg/node:20.11
@@ -71,9 +86,6 @@ jobs:
       - run:
           name: Run affected tests
           command: npx nx affected --target=test --parallel=3 --ci --code-coverage
-      - run:
-          name: Run affected linting
-          command: npx nx affected --target=lint --parallel=3 --ci
       - store_test_results:
           path: coverage
       - store_artifacts:
@@ -109,9 +121,9 @@ jobs:
           command: |
             if [ "$CIRCLE_TAG" ]; then
               cd packages/nx-surrealdb
-              npm publish --provenance
+              npm publish
             elif [ "$CIRCLE_BRANCH" = "main" ]; then
               cd packages/nx-surrealdb
               npm version patch --no-git-tag-version
-              npm publish --tag beta --provenance
+              npm publish --tag beta
             fi
