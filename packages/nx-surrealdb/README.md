@@ -53,9 +53,23 @@ A comprehensive SurrealDB toolkit for [Nx](https://nx.dev/) monorepos featuring 
 1. **Add the Plugin to Your Nx Workspace**:
    ```bash
    npm install @deepbrainspace/nx-surrealdb --save-dev
+   # or
+   pnpm add -D @deepbrainspace/nx-surrealdb
    ```
 
-2. **Verify Installation**:
+2. **Alternative: GitHub Releases**
+   
+   Download packages directly from [GitHub Releases](https://github.com/deepbrainspace/nx-plugins/releases):
+   - **Production releases**: Tagged versions (e.g., `v1.0.0`)
+   - **Beta releases**: Main branch builds with `-beta` suffix (e.g., `v1.0.1-beta`)
+
+   ```bash
+   # Download and install from GitHub release
+   curl -L https://github.com/deepbrainspace/nx-plugins/releases/download/v1.0.0/deepbrainspace-nx-surrealdb-1.0.0.tgz -o package.tgz
+   npm install package.tgz
+   ```
+
+3. **Verify Installation**:
    ```bash
    nx list @deepbrainspace/nx-surrealdb
    ```
@@ -837,6 +851,67 @@ MigrationService (Business Logic)
 3. Make your changes with tests
 4. Ensure all tests pass: `nx test nx-surrealdb`
 5. Submit a pull request
+
+## Development & Contributing
+
+### Local Development
+
+```bash
+# Build the plugin
+nx build nx-surrealdb
+
+# Run tests
+nx test nx-surrealdb
+
+# Run linting
+nx lint nx-surrealdb
+
+# Test locally by copying to node_modules
+cp -r dist/* node_modules/@deepbrainspace/nx-surrealdb/
+```
+
+### Local Development & Testing
+
+```bash
+# Build the plugin
+nx build nx-surrealdb
+
+# Run tests with coverage
+nx test nx-surrealdb --code-coverage
+
+# Run linting (zero warnings required)
+nx lint nx-surrealdb
+
+# Test locally in another project
+cd packages/nx-surrealdb
+npm pack
+# Copy *.tgz to test project and: npm install package.tgz
+```
+
+### Testing Your Plugin
+
+Create a test NX workspace to validate functionality:
+
+```bash
+# Create test workspace
+npx create-nx-workspace@latest test-workspace --preset=empty
+cd test-workspace
+
+# Install your local plugin
+npm install /path/to/nx-plugins/packages/nx-surrealdb/*.tgz
+
+# Test plugin functionality
+nx g @deepbrainspace/nx-surrealdb:init database
+nx g @deepbrainspace/nx-surrealdb:migration setup --project=database
+```
+
+### Architecture
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed system design, including:
+- Repository Pattern implementation
+- Domain-Driven Design principles
+- Component interaction diagrams
+- Data flow documentation
 
 ## License
 

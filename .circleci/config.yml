@@ -18,11 +18,12 @@ workflows:
             - dependencies
       - test:
           requires:
-            - lint
+            - dependencies
       - build:
           requires:
+            - lint
             - test
-      - publish:
+      - npm-publish:
           requires:
             - build
           filters:
@@ -31,7 +32,17 @@ workflows:
                 - main
                 - develop
             tags:
-              only: /^v.*/
+              only: /^.*-v.*/
+      - github-release:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - main
+                - develop
+            tags:
+              only: /^.*-v.*/
 
 jobs:
   dependencies:
@@ -100,14 +111,14 @@ jobs:
       - nx/set-shas:
           main-branch-name: << pipeline.parameters.main-branch >>
       - run:
-          name: Build all packages
-          command: npx nx run-many --target=build --all --parallel=3 --ci
+          name: Build affected packages
+          command: npx nx affected --target=build --parallel=3 --ci
       - persist_to_workspace:
           root: .
           paths:
             - packages/*/dist
 
-  publish:
+  npm-publish:
     docker:
       - image: cimg/node:20.11
     steps:
@@ -117,13 +128,103 @@ jobs:
           name: Authenticate with npm
           command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
       - run:
-          name: Publish to npm
+          name: Publish specific package from tag
           command: |
             if [ "$CIRCLE_TAG" ]; then
-              cd packages/nx-surrealdb
-              npm publish
+              # Extract package name and version from tag (e.g., nx-surrealdb-v1.0.0)
+              PACKAGE_NAME=$(echo "$CIRCLE_TAG" | sed 's/-v[0-9].*//')
+              PACKAGE_VERSION=$(echo "$CIRCLE_TAG" | sed 's/.*-v//')
+              
+              echo "Publishing package: $PACKAGE_NAME version: $PACKAGE_VERSION"
+              
+              # Verify package exists and has publish target
+              if npx nx show project "$PACKAGE_NAME" --json >/dev/null 2>&1; then
+                PACKAGE_PATH=$(npx nx show project "$PACKAGE_NAME" --json | jq -r '.root')
+                cd "$PACKAGE_PATH"
+                
+                # Set the version and publish
+                npm version "$PACKAGE_VERSION" --no-git-tag-version
+                npm publish
+              else
+                echo "Error: Package $PACKAGE_NAME not found"
+                exit 1
+              fi
             elif [ "$CIRCLE_BRANCH" = "main" ]; then
-              cd packages/nx-surrealdb
-              npm version patch --no-git-tag-version
-              npm publish --tag beta
+              # Main branch release (beta) - publish affected packages
+              AFFECTED_PACKAGES=$(npx nx show projects --affected --with-target=publish --json | jq -r '.[]')
+              
+              for package in $AFFECTED_PACKAGES; do
+                echo "Publishing beta package: $package"
+                PACKAGE_PATH=$(npx nx show project $package --json | jq -r '.root')
+                cd "$PACKAGE_PATH"
+                
+                npm version patch --no-git-tag-version
+                npm publish --tag beta
+                
+                cd - > /dev/null
+              done
+            fi
+      - persist_to_workspace:
+          root: .
+          paths:
+            - packages/nx-surrealdb/package.json
+
+  github-release:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install GitHub CLI
+          command: |
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+            sudo apt update
+            sudo apt install gh -y
+      - run:
+          name: Authenticate with GitHub
+          command: echo "$GITHUB_TOKEN" | gh auth login --with-token
+      - run:
+          name: Create GitHub release for specific package
+          command: |
+            if [ "$CIRCLE_TAG" ]; then
+              # Extract package name and version from tag
+              PACKAGE_NAME=$(echo "$CIRCLE_TAG" | sed 's/-v[0-9].*//')
+              PACKAGE_VERSION=$(echo "$CIRCLE_TAG" | sed 's/.*-v//')
+              
+              echo "Creating GitHub release for: $PACKAGE_NAME version: $PACKAGE_VERSION"
+              
+              if npx nx show project "$PACKAGE_NAME" --json >/dev/null 2>&1; then
+                PACKAGE_PATH=$(npx nx show project "$PACKAGE_NAME" --json | jq -r '.root')
+                cd "$PACKAGE_PATH"
+                
+                npm pack
+                TARBALL=$(ls *.tgz)
+                gh release create "$CIRCLE_TAG" "$TARBALL" \
+                  --title "Release ${PACKAGE_NAME} v${PACKAGE_VERSION}" \
+                  --notes "Production release of @deepbrainspace/${PACKAGE_NAME} v${PACKAGE_VERSION}"
+              else
+                echo "Error: Package $PACKAGE_NAME not found"
+                exit 1
+              fi
+            elif [ "$CIRCLE_BRANCH" = "main" ]; then
+              # Main branch release (beta) - release affected packages
+              AFFECTED_PACKAGES=$(npx nx show projects --affected --with-target=publish --json | jq -r '.[]')
+              
+              for package in $AFFECTED_PACKAGES; do
+                echo "Creating GitHub release for: $package"
+                PACKAGE_PATH=$(npx nx show project $package --json | jq -r '.root')
+                cd "$PACKAGE_PATH"
+                
+                NEW_VERSION=$(node -p "require('./package.json').version")
+                npm pack
+                TARBALL=$(ls *.tgz)
+                gh release create "${package}-v${NEW_VERSION}-beta" "$TARBALL" \
+                  --title "Beta Release ${package} v${NEW_VERSION}" \
+                  --notes "Beta release of @deepbrainspace/${package} v${NEW_VERSION}" \
+                  --prerelease
+                
+                cd - > /dev/null
+              done
             fi
