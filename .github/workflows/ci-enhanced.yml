@@ -1,0 +1,450 @@
+name: CI - Enhanced Parallel Pipeline
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'packages/**'
+      - 'apps/**'
+      - 'libs/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'nx.json'
+      - 'tsconfig*.json'
+      - '.github/workflows/ci-enhanced.yml'
+
+concurrency:
+  group: ci-enhanced-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Phase 1: Detection
+  detect-affected:
+    name: 🔍 Detect Affected Packages
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.detect.outputs.packages }}
+      has-packages: ${{ steps.detect.outputs.has-packages }}
+      package-count: ${{ steps.detect.outputs.package-count }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.0.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Set SHAs for NX
+        uses: nrwl/nx-set-shas@v4
+        with:
+          main-branch-name: 'main'
+
+      - name: Detect affected packages
+        id: detect
+        run: |
+          # Get affected projects with publish target
+          AFFECTED=$(pnpm nx show projects --affected --with-target=publish --json || echo '[]')
+          echo "🔍 Affected packages detected: $AFFECTED"
+          
+          if [ "$AFFECTED" = "[]" ] || [ -z "$AFFECTED" ]; then
+            echo "packages=[]" >> $GITHUB_OUTPUT
+            echo "has-packages=false" >> $GITHUB_OUTPUT
+            echo "package-count=0" >> $GITHUB_OUTPUT
+            echo "ℹ️ No affected packages found"
+          else
+            PACKAGE_COUNT=$(echo $AFFECTED | jq length)
+            echo "packages=$AFFECTED" >> $GITHUB_OUTPUT
+            echo "has-packages=true" >> $GITHUB_OUTPUT
+            echo "package-count=$PACKAGE_COUNT" >> $GITHUB_OUTPUT
+            echo "🎯 Found $PACKAGE_COUNT affected packages: $AFFECTED"
+          fi
+
+  # Phase 2: Validation (All Parallel)
+  lint:
+    name: 🔍 Lint
+    needs: detect-affected
+    if: needs.detect-affected.outputs.has-packages == 'true'
+    strategy:
+      matrix:
+        package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
+      fail-fast: false
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.0.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache NX
+        uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: nx-${{ runner.os }}-lint-${{ matrix.package }}-${{ github.sha }}
+          restore-keys: |
+            nx-${{ runner.os }}-lint-${{ matrix.package }}-
+
+      - name: Run lint for ${{ matrix.package }}
+        run: |
+          echo "🔍 Linting ${{ matrix.package }}..."
+          pnpm nx run ${{ matrix.package }}:lint
+
+  test:
+    name: 🧪 Test
+    needs: detect-affected
+    if: needs.detect-affected.outputs.has-packages == 'true'
+    strategy:
+      matrix:
+        package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
+      fail-fast: false
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.0.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache NX
+        uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: nx-${{ runner.os }}-test-${{ matrix.package }}-${{ github.sha }}
+          restore-keys: |
+            nx-${{ runner.os }}-test-${{ matrix.package }}-
+
+      - name: Run tests for ${{ matrix.package }}
+        run: |
+          echo "🧪 Testing ${{ matrix.package }}..."
+          pnpm nx run ${{ matrix.package }}:test --ci --code-coverage
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.package }}
+          path: coverage/
+          retention-days: 7
+
+  # Phase 3: Build (Parallel per Package)
+  build:
+    name: 🏗️ Build
+    needs: [detect-affected, lint, test]
+    if: needs.detect-affected.outputs.has-packages == 'true'
+    strategy:
+      matrix:
+        package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
+      fail-fast: false
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.0.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache NX
+        uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: nx-${{ runner.os }}-build-${{ matrix.package }}-${{ github.sha }}
+          restore-keys: |
+            nx-${{ runner.os }}-build-${{ matrix.package }}-
+
+      - name: Build ${{ matrix.package }}
+        run: |
+          echo "🏗️ Building ${{ matrix.package }}..."
+          pnpm nx build ${{ matrix.package }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.package }}
+          path: |
+            packages/${{ matrix.package }}/dist/
+            packages/${{ matrix.package }}/package.json
+          retention-days: 7
+
+  # Phase 4: Analysis (Parallel per Package)
+  analyze:
+    name: 📊 Analyze Changes
+    needs: [detect-affected, build]
+    if: needs.detect-affected.outputs.has-packages == 'true'
+    strategy:
+      matrix:
+        package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
+      fail-fast: false
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.0.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Set SHAs for NX
+        uses: nrwl/nx-set-shas@v4
+        with:
+          main-branch-name: 'main'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-${{ matrix.package }}
+          path: packages/${{ matrix.package }}/
+
+      - name: Analyze changes for ${{ matrix.package }}
+        id: analyze
+        run: |
+          echo "📊 Analyzing changes for ${{ matrix.package }}..."
+          
+          # Get package info
+          PACKAGE_PATH="packages/${{ matrix.package }}"
+          CURRENT_VERSION=$(jq -r '.version' $PACKAGE_PATH/package.json)
+          PACKAGE_NAME=$(jq -r '.name' $PACKAGE_PATH/package.json)
+          
+          # Get changes since main branch
+          CHANGES=$(git diff ${{ github.event.pull_request.base.sha }}..HEAD --name-only -- $PACKAGE_PATH/ || echo "")
+          
+          # Simple version bump logic (can be enhanced with AI later)
+          BUMP_TYPE="patch"
+          if echo "$CHANGES" | grep -E "(BREAKING|breaking|major)" > /dev/null; then
+            BUMP_TYPE="major"
+          elif echo "$CHANGES" | grep -E "(feat|feature|minor)" > /dev/null; then
+            BUMP_TYPE="minor"
+          fi
+          
+          # Calculate new version
+          if [ "$BUMP_TYPE" = "major" ]; then
+            NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print ($1+1)".0.0"}')
+          elif [ "$BUMP_TYPE" = "minor" ]; then
+            NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."($2+1)".0"}')
+          else
+            NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."$2"."($3+1)}')
+          fi
+          
+          # Generate change summary
+          COMMIT_MESSAGES=$(git log ${{ github.event.pull_request.base.sha }}..HEAD --oneline --grep="${{ matrix.package }}" || echo "")
+          if [ -z "$COMMIT_MESSAGES" ]; then
+            COMMIT_MESSAGES=$(git log ${{ github.event.pull_request.base.sha }}..HEAD --oneline -- $PACKAGE_PATH/ || echo "- Various improvements")
+          fi
+          
+          # Create analysis output
+          cat > analysis-${{ matrix.package }}.json << EOF
+          {
+            "package": "${{ matrix.package }}",
+            "name": "$PACKAGE_NAME",
+            "currentVersion": "$CURRENT_VERSION",
+            "newVersion": "$NEW_VERSION",
+            "bumpType": "$BUMP_TYPE",
+            "changes": $(echo "$COMMIT_MESSAGES" | jq -R -s 'split("\n") | map(select(length > 0))'),
+            "changedFiles": $(echo "$CHANGES" | jq -R -s 'split("\n") | map(select(length > 0))')
+          }
+          EOF
+          
+          echo "📋 Analysis complete for ${{ matrix.package }}: $CURRENT_VERSION → $NEW_VERSION ($BUMP_TYPE)"
+
+      - name: Upload analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: analysis-${{ matrix.package }}
+          path: analysis-${{ matrix.package }}.json
+          retention-days: 7
+
+  # Phase 5: Release Preview (Parallel per Package)
+  preview:
+    name: 📝 Generate Preview
+    needs: [detect-affected, analyze]
+    if: needs.detect-affected.outputs.has-packages == 'true'
+    strategy:
+      matrix:
+        package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
+      fail-fast: false
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download analysis
+        uses: actions/download-artifact@v4
+        with:
+          name: analysis-${{ matrix.package }}
+
+      - name: Generate release preview for ${{ matrix.package }}
+        run: |
+          echo "📝 Generating release preview for ${{ matrix.package }}..."
+          
+          # Read analysis
+          ANALYSIS=$(cat analysis-${{ matrix.package }}.json)
+          PACKAGE_NAME=$(echo $ANALYSIS | jq -r '.name')
+          CURRENT_VERSION=$(echo $ANALYSIS | jq -r '.currentVersion')
+          NEW_VERSION=$(echo $ANALYSIS | jq -r '.newVersion')
+          BUMP_TYPE=$(echo $ANALYSIS | jq -r '.bumpType')
+          
+          # Generate preview markdown
+          cat > preview-${{ matrix.package }}.md << EOF
+          ## 📦 \`$PACKAGE_NAME\` $CURRENT_VERSION → $NEW_VERSION ($BUMP_TYPE)
+          
+          **Why $BUMP_TYPE?** Detected from commit analysis
+          
+          ### Changes:
+          $(echo $ANALYSIS | jq -r '.changes[]' | sed 's/^/- /')
+          
+          ### Files Modified:
+          $(echo $ANALYSIS | jq -r '.changedFiles[]' | head -10 | sed 's/^/- `/' | sed 's/$/`/')
+          
+          ---
+          EOF
+          
+          echo "✅ Preview generated for ${{ matrix.package }}"
+
+      - name: Upload preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-${{ matrix.package }}
+          path: preview-${{ matrix.package }}.md
+          retention-days: 7
+
+  # Phase 6: Aggregate and Comment
+  comment:
+    name: 💬 Post Release Preview
+    needs: [detect-affected, preview]
+    if: needs.detect-affected.outputs.has-packages == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Download all previews
+        uses: actions/download-artifact@v4
+        with:
+          pattern: preview-*
+          merge-multiple: true
+
+      - name: Aggregate release preview
+        run: |
+          echo "💬 Aggregating release preview..."
+          
+          # Create header
+          cat > final-preview.md << 'EOF'
+          # 🚀 Release Preview
+          
+          **Affected Packages:** ${{ needs.detect-affected.outputs.package-count }}
+          
+          ### 📋 What happens on merge:
+          1. ✅ Version bumps applied automatically
+          2. 📦 Packages published to npm with \`next\` tag
+          3. 🏷️ GitHub releases created  
+          4. 🔄 Version commits pushed back to repository
+          
+          ---
+          
+          EOF
+          
+          # Append all package previews
+          for file in preview-*.md; do
+            if [ -f "$file" ]; then
+              cat "$file" >> final-preview.md
+            fi
+          done
+          
+          # Add footer
+          cat >> final-preview.md << 'EOF'
+          
+          ---
+          
+          *🤖 Generated by AI Release Assistant - Enhanced Parallel Pipeline*
+          EOF
+          
+          echo "📋 Final preview generated"
+
+      - name: Find existing comment
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '🚀 Release Preview'
+
+      - name: Update or create PR comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: final-preview.md
+          edit-mode: replace
+
+  # No affected packages notification
+  no-packages:
+    name: ℹ️ No Packages Affected
+    needs: detect-affected
+    if: needs.detect-affected.outputs.has-packages == 'false'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Report status
+        run: |
+          echo "ℹ️ No packages with publish targets were affected by this PR."
+          echo "The changes appear to be documentation, configuration, or non-publishable code."
+          echo "No release preview will be generated."
