@@ -153,7 +153,7 @@ export class TreeUtils {
   /**
    * Read and parse JSON file using Tree API
    */
-  static readJsonFile<T = any>(tree: Tree, filePath: string): T | null {
+  static readJsonFile<T = unknown>(tree: Tree, filePath: string): T | null {
     if (!tree.exists(filePath)) {
       return null;
     }
@@ -169,7 +169,7 @@ export class TreeUtils {
   /**
    * Write JSON file using Tree API
    */
-  static writeJsonFile(tree: Tree, filePath: string, data: any): void {
+  static writeJsonFile(tree: Tree, filePath: string, data: unknown): void {
     tree.write(filePath, JSON.stringify(data, null, 2));
   }
 

@@ -1,4 +1,3 @@
-/* eslint-disable */
 export default {
   displayName: 'nx-surrealdb',
   preset: 'ts-jest',

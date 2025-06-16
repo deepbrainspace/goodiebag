@@ -1,7 +1,6 @@
 import { ExecutorContext } from '@nx/devkit';
 import { SurrealDBClient } from '../../lib/infrastructure/client';
 import { loadEnvFile, replaceEnvVars } from '../../lib/infrastructure/env';
-import { resolveProjectPath } from '../../lib/infrastructure/project';
 import { Debug } from '../../lib/infrastructure/debug';
 
 export interface ResetExecutorSchema {
@@ -58,7 +57,7 @@ export default async function runExecutor(
     try {
       // Check current migration records
       const records = await client.query('SELECT count() FROM system_migrations GROUP ALL');
-      const count = records?.[0]?.result?.[0]?.count || 0;
+      const count = (records?.[0]?.result?.[0] as any)?.count || 0;
 
       console.log(`📊 Current migration records: ${count}`);
       console.log('');
@@ -75,7 +74,7 @@ export default async function runExecutor(
         const sampleRecords = samples?.[0]?.result || [];
         
         if (sampleRecords.length > 0) {
-          sampleRecords.forEach((record: any) => {
+          sampleRecords.forEach((record: { number: string; name: string; direction: string; path: string; applied_at: string }) => {
             console.log(`   • ${record.number}_${record.name}_${record.direction} (${record.path}) - ${record.applied_at}`);
           });
           console.log('');
@@ -114,7 +113,7 @@ export default async function runExecutor(
 
       // Verify deletion
       const verifyRecords = await client.query('SELECT count() FROM system_migrations GROUP ALL');
-      const remainingCount = verifyRecords?.[0]?.result?.[0]?.count || 0;
+      const remainingCount = (verifyRecords?.[0]?.result?.[0] as any)?.count || 0;
 
       if (remainingCount === 0) {
         console.log('✅ Migration tracking reset completed successfully!');

@@ -1,11 +1,9 @@
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
-import { Tree, readProjectConfiguration } from '@nx/devkit';
+import { Tree } from '@nx/devkit';
 import * as fs from 'fs';
-import * as path from 'path';
 
 import generator from './generator';
 import { ExportModuleGeneratorSchema } from './generator';
-import { MigrationService } from '../../lib/domain/migration-service';
 import { ConfigLoader } from '../../lib/configuration/config-loader';
 import { TreeUtils } from '../../lib/filesystem/tree-utils';
 import { execSync } from 'child_process';
@@ -13,7 +11,6 @@ import { execSync } from 'child_process';
 // Mock filesystem operations
 jest.mock('fs');
 jest.mock('child_process');
-jest.mock('../../lib/domain/migration-service');
 jest.mock('../../lib/configuration/config-loader');
 jest.mock('../../lib/filesystem/tree-utils');
 jest.mock('@nx/devkit', () => ({
@@ -58,7 +55,7 @@ describe('export-module generator', () => {
     tree.write('database/010_auth/0001_authentication_down.surql', 'DROP TABLE users;');
     
     // Mock TreeUtils
-    (TreeUtils.findMatchingSubdirectory as jest.Mock).mockImplementation((tree: any, basePath: string, pattern: string) => {
+    (TreeUtils.findMatchingSubdirectory as jest.Mock).mockImplementation((_tree: Tree, _basePath: string, pattern: string) => {
       // Return the module if it exists, null otherwise
       if (pattern === '999_nonexistent' || pattern === 999) {
         return null;
@@ -70,7 +67,7 @@ describe('export-module generator', () => {
       '0001_authentication_down.surql'
     ]);
     // Use real implementation for copyFiles and ensureDirectory to test actual functionality
-    (TreeUtils.copyFiles as jest.Mock).mockImplementation((tree: any, sourcePath: string, destPath: string, fileFilter?: (filename: string) => boolean) => {
+    (TreeUtils.copyFiles as jest.Mock).mockImplementation((tree: Tree, sourcePath: string, destPath: string, fileFilter?: (filename: string) => boolean) => {
       if (!tree.exists(sourcePath)) return;
       const files = tree.children(sourcePath);
       for (const file of files) {
@@ -83,7 +80,7 @@ describe('export-module generator', () => {
         }
       }
     });
-    (TreeUtils.ensureDirectory as jest.Mock).mockImplementation((tree: any, dirPath: string) => {
+    (TreeUtils.ensureDirectory as jest.Mock).mockImplementation((tree: Tree, dirPath: string) => {
       if (!tree.exists(dirPath)) {
         tree.write(dirPath + '/.gitkeep', '');
       }

@@ -9,6 +9,12 @@ jest.mock('../infrastructure/env', () => ({
 
 const mockFs = fs as jest.Mocked<typeof fs>;
 
+// Type for fs.readdir with withFileTypes option
+interface MockDirent {
+  name: string;
+  isDirectory(): boolean;
+}
+
 describe('MigrationFileProcessor', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -20,7 +26,7 @@ describe('MigrationFileProcessor', () => {
         { name: '000_admin', isDirectory: () => true },
         { name: '010_auth', isDirectory: () => true },
         { name: '020_schema', isDirectory: () => true }
-      ] as any);
+      ] as MockDirent[]);
 
       const result = await MigrationFileProcessor.findMatchingSubdirectory('/base', '010_auth');
       
@@ -31,7 +37,7 @@ describe('MigrationFileProcessor', () => {
       mockFs.readdir.mockResolvedValue([
         { name: '000_admin', isDirectory: () => true },
         { name: '010_auth', isDirectory: () => true }
-      ] as any);
+      ] as MockDirent[]);
 
       const result = await MigrationFileProcessor.findMatchingSubdirectory('/base', '10');
       
@@ -42,7 +48,7 @@ describe('MigrationFileProcessor', () => {
       mockFs.readdir.mockResolvedValue([
         { name: '000_admin', isDirectory: () => true },
         { name: '010_auth', isDirectory: () => true }
-      ] as any);
+      ] as MockDirent[]);
 
       const result = await MigrationFileProcessor.findMatchingSubdirectory('/base', 'auth');
       
@@ -52,7 +58,7 @@ describe('MigrationFileProcessor', () => {
     it('should find directory by number_name format', async () => {
       mockFs.readdir.mockResolvedValue([
         { name: '010_auth', isDirectory: () => true }
-      ] as any);
+      ] as MockDirent[]);
 
       const result = await MigrationFileProcessor.findMatchingSubdirectory('/base', '10_auth');
       
@@ -62,7 +68,7 @@ describe('MigrationFileProcessor', () => {
     it('should return null when no match found', async () => {
       mockFs.readdir.mockResolvedValue([
         { name: '010_auth', isDirectory: () => true }
-      ] as any);
+      ] as MockDirent[]);
 
       const result = await MigrationFileProcessor.findMatchingSubdirectory('/base', 'nonexistent');
       
@@ -80,7 +86,7 @@ describe('MigrationFileProcessor', () => {
       mockFs.readdir.mockResolvedValue([
         { name: 'file.txt', isDirectory: () => false },
         { name: '010_auth', isDirectory: () => true }
-      ] as any);
+      ] as MockDirent[]);
 
       const result = await MigrationFileProcessor.findMatchingSubdirectory('/base', 'auth');
       
@@ -95,7 +101,7 @@ describe('MigrationFileProcessor', () => {
         { name: '000_admin', isDirectory: () => true },
         { name: '010_auth', isDirectory: () => true },
         { name: 'README.md', isDirectory: () => false }
-      ] as any);
+      ] as MockDirent[]);
 
       const result = await MigrationFileProcessor.discoverModules('/base');
       
@@ -115,7 +121,7 @@ describe('MigrationFileProcessor', () => {
     });
 
     it('should return empty array when directory does not exist', async () => {
-      const error = new Error('Directory not found') as any;
+      const error = new Error('Directory not found');
       error.code = 'ENOENT';
       mockFs.readdir.mockRejectedValue(error);
 
@@ -136,7 +142,7 @@ describe('MigrationFileProcessor', () => {
         { name: '010_auth', isDirectory: () => true },
         { name: 'invalid_name', isDirectory: () => true },
         { name: 'config.json', isDirectory: () => false }
-      ] as any);
+      ] as MockDirent[]);
 
       const result = await MigrationFileProcessor.discoverModules('/base');
       
@@ -156,7 +162,7 @@ describe('MigrationFileProcessor', () => {
     });
 
     it('should return 0001 when directory does not exist', async () => {
-      const error = new Error('Directory not found') as any;
+      const error = new Error('Directory not found') as Error & { code: string };
       error.code = 'ENOENT';
       mockFs.readdir.mockRejectedValue(error);
 

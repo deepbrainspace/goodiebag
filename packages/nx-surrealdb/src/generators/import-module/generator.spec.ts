@@ -1,7 +1,6 @@
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import { Tree } from '@nx/devkit';
 import * as fs from 'fs';
-import * as path from 'path';
 
 import generator from './generator';
 import { ImportModuleGeneratorSchema } from './generator';
@@ -46,13 +45,13 @@ describe('import-module generator', () => {
     mockFs.statSync.mockImplementation((filePath: string) => ({
       isDirectory: () => filePath.includes('/tmp/auth-package') && !filePath.includes('.'),
       isFile: () => filePath.includes('.'),
-    } as any));
+    } as fs.Stats));
     
     mockFs.readdirSync.mockImplementation((dirPath: string) => {
       if (dirPath.includes('/tmp/auth-package/migrations')) {
-        return ['0001_authentication_up.surql', '0001_authentication_down.surql'] as any;
+        return ['0001_authentication_up.surql', '0001_authentication_down.surql'] as string[];
       }
-      return [] as any;
+      return [] as string[];
     });
     
     mockFs.readFileSync.mockImplementation((filePath: string) => {

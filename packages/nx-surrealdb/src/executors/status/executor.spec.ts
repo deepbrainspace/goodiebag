@@ -89,7 +89,7 @@ describe('Status Executor', () => {
       resolveTargetFilenames: jest.fn().mockResolvedValue([]),
       getFileStatus: jest.fn().mockResolvedValue([]),
       close: jest.fn().mockResolvedValue(undefined)
-    } as any;
+    };
 
     MockMigrationService.mockImplementation(() => mockEngine);
 
@@ -112,7 +112,7 @@ describe('Status Executor', () => {
         blockedModules: [],
         lockReasons: {}
       })
-    } as any;
+    };
 
     MockModuleLockManager.createLockManager = jest.fn().mockReturnValue(mockLockManager);
   });

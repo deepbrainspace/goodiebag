@@ -51,8 +51,8 @@ export class DependencyResolver {
       } else {
         this.config = { modules: {} };
       }
-    } catch (error) {
-      // console.warn(`Failed to auto-discover modules: ${error.message}`);
+    } catch {
+      // console.warn(`Failed to auto-discover modules`);
       this.config = { modules: {} };
     }
   }
@@ -67,14 +67,14 @@ export class DependencyResolver {
       this.dependencyGraph.set(moduleId, {
         moduleId,
         config: moduleConfig,
-        dependencies: [...moduleConfig.depends],
+        dependencies: [...moduleConfig.dependencies],
         dependents: []
       });
     }
 
     // Second pass: build dependents lists
     for (const [moduleId, moduleConfig] of Object.entries(this.config.modules)) {
-      for (const dependency of moduleConfig.depends) {
+      for (const dependency of moduleConfig.dependencies) {
         const depNode = this.dependencyGraph.get(dependency);
         if (depNode) {
           depNode.dependents.push(moduleId);

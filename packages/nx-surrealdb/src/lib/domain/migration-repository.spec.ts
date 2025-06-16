@@ -1,7 +1,6 @@
 import { MigrationRepository } from './migration-repository';
 import { SurrealDBClient } from '../infrastructure/client';
 import * as fs from 'fs/promises';
-import * as path from 'path';
 
 jest.mock('../infrastructure/client');
 jest.mock('fs/promises');
@@ -20,7 +19,13 @@ describe('MigrationRepository', () => {
       query: jest.fn().mockResolvedValue([[]]), // Default to empty array result
       create: jest.fn().mockResolvedValue(undefined),
       username: 'testuser'
-    } as any;
+    } as {
+      use: jest.MockedFunction<(namespace: string, database: string) => Promise<void>>;
+      query: jest.MockedFunction<(query: string) => Promise<unknown[]>>;
+      close: jest.MockedFunction<() => Promise<void>>;
+      create: jest.MockedFunction<() => Promise<void>>;
+      username: string;
+    };
     
     // Set up default filesystem mock to prevent schema file reading issues
     const defaultSchemaContent = `
@@ -83,13 +88,13 @@ describe('MigrationRepository', () => {
         DEFINE TABLE IF NOT EXISTS system_migrations;
         DEFINE FIELD IF NOT EXISTS number ON system_migrations TYPE string;
       `;
-      mockFs.readFile.mockResolvedValue(incompleteSchema);
+      mockFs.readFile.mockResolvedValue(incompleteSchema as never);
       
       await expect(repository.initialize()).rejects.toThrow('missing required field: name');
     });
 
     it('should handle file not found error', async () => {
-      const error = new Error('File not found') as any;
+      const error = new Error('File not found') as Error & { code: string };
       error.code = 'ENOENT';
       mockFs.readFile.mockRejectedValue(error);
       
@@ -163,7 +168,7 @@ describe('MigrationRepository', () => {
       await expect(repository.canApplyMigration('', 'test', 'up'))
         .rejects.toThrow('Number and name are required');
       
-      await expect(repository.canApplyMigration('0001', 'test', 'invalid' as any))
+      await expect(repository.canApplyMigration('0001', 'test', 'invalid' as 'up' | 'down'))
         .rejects.toThrow('Requested direction must be \'up\' or \'down\'');
     });
   });
@@ -224,14 +229,14 @@ describe('MigrationRepository', () => {
     });
 
     it('should validate direction values', async () => {
-      const invalidMigration = { ...validMigration, direction: 'invalid' as any };
+      const invalidMigration = { ...validMigration, direction: 'invalid' as 'up' | 'down' };
       
       await expect(repository.addMigration(invalidMigration))
         .rejects.toThrow('Direction must be \'up\' or \'down\'');
     });
 
     it('should validate status values', async () => {
-      const invalidMigration = { ...validMigration, status: 'invalid' as any };
+      const invalidMigration = { ...validMigration, status: 'invalid' as 'applied' | 'pending' };
       
       await expect(repository.addMigration(invalidMigration))
         .rejects.toThrow('Status must be \'success\' or \'fail\'');

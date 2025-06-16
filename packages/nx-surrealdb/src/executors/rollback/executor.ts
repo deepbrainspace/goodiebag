@@ -1,6 +1,5 @@
 import { ExecutorContext, logger } from '@nx/devkit';
 import { MigrationService } from '../../lib/domain/migration-service';
-import { ModuleLockManager } from '../../lib/domain/module-lock-manager';
 import { Debug } from '../../lib/infrastructure/debug';
 
 export interface RollbackExecutorSchema {

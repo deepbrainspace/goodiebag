@@ -1,5 +1,4 @@
 import { PatternResolver } from './pattern-resolver';
-import { DependencyResolver } from '../domain/dependency-resolver';
 import { MigrationFileProcessor } from './migration-file-processor';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -21,7 +20,7 @@ const MockMigrationFileProcessor = MigrationFileProcessor as jest.MockedClass<ty
 const mockDependencyResolver = {
   getAllModules: jest.fn(),
   validateRollback: jest.fn()
-} as any;
+};
 
 describe('PatternResolver', () => {
   let resolver: PatternResolver;
@@ -119,16 +118,16 @@ describe('PatternResolver', () => {
       mockDependencyResolver.getAllModules.mockReturnValue(['010_auth']);
       
       // Mock file system calls
-      mockFs.readdir.mockImplementation((dirPath: any) => {
+      mockFs.readdir.mockImplementation((dirPath: string) => {
         if (dirPath.includes('010_auth')) {
           return Promise.resolve([
             '0001_create_users_table_up.surql',
             '0001_create_users_table_down.surql',
             '0002_add_authentication_up.surql',
             '0002_add_authentication_down.surql'
-          ] as any);
+          ] as string[]);
         }
-        return Promise.resolve([] as any);
+        return Promise.resolve([] as string[]);
       });
     });
 
@@ -185,14 +184,14 @@ describe('PatternResolver', () => {
         reason: null
       });
       
-      mockFs.readdir.mockImplementation((dirPath: any) => {
+      mockFs.readdir.mockImplementation((dirPath: string) => {
         if (dirPath.includes('010_auth')) {
           return Promise.resolve([
             '0001_create_users_table_down.surql',
             '0002_add_authentication_down.surql'
-          ] as any);
+          ] as string[]);
         }
-        return Promise.resolve([] as any);
+        return Promise.resolve([] as string[]);
       });
     });
 

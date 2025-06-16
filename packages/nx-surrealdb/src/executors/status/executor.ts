@@ -44,7 +44,6 @@ export default async function runExecutor(
   context: ExecutorContext
 ): Promise<{ success: boolean }> {
   const engine = new MigrationService(context);
-  const debug = Debug.scope('status-executor');
 
   // Enable debug mode if requested
   Debug.setEnabled(!!options.debug);

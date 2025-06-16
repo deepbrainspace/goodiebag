@@ -83,7 +83,7 @@ describe('Migrate Executor', () => {
       resolveTargetFilenames: jest.fn().mockResolvedValue([]),
       getFileStatus: jest.fn().mockResolvedValue([]),
       close: jest.fn().mockResolvedValue(undefined)
-    } as any;
+    };
 
     MockMigrationService.mockImplementation(() => mockEngine);
   });

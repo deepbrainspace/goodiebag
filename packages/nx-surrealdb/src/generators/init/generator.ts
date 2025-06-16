@@ -24,25 +24,25 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
     pass: options.pass || 'root'
   };
 
-  // Create the initial module configuration
+  // Create the initial module configuration and write it to config.json
   const moduleConfig: MigrationsConfig = {
     modules: {
       '000_admin': {
         name: 'System Administration',
         description: 'Core database setup and administrative functions',
-        depends: [],
+        dependencies: [],
         locked: true,
         lockReason: 'Critical system module - contains core admin setup and permissions'
       },
       '010_auth': {
         name: 'Authentication & Users',
         description: 'User authentication and authorization system',
-        depends: ['000_admin']
+        dependencies: ['000_admin']
       },
       '020_schema': {
         name: 'Application Schema',
         description: 'Core application data models and relationships',
-        depends: ['010_auth']
+        dependencies: ['010_auth']
       }
     },
     settings: {
@@ -60,7 +60,8 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
     name,
     {
       ...config,
-      template: ''
+      template: '',
+      moduleConfig: JSON.stringify(moduleConfig, null, 2)
     }
   );
 

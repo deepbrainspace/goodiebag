@@ -54,7 +54,7 @@ describe('DependencyResolver', () => {
         { name: '010_auth', isDirectory: () => true },
         { name: '020_schema', isDirectory: () => true },
         { name: 'file.txt', isDirectory: () => false }
-      ] as any);
+      ] as { name: string; isDirectory(): boolean }[]);
 
       await resolver.initialize();
 
