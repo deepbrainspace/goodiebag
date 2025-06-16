@@ -1,18 +1,13 @@
 import {
   Tree,
-  formatFiles,
-  generateFiles,
   logger,
-  names,
-  offsetFromRoot,
-  readProjectConfiguration,
 } from '@nx/devkit';
 import * as path from 'path';
 import * as fs from 'fs';
 import { execSync } from 'child_process';
 import { ConfigLoader } from '../../lib/configuration/config-loader';
-import { MigrationService } from '../../lib/domain/migration-service';
 import { TreeUtils } from '../../lib/filesystem/tree-utils';
+import { ModuleConfig } from '../../lib/configuration/types';
 
 export interface ExportModuleGeneratorSchema {
   module: string | number;
@@ -42,10 +37,10 @@ export default async function (tree: Tree, options: ExportModuleGeneratorSchema)
   const config = await loadModuleConfig(normalizedOptions, moduleDir.name);
   
   // Create export package structure
-  await createExportPackage(tree, normalizedOptions, moduleDir, config);
+  await createExportPackage(tree, normalizedOptions, moduleDir, config as ModuleConfig | null);
   
   // Generate package files
-  await generatePackageFiles(tree, normalizedOptions, moduleDir, config);
+  await generatePackageFiles(tree, normalizedOptions, moduleDir, config as ModuleConfig | null);
   
   // Create the package archive if requested
   if (normalizedOptions.packageFormat !== 'directory') {
@@ -106,7 +101,6 @@ async function loadModuleConfig(
   moduleName: string
 ) {
   try {
-    const configLoader = new ConfigLoader();
     const configPath = options.configPath || path.join(options.initPath, 'config.json');
     
     if (fs.existsSync(configPath)) {
@@ -125,7 +119,7 @@ async function createExportPackage(
   tree: Tree,
   options: ReturnType<typeof normalizeOptions>,
   moduleDir: { name: string; path: string },
-  config: any
+  _config: ModuleConfig | null
 ) {
   const exportPath = path.join(options.outputPath, moduleDir.name);
   
@@ -142,7 +136,7 @@ async function generatePackageFiles(
   tree: Tree,
   options: ReturnType<typeof normalizeOptions>,
   moduleDir: { name: string; path: string },
-  config: any
+  config: ModuleConfig | null
 ) {
   const exportPath = path.join(options.outputPath, moduleDir.name);
   
@@ -153,7 +147,7 @@ async function generatePackageFiles(
     description: options.description || config?.description || `Migration module: ${moduleDir.name}`,
     main: 'index.js',
     keywords: ['surrealdb', 'migrations', 'nx'],
-    dependencies: config?.depends || [],
+    dependencies: config?.dependencies || [],
     metadata: {
       moduleName: moduleDir.name,
       originalName: config?.name || moduleDir.name,
@@ -192,7 +186,7 @@ async function generatePackageFiles(
 function generateReadme(
   tree: Tree,
   moduleDir: { name: string; path: string },
-  config: any,
+  config: ModuleConfig | null,
   options: ReturnType<typeof normalizeOptions>
 ): string {
   const migrationFiles = TreeUtils.getMigrationFiles(tree, moduleDir.path);
@@ -206,7 +200,7 @@ ${config?.description || `Migration module exported from ${moduleDir.name}`}
 - **Name**: ${config?.name || moduleDir.name}
 - **Version**: ${options.version}
 - **Exported**: ${new Date().toISOString()}
-- **Dependencies**: ${config?.depends?.join(', ') || 'None'}
+- **Dependencies**: ${config?.dependencies?.join(', ') || 'None'}
 
 ## Migration Files
 ${migrationFiles.map(f => `- \`${f}\``).join('\n')}
@@ -224,8 +218,8 @@ nx g @deepbrainspace/nx-surrealdb:import-module ${moduleDir.name} --packagePath=
 3. Run migrations: \`nx run your-project:migrate --module ${moduleDir.name}\`
 
 ## Dependencies
-${config?.depends?.length > 0 ? 
-  `This module depends on: ${config.depends.join(', ')}\n\nEnsure these modules are installed and migrated before using this module.` :
+${config?.dependencies?.length > 0 ? 
+  `This module depends on: ${config.dependencies.join(', ')}\n\nEnsure these modules are installed and migrated before using this module.` :
   'This module has no dependencies.'
 }
 
@@ -236,7 +230,7 @@ ${config?.depends?.length > 0 ?
 
 function generateImportScript(
   moduleDir: { name: string; path: string },
-  options: ReturnType<typeof normalizeOptions>
+  _options: ReturnType<typeof normalizeOptions>
 ): string {
   return `#!/bin/bash
 # Import script for ${moduleDir.name} migration module
@@ -247,35 +241,35 @@ set -e
 TARGET_DIR=\${1:-"database"}
 MODULE_NAME="${moduleDir.name}"
 
-echo "🚀 Importing migration module: \$MODULE_NAME"
-echo "📁 Target directory: \$TARGET_DIR"
+echo "🚀 Importing migration module: $MODULE_NAME"
+echo "📁 Target directory: $TARGET_DIR"
 
 # Create target module directory if it doesn't exist
-mkdir -p "\$TARGET_DIR/\$MODULE_NAME"
+mkdir -p "$TARGET_DIR/$MODULE_NAME"
 
 # Copy migration files
 echo "📋 Copying migration files..."
-cp migrations/* "\$TARGET_DIR/\$MODULE_NAME/"
+cp migrations/* "$TARGET_DIR/$MODULE_NAME/"
 
 # Copy module configuration if it exists
 if [ -f "module.config.json" ]; then
   echo "⚙️ Module configuration found"
-  if [ -f "\$TARGET_DIR/config.json" ]; then
+  if [ -f "$TARGET_DIR/config.json" ]; then
     echo "📝 Merging with existing config.json..."
     # Note: Manual merge required - see README.md for instructions
-    echo "⚠️  Please manually merge module.config.json into \$TARGET_DIR/config.json"
+    echo "⚠️  Please manually merge module.config.json into $TARGET_DIR/config.json"
   else
     echo "📝 Creating new config.json..."
-    cp module.config.json "\$TARGET_DIR/config.json"
+    cp module.config.json "$TARGET_DIR/config.json"
   fi
 fi
 
 echo "✅ Import completed!"
-echo "📍 Module imported to: \$TARGET_DIR/\$MODULE_NAME"
+echo "📍 Module imported to: $TARGET_DIR/$MODULE_NAME"
 echo ""
 echo "Next steps:"
 echo "1. Review and update dependencies in config.json if needed"
-echo "2. Run: nx run your-project:migrate --module \$MODULE_NAME"
+echo "2. Run: nx run your-project:migrate --module $MODULE_NAME"
 
 chmod +x import.sh
 `;

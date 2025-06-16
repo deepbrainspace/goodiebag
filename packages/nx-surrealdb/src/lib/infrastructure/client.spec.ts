@@ -19,7 +19,7 @@ describe('SurrealDBClient', () => {
       create: jest.fn().mockResolvedValue({}),
       use: jest.fn().mockResolvedValue(undefined),
       signin: jest.fn().mockResolvedValue(undefined)
-    } as any;
+    };
     
     MockSurreal.mockImplementation(() => mockSurrealInstance);
     client = new SurrealDBClient();

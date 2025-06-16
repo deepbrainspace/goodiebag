@@ -1,4 +1,4 @@
-import { MigrationsConfig, ModuleConfig } from '../configuration/config-loader';
+import { MigrationsConfig } from '../configuration/config-loader';
 
 export interface ModuleLockValidation {
   isLocked: boolean;

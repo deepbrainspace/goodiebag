@@ -77,7 +77,7 @@ describe('Rollback Executor', () => {
         warnings: []
       }),
       close: jest.fn().mockResolvedValue(undefined)
-    } as any;
+    };
 
     MockMigrationService.mockImplementation(() => mockEngine);
   });

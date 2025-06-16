@@ -2,7 +2,7 @@ import { ExecutorContext, logger } from '@nx/devkit';
 import { MigrationService } from '../../lib/domain/migration-service';
 import { ModuleLockManager } from '../../lib/domain/module-lock-manager';
 import { Debug } from '../../lib/infrastructure/debug';
-const chalk = require('chalk');
+import pc from 'picocolors';
 
 export interface StatusExecutorSchema {
   url?: string;
@@ -44,7 +44,6 @@ export default async function runExecutor(
   context: ExecutorContext
 ): Promise<{ success: boolean }> {
   const engine = new MigrationService(context);
-  const debug = Debug.scope('status-executor');
 
   // Enable debug mode if requested
   Debug.setEnabled(!!options.debug);
@@ -214,8 +213,8 @@ export default async function runExecutor(
       const statusIcon = module.pendingMigrations > 0 ? '🔄' : '✅';
       const statusText = module.pendingMigrations > 0 ? 'PENDING' : 'UP-TO-DATE';
       const coloredStatus = module.pendingMigrations > 0 
-        ? chalk.yellow(`[${statusText}]`)
-        : chalk.green(`[${statusText}]`);
+        ? pc.yellow(`[${statusText}]`)
+        : pc.green(`[${statusText}]`);
       
       // Add lock information
       const lockValidation = lockManager.validateModuleLock(module.moduleId);

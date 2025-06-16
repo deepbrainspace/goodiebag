@@ -1,7 +1,6 @@
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import { Tree } from '@nx/devkit';
 import * as fs from 'fs';
-import * as path from 'path';
 
 import generator from './generator';
 import { ImportModuleGeneratorSchema } from './generator';
@@ -28,7 +27,7 @@ describe('import-module generator', () => {
       modules: {
         '000_admin': {
           name: 'Admin',
-          depends: []
+          dependencies: []
         }
       }
     }));
@@ -46,13 +45,13 @@ describe('import-module generator', () => {
     mockFs.statSync.mockImplementation((filePath: string) => ({
       isDirectory: () => filePath.includes('/tmp/auth-package') && !filePath.includes('.'),
       isFile: () => filePath.includes('.'),
-    } as any));
+    } as fs.Stats));
     
     mockFs.readdirSync.mockImplementation((dirPath: string) => {
       if (dirPath.includes('/tmp/auth-package/migrations')) {
-        return ['0001_authentication_up.surql', '0001_authentication_down.surql'] as any;
+        return ['0001_authentication_up.surql', '0001_authentication_down.surql'] as string[];
       }
-      return [] as any;
+      return [] as string[];
     });
     
     mockFs.readFileSync.mockImplementation((filePath: string) => {
@@ -74,7 +73,7 @@ describe('import-module generator', () => {
           '010_auth': {
             name: 'Authentication',
             description: 'User authentication system',
-            depends: ['000_admin']
+            dependencies: ['000_admin']
           }
         });
       }
@@ -113,7 +112,7 @@ describe('import-module generator', () => {
     const config = JSON.parse(tree.read(configPath, 'utf-8'));
     expect(config.modules['010_auth']).toBeDefined();
     expect(config.modules['010_auth'].name).toBe('Authentication');
-    expect(config.modules['010_auth'].depends).toEqual(['000_admin']);
+    expect(config.modules['010_auth'].dependencies).toEqual(['000_admin']);
   });
 
   it('should create new configuration if none exists', async () => {
@@ -219,7 +218,7 @@ describe('import-module generator', () => {
           '010_auth': {
             name: 'Authentication',
             description: 'User authentication system',
-            depends: [] // No dependencies
+            dependencies: [] // No dependencies
           }
         });
       }

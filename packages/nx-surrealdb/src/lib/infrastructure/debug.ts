@@ -37,7 +37,7 @@ export class Debug {
   /**
    * Log debug message with 🔍 prefix
    */
-  static log(message: string, ...args: any[]): void {
+  static log(message: string, ...args: unknown[]): void {
     if (Debug.isEnabled) {
       console.log(`🔍 DEBUG: ${message}`, ...args);
     }
@@ -46,7 +46,7 @@ export class Debug {
   /**
    * Log debug error with ❌ prefix
    */
-  static error(message: string, error?: any): void {
+  static error(message: string, error?: unknown): void {
     if (Debug.isEnabled) {
       console.error(`🔍 DEBUG ERROR: ${message}`, error);
     }
@@ -55,7 +55,7 @@ export class Debug {
   /**
    * Log debug warning with ⚠️ prefix
    */
-  static warn(message: string, ...args: any[]): void {
+  static warn(message: string, ...args: unknown[]): void {
     if (Debug.isEnabled) {
       console.warn(`🔍 DEBUG WARNING: ${message}`, ...args);
     }
@@ -64,7 +64,7 @@ export class Debug {
   /**
    * Log debug info with ℹ️ prefix
    */
-  static info(message: string, ...args: any[]): void {
+  static info(message: string, ...args: unknown[]): void {
     if (Debug.isEnabled) {
       console.info(`🔍 DEBUG INFO: ${message}`, ...args);
     }
@@ -73,7 +73,7 @@ export class Debug {
   /**
    * Log debug object/data with proper formatting
    */
-  static data(label: string, data: any): void {
+  static data(label: string, data: unknown): void {
     if (Debug.isEnabled) {
       console.log(`🔍 DEBUG DATA [${label}]:`, JSON.stringify(data, null, 2));
     }
@@ -82,7 +82,7 @@ export class Debug {
   /**
    * Log debug table for array data
    */
-  static table(label: string, data: any[]): void {
+  static table(label: string, data: unknown[]): void {
     if (Debug.isEnabled) {
       console.log(`🔍 DEBUG TABLE [${label}]:`);
       console.table(data);
@@ -126,12 +126,12 @@ export class Debug {
    */
   static scope(moduleName: string) {
     return {
-      log: (message: string, ...args: any[]) => Debug.log(`[${moduleName}] ${message}`, ...args),
-      error: (message: string, error?: any) => Debug.error(`[${moduleName}] ${message}`, error),
-      warn: (message: string, ...args: any[]) => Debug.warn(`[${moduleName}] ${message}`, ...args),
-      info: (message: string, ...args: any[]) => Debug.info(`[${moduleName}] ${message}`, ...args),
-      data: (label: string, data: any) => Debug.data(`${moduleName}:${label}`, data),
-      table: (label: string, data: any[]) => Debug.table(`${moduleName}:${label}`, data),
+      log: (message: string, ...args: unknown[]) => Debug.log(`[${moduleName}] ${message}`, ...args),
+      error: (message: string, error?: unknown) => Debug.error(`[${moduleName}] ${message}`, error),
+      warn: (message: string, ...args: unknown[]) => Debug.warn(`[${moduleName}] ${message}`, ...args),
+      info: (message: string, ...args: unknown[]) => Debug.info(`[${moduleName}] ${message}`, ...args),
+      data: (label: string, data: unknown) => Debug.data(`${moduleName}:${label}`, data),
+      table: (label: string, data: unknown[]) => Debug.table(`${moduleName}:${label}`, data),
       time: <T>(label: string, fn: () => T | Promise<T>) => Debug.time(`${moduleName}:${label}`, fn)
     };
   }

@@ -3,47 +3,53 @@
   "sourceRoot": "packages/nx-surrealdb/src",
   "projectType": "library",
   "targets": {
-    "build": {
+    "build-ts": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "cache": false,
       "options": {
-        "outputPath": "packages/nx-surrealdb/dist",
-        "main": "packages/nx-surrealdb/src/index.ts",
-        "tsConfig": "packages/nx-surrealdb/tsconfig.lib.json",
+        "outputPath": "{workspaceRoot}/packages/nx-surrealdb/dist",
+        "main": "{workspaceRoot}/packages/nx-surrealdb/src/index.ts",
+        "tsConfig": "{workspaceRoot}/packages/nx-surrealdb/tsconfig.lib.json",
         "assets": [
           {
-            "input": "packages/nx-surrealdb/src/generators/migration/files",
+            "input": "./src/generators/migration/files",
             "glob": "**/*",
             "output": "src/generators/migration/files"
           },
           {
-            "input": "packages/nx-surrealdb",
-            "glob": "{package.json,generators.json,executors.json,README.md,LICENSE.md,ARCHITECTURE.md}",
-            "output": "./"
+            "input": "./src/generators/init/files",
+            "glob": "**/*",
+            "output": "src/generators/init/files"
           },
           {
-            "input": "packages/nx-surrealdb/src",
+            "input": "./src",
             "glob": "**/*/schema.json",
             "output": "src"
           },
           {
-            "input": "packages/nx-surrealdb/src/schema",
+            "input": "./src/schema",
             "glob": "**/*",
             "output": "src/schema"
           }
-        ],
-        "updateBuildableProjectDepsInPackageJson": true,
-        "buildableProjectDepsInPackageJsonType": "dependencies"
+        ]
       },
       "configurations": {
         "production": {}
       }
     },
-    "copy-schema": {
+    "build": {
       "executor": "nx:run-commands",
+      "dependsOn": ["build-ts"],
       "options": {
-        "command": "mkdir -p packages/nx-surrealdb/dist/src/schema && cp packages/nx-surrealdb/src/schema/system_migrations.surql packages/nx-surrealdb/dist/src/schema/"
+        "commands": [
+          {
+            "command": "cp README.md ARCHITECTURE.md executors.json generators.json package.json dist/",
+            "forwardAllArgs": false
+          }
+        ],
+        "cwd": "packages/nx-surrealdb",
+        "parallel": false
       }
     },
     "lint": {
@@ -61,7 +67,7 @@
       "executor": "nx:run-commands",
       "dependsOn": ["build"],
       "options": {
-        "command": "cd packages/nx-surrealdb && npm publish"
+        "command": "cd packages/nx-surrealdb && pnpm publish"
       }
     }
   }

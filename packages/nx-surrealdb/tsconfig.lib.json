@@ -5,12 +5,14 @@
     "rootDir": "src",
     "declaration": true,
     "types": ["node"],
+    "typeRoots": ["../../node_modules/@types", "./node_modules/@types"],
     "module": "commonjs",
     "target": "es2020",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "lib": ["es2020", "dom"]
   },
   "include": ["src/**/*"],
   "exclude": ["**/*.spec.ts", "node_modules"]

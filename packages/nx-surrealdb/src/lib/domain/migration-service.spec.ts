@@ -47,7 +47,11 @@ describe('MigrationService', () => {
       connect: jest.fn().mockResolvedValue(undefined),
       query: jest.fn().mockResolvedValue([]),
       close: jest.fn().mockResolvedValue(undefined)
-    } as any;
+    } as {
+      query: jest.MockedFunction<(query: string) => Promise<unknown[]>>;
+      use: jest.MockedFunction<(namespace: string, database: string) => Promise<void>>;
+      close: jest.MockedFunction<() => Promise<void>>;
+    };
 
     mockRepository = {
       initialize: jest.fn().mockResolvedValue(undefined),
@@ -57,7 +61,15 @@ describe('MigrationService', () => {
       findLastMigrations: jest.fn().mockResolvedValue([]),
       getAllModuleStatusCounts: jest.fn().mockResolvedValue(new Map()),
       getLatestMigrationStatus: jest.fn().mockResolvedValue(null)
-    } as any;
+    } as {
+      initialize: jest.MockedFunction<() => Promise<void>>;
+      canApplyMigration: jest.MockedFunction<(number: string, name: string, direction: 'up' | 'down') => Promise<{ canApply: boolean }>>;
+      addMigration: jest.MockedFunction<(migration: unknown) => Promise<void>>;
+      getMigrationsByDirectionAndPath: jest.MockedFunction<(direction: string, path: string) => Promise<unknown[]>>;
+      findLastMigrations: jest.MockedFunction<(moduleId?: string) => Promise<unknown[]>>;
+      getAllModuleStatusCounts: jest.MockedFunction<() => Promise<Map<string, unknown>>>;
+      getLatestMigrationStatus: jest.MockedFunction<(moduleId: string) => Promise<unknown | null>>;
+    };
 
     mockResolver = {
       initialize: jest.fn().mockResolvedValue(undefined),
@@ -68,7 +80,16 @@ describe('MigrationService', () => {
       getModuleDependencies: jest.fn().mockReturnValue([]),
       getModuleDependents: jest.fn().mockReturnValue([]),
       getConfig: jest.fn().mockReturnValue({ modules: {} })
-    } as any;
+    } as {
+      initialize: jest.MockedFunction<() => Promise<void>>;
+      getAllModules: jest.MockedFunction<() => string[]>;
+      getExecutionOrder: jest.MockedFunction<(modules?: string[]) => string[]>;
+      getRollbackOrder: jest.MockedFunction<(modules?: string[]) => string[]>;
+      validateRollback: jest.MockedFunction<(moduleIds: string[], targetModuleId?: string, targetMigrationNumber?: string) => { canRollback: boolean; blockedBy: string[] }>;
+      getModuleDependencies: jest.MockedFunction<(moduleId: string) => string[]>;
+      getModuleDependents: jest.MockedFunction<(moduleId: string) => string[]>;
+      getConfig: jest.MockedFunction<() => { modules: Record<string, unknown> }>;
+    };
 
     MockSurrealDBClient.mockImplementation(() => mockClient);
     MockMigrationRepository.mockImplementation(() => mockRepository);
@@ -79,7 +100,11 @@ describe('MigrationService', () => {
       resolveModules: jest.fn().mockReturnValue({ resolved: [{ moduleId: '010_auth', pattern: '010_auth' }], notFound: [] }),
       resolveFilenames: jest.fn().mockResolvedValue({ resolved: [], notFound: [] }),
       resolveRollbackFilenames: jest.fn().mockResolvedValue({ resolved: [], notFound: [], dependencyWarnings: [] })
-    } as any;
+    } as {
+      resolveModules: jest.MockedFunction<(patterns: string[]) => { resolved: Array<{ moduleId: string; pattern: string }>; notFound: string[] }>;
+      resolveFilenames: jest.MockedFunction<(filenames: string[], moduleIds?: string[]) => Promise<{ resolved: unknown[]; notFound: string[] }>>;
+      resolveRollbackFilenames: jest.MockedFunction<(filenames: string[], moduleIds?: string[]) => Promise<{ resolved: unknown[]; notFound: string[]; dependencyWarnings: unknown[] }>>;
+    };
     MockPatternResolver.mockImplementation(() => mockPatternResolver);
 
     engine = new MigrationService();
@@ -153,14 +178,14 @@ describe('MigrationService', () => {
       await engine.initialize(defaultOptions);
       
       // Mock file system
-      mockFs.readdir.mockImplementation(async (dirPath: any) => {
+      mockFs.readdir.mockImplementation(async (dirPath: string | URL) => {
         if (dirPath.toString().includes('000_admin')) {
-          return ['0001_setup_up.surql', '0001_setup_down.surql'] as any;
+          return ['0001_setup_up.surql', '0001_setup_down.surql'] as never;
         }
         if (dirPath.toString().includes('010_auth')) {
-          return ['0001_users_up.surql', '0001_users_down.surql', '0002_roles_up.surql', '0002_roles_down.surql'] as any;
+          return ['0001_users_up.surql', '0001_users_down.surql', '0002_roles_up.surql', '0002_roles_down.surql'] as never;
         }
-        return [] as any;
+        return [] as never;
       });
 
       mockFs.readFile.mockResolvedValue('-- migration content');
@@ -303,11 +328,11 @@ describe('MigrationService', () => {
       await engine.initialize(defaultOptions);
       
       // Mock file system for rollback file detection
-      mockFs.readdir.mockImplementation(async (dirPath: any) => {
+      mockFs.readdir.mockImplementation(async (dirPath: string | URL) => {
         if (dirPath.toString().includes('010_auth')) {
-          return ['0001_users_up.surql', '0001_users_down.surql'] as any;
+          return ['0001_users_up.surql', '0001_users_down.surql'] as never;
         }
-        return [] as any;
+        return [] as never;
       });
       mockFs.readFile.mockResolvedValue('-- rollback content');
     });
@@ -354,11 +379,11 @@ describe('MigrationService', () => {
 
     it('should detect missing rollback files', async () => {
       mockResolver.validateRollback.mockReturnValue({ canRollback: true, blockedBy: [] });
-      mockFs.readdir.mockImplementation(async (dirPath: any) => {
+      mockFs.readdir.mockImplementation(async (dirPath: string | URL) => {
         if (dirPath.toString().includes('010_auth')) {
-          return ['0001_users_up.surql'] as any; // Missing down file
+          return ['0001_users_up.surql'] as never; // Missing down file
         }
-        return [] as any;
+        return [] as never;
       });
 
       const result = await engine.validateRollback(['010_auth']);
@@ -402,7 +427,11 @@ describe('MigrationService', () => {
         }),
         resolveFilenames: jest.fn().mockResolvedValue({ resolved: [], notFound: [] }),
         resolveRollbackFilenames: jest.fn().mockResolvedValue({ resolved: [], notFound: [], dependencyWarnings: [] })
-      } as any;
+      } as {
+        resolveModules: jest.MockedFunction<(patterns: string[]) => { resolved: Array<{ moduleId: string; pattern: string }>; notFound: string[] }>;
+        resolveFilenames: jest.MockedFunction<(filenames: string[], moduleIds?: string[]) => Promise<{ resolved: unknown[]; notFound: string[] }>>;
+        resolveRollbackFilenames: jest.MockedFunction<(filenames: string[], moduleIds?: string[]) => Promise<{ resolved: unknown[]; notFound: string[]; dependencyWarnings: unknown[] }>>;
+      };
       MockPatternResolver.mockImplementation(() => mockPatternResolver);
       
       // Re-initialize to get new PatternResolver instance
@@ -498,7 +527,11 @@ describe('MigrationService', () => {
         }),
         resolveFilenames: jest.fn().mockResolvedValue({ resolved: [], notFound: [] }),
         resolveRollbackFilenames: jest.fn().mockResolvedValue({ resolved: [], notFound: [], dependencyWarnings: [] })
-      } as any;
+      } as {
+        resolveModules: jest.MockedFunction<(patterns: string[]) => { resolved: Array<{ moduleId: string; pattern: string }>; notFound: string[] }>;
+        resolveFilenames: jest.MockedFunction<(filenames: string[], moduleIds?: string[]) => Promise<{ resolved: unknown[]; notFound: string[] }>>;
+        resolveRollbackFilenames: jest.MockedFunction<(filenames: string[], moduleIds?: string[]) => Promise<{ resolved: unknown[]; notFound: string[]; dependencyWarnings: unknown[] }>>;
+      };
       MockPatternResolver.mockImplementation(() => mockPatternResolver);
       
       // Re-initialize to get new PatternResolver instance

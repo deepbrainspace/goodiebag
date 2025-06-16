@@ -5,14 +5,14 @@ import { performance } from 'perf_hooks';
 import { SurrealDBClient } from '../infrastructure/client';
 import { MigrationRepository } from './migration-repository';
 import { ModuleLockManager } from './module-lock-manager';
-import { ConfigLoader } from '../configuration/config-loader';
 import { DependencyResolver } from './dependency-resolver';
-import { MigrationFileProcessor, type MigrationFile, type MigrationContext } from '../filesystem/migration-file-processor';
-import { PatternResolver, type PatternResolutionResult, type ResolvedFilename } from '../filesystem/pattern-resolver';
+import { MigrationFileProcessor, type MigrationFile } from '../filesystem/migration-file-processor';
+import { PatternResolver, type ResolvedFilename } from '../filesystem/pattern-resolver';
 import { replaceEnvVars, loadEnvFile } from '../infrastructure/env';
 import { resolveProjectPath } from '../infrastructure/project';
 import { Debug } from '../infrastructure/debug';
 import { MigrationRecord, Migration } from '../configuration/types';
+import { ExecutorContext } from '@nx/devkit';
 
 export interface MigrationServiceOptions {
   url: string;
@@ -76,7 +76,7 @@ export class MigrationService {
   private patternResolver: PatternResolver | null = null;
   private debug = Debug.scope('migration-service');
 
-  constructor(private projectContext?: any) {}
+  constructor(private projectContext?: ExecutorContext) {}
 
   // Static utility methods for file operations
   static async findMatchingSubdirectory(basePath: string, pattern: string): Promise<string | null> {
@@ -723,7 +723,7 @@ export class MigrationService {
       }
       
       return migrations.sort((a, b) => a.number.localeCompare(b.number));
-    } catch (error) {
+    } catch {
       // Module directory doesn't exist or is empty
       return [];
     }

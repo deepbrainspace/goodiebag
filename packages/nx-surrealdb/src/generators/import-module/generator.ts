@@ -5,7 +5,6 @@ import {
 import * as path from 'path';
 import * as fs from 'fs';
 import { execSync } from 'child_process';
-import { DependencyResolver } from '../../lib/domain/dependency-resolver';
 import { TreeUtils } from '../../lib/filesystem/tree-utils';
 
 export interface ImportModuleGeneratorSchema {
@@ -129,7 +128,7 @@ async function extractPackage(options: ReturnType<typeof normalizeOptions>): Pro
   }
 }
 
-async function validatePackage(extractedPath: string, moduleName: string) {
+async function validatePackage(extractedPath: string, _moduleName: string) {
   if (!fs.existsSync(extractedPath)) {
     throw new Error(`Extracted package path not found: ${extractedPath}`);
   }
@@ -215,7 +214,7 @@ async function validateDependencies(
   const moduleName = Object.keys(moduleConfig)[0];
   const config = moduleConfig[moduleName];
   
-  if (!config.depends || config.depends.length === 0) {
+  if (!config.dependencies || config.dependencies.length === 0) {
     logger.info(`✅ Module has no dependencies`);
     return;
   }
@@ -225,7 +224,7 @@ async function validateDependencies(
   
   const targetConfig = TreeUtils.readJsonFile(tree, targetConfigPath);
   if (targetConfig) {
-    const missingDeps = config.depends.filter(dep => !targetConfig.modules || !targetConfig.modules[dep]);
+    const missingDeps = (config.dependencies || []).filter(dep => !(targetConfig as { modules?: Record<string, unknown> }).modules || !(targetConfig as { modules?: Record<string, unknown> }).modules[dep]);
     
     if (missingDeps.length > 0) {
       throw new Error(
@@ -237,7 +236,7 @@ async function validateDependencies(
     logger.warn(`⚠️ No target configuration found - cannot validate dependencies`);
   }
   
-  logger.info(`✅ All dependencies satisfied: ${config.depends.join(', ')}`);
+  logger.info(`✅ All dependencies satisfied: ${config.dependencies.join(', ')}`);
 }
 
 async function importMigrationFiles(
@@ -289,7 +288,7 @@ async function mergeModuleConfiguration(
   
   const targetConfigPath = options.configPath || path.join(options.initPath, 'config.json');
   
-  let targetConfig: any = {
+  let targetConfig: { modules: Record<string, unknown>; settings: { configFormat: string; useTransactions: boolean } } = {
     modules: {},
     settings: {
       configFormat: 'json',
@@ -300,14 +299,14 @@ async function mergeModuleConfiguration(
   // Load existing config if it exists in Tree
   const existingConfig = TreeUtils.readJsonFile(tree, targetConfigPath);
   if (existingConfig) {
-    targetConfig = existingConfig;
+    targetConfig = existingConfig as { modules: Record<string, unknown>; settings: { configFormat: string; useTransactions: boolean } };
   }
   
   // Add the new module configuration
   targetConfig.modules[targetModuleName] = {
     ...config,
     // Update any self-references in dependencies
-    depends: config.depends?.map(dep => 
+    dependencies: config.dependencies?.map(dep => 
       dep === originalModuleName ? targetModuleName : dep
     ) || []
   };

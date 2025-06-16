@@ -129,7 +129,7 @@ export class MigrationRepository {
       const migration = result[0][0] ?? null;
       this.debug.log(`Parsed migration result:`, migration);
       
-      return migration;
+      return migration as Migration;
     } catch (error) {
       this.debug.error(`Failed to fetch migration status for ${number}_${name}:`, error);
       throw new Error(`Failed to fetch migration status: ${error.message}`);
@@ -217,22 +217,23 @@ export class MigrationRepository {
       
       if (!migration) return null;
       
+      const migrationData = migration as MigrationRecord;
       return {
-        id: migration.id,
-        number: migration.number,
-        name: migration.name,
-        direction: migration.direction,
-        filename: migration.filename,
-        path: migration.path,
-        content: migration.content,
-        module: migration.module,
-        checksum: migration.checksum,
-        status: migration.status,
-        namespace: migration.namespace,
-        database: migration.database,
-        applied_at: migration.applied_at,
-        applied_by: migration.applied_by,
-        execution_time_ms: migration.execution_time_ms
+        id: migrationData.id,
+        number: migrationData.number,
+        name: migrationData.name,
+        direction: migrationData.direction,
+        filename: migrationData.filename,
+        path: migrationData.path,
+        content: migrationData.content,
+        module: migrationData.module,
+        checksum: migrationData.checksum,
+        status: migrationData.status,
+        namespace: migrationData.namespace,
+        database: migrationData.database,
+        applied_at: migrationData.applied_at,
+        applied_by: migrationData.applied_by,
+        execution_time_ms: migrationData.execution_time_ms
       };
     } catch (error) {
       throw new Error(`Failed to fetch migration status: ${error.message}`);
@@ -266,7 +267,7 @@ export class MigrationRepository {
       this.debug.log(`result[0] length:`, Array.isArray(result[0]) ? result[0].length : 'not array');
       this.debug.log(`result[0]?.result length:`, Array.isArray(result[0]?.result) ? result[0].result.length : 'not array');
       
-      const migrations = (result[0] || []).map((m: Migration) => ({
+      const migrations = ((result[0] as unknown) as MigrationRecord[] || []).map((m: MigrationRecord) => ({
         id: m.id,
         number: m.number,
         name: m.name,
@@ -312,11 +313,11 @@ export class MigrationRepository {
         ORDER BY applied_at DESC
       `);
 
-      const migrations = result[0] || [];
+      const migrations = (result[0] as unknown) as MigrationRecord[] || [];
       this.debug.log(`Found ${migrations.length} latest migration records across modules`);
       
       // Filter to only include migrations where the latest record is UP + SUCCESS (case insensitive)
-      const eligibleMigrations = migrations.filter(migration => 
+      const eligibleMigrations = migrations.filter((migration: MigrationRecord) => 
         migration.direction?.toLowerCase() === 'up' && migration.status?.toLowerCase() === 'success'
       );
       
@@ -429,7 +430,7 @@ export class MigrationRepository {
       }>();
       
       // Group migrations by module
-      const migrationsByModule = new Map<string, any[]>();
+      const migrationsByModule = new Map<string, MigrationRecord[]>();
       const migrationsArray = Array.isArray(migrations) ? migrations : [];
       for (const migration of migrationsArray) {
         const moduleId = migration.module;

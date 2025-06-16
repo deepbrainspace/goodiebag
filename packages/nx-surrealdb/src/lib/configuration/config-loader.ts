@@ -4,7 +4,7 @@ import * as path from 'path';
 export interface ModuleConfig {
   name: string;
   description?: string;
-  depends: string[];
+  dependencies: string[];  // Changed from 'depends' to match types.ts
   locked?: boolean;
   lockReason?: string;
 }
@@ -22,7 +22,7 @@ export interface MigrationsConfig {
 export interface ConfigValidationError {
   field: string;
   message: string;
-  value?: any;
+  value?: unknown;
 }
 
 export class ConfigLoader {
@@ -79,7 +79,7 @@ export class ConfigLoader {
     // In production, we'd use a proper YAML library like js-yaml
     try {
       // Remove comments and normalize
-      const lines = content.split('\n')
+      content.split('\n')
         .map(line => line.trim())
         .filter(line => line && !line.startsWith('#'));
       
@@ -95,34 +95,34 @@ export class ConfigLoader {
     }
   }
 
-  private static validateConfig(config: any): void {
+  private static validateConfig(config: unknown): void {
     const errors: ConfigValidationError[] = [];
 
     if (!config || typeof config !== 'object') {
       throw new Error('Configuration must be an object');
     }
 
-    if (!config.modules || typeof config.modules !== 'object') {
+    if (!(config as { modules?: unknown }).modules || typeof (config as { modules?: unknown }).modules !== 'object') {
       errors.push({
         field: 'modules',
         message: 'modules field is required and must be an object',
-        value: config.modules
+        value: (config as { modules?: unknown }).modules
       });
     } else {
       // Validate each module
-      for (const [moduleId, moduleConfig] of Object.entries(config.modules)) {
-        this.validateModule(moduleId, moduleConfig as any, errors);
+      for (const [moduleId, moduleConfig] of Object.entries((config as { modules: Record<string, unknown> }).modules)) {
+        this.validateModule(moduleId, moduleConfig, errors);
       }
 
       // Validate dependencies exist
-      this.validateDependencies(config.modules, errors);
+      this.validateDependencies((config as { modules: Record<string, ModuleConfig> }).modules, errors);
     }
 
-    if (config.settings && typeof config.settings !== 'object') {
+    if ((config as { settings?: unknown }).settings && typeof (config as { settings?: unknown }).settings !== 'object') {
       errors.push({
         field: 'settings',
         message: 'settings must be an object',
-        value: config.settings
+        value: (config as { settings?: unknown }).settings
       });
     }
 
@@ -132,7 +132,7 @@ export class ConfigLoader {
     }
   }
 
-  private static validateModule(moduleId: string, moduleConfig: any, errors: ConfigValidationError[]): void {
+  private static validateModule(moduleId: string, moduleConfig: unknown, errors: ConfigValidationError[]): void {
     const fieldPrefix = `modules.${moduleId}`;
 
     // Validate module ID format
@@ -153,26 +153,26 @@ export class ConfigLoader {
       return;
     }
 
-    if (!moduleConfig.name || typeof moduleConfig.name !== 'string') {
+    if (!(moduleConfig as Record<string, unknown>).name || typeof (moduleConfig as Record<string, unknown>).name !== 'string') {
       errors.push({
         field: `${fieldPrefix}.name`,
         message: 'Module name is required and must be a string',
-        value: moduleConfig.name
+        value: (moduleConfig as Record<string, unknown>).name
       });
     }
 
-    if (!Array.isArray(moduleConfig.depends)) {
+    if (!Array.isArray((moduleConfig as Record<string, unknown>).dependencies)) {
       errors.push({
-        field: `${fieldPrefix}.depends`,
-        message: 'Module depends must be an array',
-        value: moduleConfig.depends
+        field: `${fieldPrefix}.dependencies`,
+        message: 'Module dependencies must be an array',
+        value: (moduleConfig as Record<string, unknown>).dependencies
       });
     } else {
       // Validate each dependency is a string
-      moduleConfig.depends.forEach((dep: any, index: number) => {
+      ((moduleConfig as Record<string, unknown>).dependencies as unknown[]).forEach((dep: unknown, index: number) => {
         if (typeof dep !== 'string') {
           errors.push({
-            field: `${fieldPrefix}.depends[${index}]`,
+            field: `${fieldPrefix}.dependencies[${index}]`,
             message: 'Dependency must be a string',
             value: dep
           });
@@ -185,12 +185,12 @@ export class ConfigLoader {
     const moduleIds = Object.keys(modules);
     
     for (const [moduleId, moduleConfig] of Object.entries(modules)) {
-      if (!Array.isArray(moduleConfig.depends)) continue;
+      if (!Array.isArray(moduleConfig.dependencies)) continue;
       
-      for (const dependency of moduleConfig.depends) {
+      for (const dependency of moduleConfig.dependencies) {
         if (!moduleIds.includes(dependency)) {
           errors.push({
-            field: `modules.${moduleId}.depends`,
+            field: `modules.${moduleId}.dependencies`,
             message: `Dependency '${dependency}' does not exist in modules`,
             value: dependency
           });
@@ -225,8 +225,8 @@ export class ConfigLoader {
       recursionStack.add(moduleId);
 
       const moduleConfig = modules[moduleId];
-      if (moduleConfig && Array.isArray(moduleConfig.depends)) {
-        for (const dependency of moduleConfig.depends) {
+      if (moduleConfig && Array.isArray(moduleConfig.dependencies)) {
+        for (const dependency of moduleConfig.dependencies) {
           if (hasCycle(dependency, [...path, moduleId])) {
             return true;
           }
@@ -264,7 +264,7 @@ export class ConfigLoader {
       config.modules[moduleId] = {
         name: name.charAt(0).toUpperCase() + name.slice(1).replace(/_/g, ' '),
         description: `${name} module`,
-        depends: i > 0 ? [sortedModules[i - 1]] : []
+        dependencies: i > 0 ? [sortedModules[i - 1]] : []
       };
     }
 
