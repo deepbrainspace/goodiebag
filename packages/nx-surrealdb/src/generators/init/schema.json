@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the database project",
+      "default": "database",
+      "$default": {
+        "$source": "argv",
+        "index": 0
+      }
+    },
+    "directory": {
+      "type": "string",
+      "description": "Directory where to create the database project",
+      "default": "."
+    },
+    "url": {
+      "type": "string",
+      "description": "SurrealDB connection URL",
+      "default": "ws://localhost:8000/rpc"
+    },
+    "namespace": {
+      "type": "string",
+      "description": "SurrealDB namespace",
+      "default": "development"
+    },
+    "database": {
+      "type": "string",
+      "description": "SurrealDB database name",
+      "default": "main"
+    },
+    "user": {
+      "type": "string",
+      "description": "SurrealDB root user",
+      "default": "root"
+    },
+    "pass": {
+      "type": "string",
+      "description": "SurrealDB root password",
+      "default": "root"
+    }
+  },
+  "required": ["name"]
+}
