@@ -113,8 +113,6 @@ jobs:
           main-branch-name: << pipeline.parameters.main-branch >>
       - run:
           name: Build affected packages
-          command: npx nx affected --target=build --parallel=3 --ci
-      - persist_to_workspace:
-          root: .
-          paths:
-            - packages/*/dist
+          command: |
+            npx nx affected --target=build --parallel=3 --ci
+            echo "Build completed - artifacts cached in NX Cloud for later use"
