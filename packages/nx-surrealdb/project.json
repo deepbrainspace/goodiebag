@@ -58,7 +58,10 @@
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint"
+      "executor": "@nx/eslint:lint",
+      "options": {
+        "lintFilePatterns": ["packages/nx-surrealdb/src/**/*.ts", "packages/nx-surrealdb/src/**/*.js"]
+      }
     },
     "test": {
       "executor": "@nx/jest:jest",
