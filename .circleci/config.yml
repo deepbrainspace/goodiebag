@@ -114,16 +114,39 @@ jobs:
       - attach_workspace:
           at: .
       - run:
+          name: Install GitHub CLI
+          command: |
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+            sudo apt update
+            sudo apt install gh -y
+      - run:
           name: Authenticate with npm
           command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
       - run:
-          name: Publish to npm
+          name: Authenticate with GitHub
+          command: echo "$GITHUB_TOKEN" | gh auth login --with-token
+      - run:
+          name: Publish to npm and create GitHub release
           command: |
+            cd packages/nx-surrealdb
             if [ "$CIRCLE_TAG" ]; then
-              cd packages/nx-surrealdb
+              # Tag-based release (production)
+              npm pack
               npm publish
+              TARBALL=$(ls *.tgz)
+              gh release create "$CIRCLE_TAG" "$TARBALL" \
+                --title "Release $CIRCLE_TAG" \
+                --notes "Production release of @deepbrainspace/nx-surrealdb $CIRCLE_TAG"
             elif [ "$CIRCLE_BRANCH" = "main" ]; then
-              cd packages/nx-surrealdb
+              # Main branch release (beta)
               npm version patch --no-git-tag-version
+              NEW_VERSION=$(node -p "require('./package.json').version")
+              npm pack
               npm publish --tag beta
+              TARBALL=$(ls *.tgz)
+              gh release create "v$NEW_VERSION-beta" "$TARBALL" \
+                --title "Beta Release v$NEW_VERSION" \
+                --notes "Beta release of @deepbrainspace/nx-surrealdb v$NEW_VERSION" \
+                --prerelease
             fi
