@@ -1,5 +1,7 @@
 # Goodie-Bag 🎒
 
+[![CircleCI](https://dl.circleci.com/status-badge/img/circleci/L1L7Dg2J95eoimkWR3ScDb/BZ3H2kcEVycJ4TGq4s17of/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/circleci/L1L7Dg2J95eoimkWR3ScDb/BZ3H2kcEVycJ4TGq4s17of/tree/main)
+
 A streamlined monorepo of developer utilities, NX plugins, MCP servers, and tools - featuring intelligent CI/CD, comprehensive testing, and production-ready automation.
 
 ## Repository Philosophy
@@ -76,8 +78,8 @@ npm install @deepbrainspace/nx-surrealdb --save-dev
 ### Repository Setup
 ```bash
 # Clone and install
-git clone https://github.com/deepbrainspace/nx-plugins.git
-cd nx-plugins
+git clone https://github.com/deepbrainspace/goodiebag.git
+cd goodiebag
 pnpm install
 
 # Build all packages
@@ -117,7 +119,7 @@ nx affected --target=test    # Only tests affected packages
 **🏗️ Complete Ecosystem Architecture:**
 
 ```
-goodie-bag/
+goodiebag/
 ├── packages/              # 📦 Publishable to npm
 │   ├── nx-surrealdb/     # NX plugin for SurrealDB migrations
 │   ├── mcp-server-*/     # Model Context Protocol servers
