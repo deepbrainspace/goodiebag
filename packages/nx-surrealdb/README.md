@@ -53,9 +53,23 @@ A comprehensive SurrealDB toolkit for [Nx](https://nx.dev/) monorepos featuring 
 1. **Add the Plugin to Your Nx Workspace**:
    ```bash
    npm install @deepbrainspace/nx-surrealdb --save-dev
+   # or
+   pnpm add -D @deepbrainspace/nx-surrealdb
    ```
 
-2. **Verify Installation**:
+2. **Alternative: GitHub Releases**
+   
+   Download packages directly from [GitHub Releases](https://github.com/deepbrainspace/nx-plugins/releases):
+   - **Production releases**: Tagged versions (e.g., `v1.0.0`)
+   - **Beta releases**: Main branch builds with `-beta` suffix (e.g., `v1.0.1-beta`)
+
+   ```bash
+   # Download and install from GitHub release
+   curl -L https://github.com/deepbrainspace/nx-plugins/releases/download/v1.0.0/deepbrainspace-nx-surrealdb-1.0.0.tgz -o package.tgz
+   npm install package.tgz
+   ```
+
+3. **Verify Installation**:
    ```bash
    nx list @deepbrainspace/nx-surrealdb
    ```
