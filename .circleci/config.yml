@@ -88,8 +88,8 @@ jobs:
       - nx/set-shas:
           main-branch-name: << pipeline.parameters.main-branch >>
       - run:
-          name: Build affected packages
-          command: npx nx affected --target=build --parallel=3 --ci
+          name: Build all packages
+          command: npx nx run-many --target=build --all --parallel=3 --ci
       - persist_to_workspace:
           root: .
           paths:
