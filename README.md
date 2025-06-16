@@ -1,66 +1,94 @@
 # DeepBrain NX Plugins
 
-A collection of NX plugins for DeepBrain projects, featuring database migrations and tooling.
+A monorepo of specialized NX plugins for DeepBrain projects, featuring robust CI/CD, comprehensive testing, and production-ready tooling.
 
-<!-- Test CircleCI pipeline - attempt 2 -->
+## Repository Overview
+
+This repository demonstrates modern NX plugin development with:
+- **Optimized CI/CD Pipeline**: Parallel execution with ~50% faster builds
+- **Dual Distribution**: npm registry + GitHub releases with artifacts
+- **Quality Gates**: Zero-warning ESLint, 278+ tests, TypeScript compilation
+- **Repository Pattern**: Clean architecture with Domain-Driven Design
 
 ## Packages
 
+| Package | Version | Description |
+|---------|---------|-------------|
+| [`@deepbrainspace/nx-surrealdb`](./packages/nx-surrealdb) | ![npm](https://img.shields.io/npm/v/@deepbrainspace/nx-surrealdb) | SurrealDB migrations with modular architecture |
+
 ### @deepbrainspace/nx-surrealdb
 
-An NX plugin for SurrealDB migrations with modular architecture support.
+A comprehensive SurrealDB toolkit for NX monorepos featuring migration management, dependency resolution, and extensible architecture.
 
-**Features:**
-- Database migration management
-- Modular schema organization
-- Dependency resolution between modules
-- Rollback capabilities
-- Status reporting
-- Module import/export
+**Key Features:**
+- 🚀 Migration management with dependency resolution
+- 🔄 Modular schema organization with topological sorting  
+- 🛡️ Safe rollbacks with dependency conflict detection
+- 📊 Rich visualization with ASCII dependency trees
+- 🎯 Smart targeting (index, name, number patterns)
 
-**Installation:**
+**Quick Install:**
 ```bash
-npm install @deepbrainspace/nx-surrealdb
-# or
-pnpm add @deepbrainspace/nx-surrealdb
+npm install @deepbrainspace/nx-surrealdb --save-dev
 ```
 
-**Usage:**
-```bash
-# Generate a new migration
-nx g @deepbrainspace/nx-surrealdb:migration my-migration
-
-# Run migrations
-nx run database:migrate
-
-# Check migration status
-nx run database:status
-
-# Rollback migrations
-nx run database:rollback
-```
+[**📖 Full Documentation →**](./packages/nx-surrealdb/README.md)
 
 ## Development
 
 ### Prerequisites
-- Node.js 18+ or 20+
-- pnpm 9.0.0+
-- NX CLI
+- **Node.js**: 18+ or 20+
+- **pnpm**: 9.0.0+
+- **NX CLI**: `npm install -g nx`
 
-### Setup
+### Repository Setup
 ```bash
-# Install dependencies
+# Clone and install
+git clone https://github.com/deepbrainspace/nx-plugins.git
+cd nx-plugins
 pnpm install
 
 # Build all packages
 pnpm build
 
-# Run tests
+# Run tests across all packages
 pnpm test
 
-# Run linting
+# Lint all packages
 pnpm lint
 ```
+
+### NX Plugin Development Patterns
+
+Key learnings from building production NX plugins:
+
+**🏗️ Architecture Patterns:**
+- **Repository Pattern**: Separate data access from business logic
+- **Domain-Driven Design**: Clear layer boundaries and responsibilities
+- **Self-Contained Packages**: Independent configurations and dependencies
+
+**🔧 Build Configuration:**
+- **TypeScript Compilation**: Use `@nx/js:tsc` for clean builds
+- **Asset Copying**: Include schemas, templates, and metadata files
+- **Independent ESLint**: Flat config format with workspace path handling
+
+**📦 Package Structure:**
+```
+packages/plugin-name/
+├── src/
+│   ├── executors/           # NX executors (migrate, status, etc.)
+│   ├── generators/          # NX generators (init, migration, etc.)
+│   └── lib/                # Core business logic
+├── executors.json          # Executor definitions
+├── generators.json         # Generator definitions
+└── package.json           # Self-contained dependencies
+```
+
+**⚡ Testing Strategy:**
+- **278+ test cases** across all components
+- **Mock-based testing** for external dependencies
+- **Integration tests** for executor/generator workflows
+- **TypeScript strict mode** for compile-time safety
 
 ## CI/CD Pipeline
 

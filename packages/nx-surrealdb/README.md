@@ -870,26 +870,40 @@ nx lint nx-surrealdb
 cp -r dist/* node_modules/@deepbrainspace/nx-surrealdb/
 ```
 
-### CI/CD Pipeline
+### Local Development & Testing
 
-This package uses an optimized CircleCI pipeline for fast, reliable releases:
+```bash
+# Build the plugin
+nx build nx-surrealdb
 
+# Run tests with coverage
+nx test nx-surrealdb --code-coverage
+
+# Run linting (zero warnings required)
+nx lint nx-surrealdb
+
+# Test locally in another project
+cd packages/nx-surrealdb
+npm pack
+# Copy *.tgz to test project and: npm install package.tgz
 ```
-   dependencies
-       ├── lint ──┐
-       └── test ──┼── build ──┬── npm-publish
-                  │           └── github-release
+
+### Testing Your Plugin
+
+Create a test NX workspace to validate functionality:
+
+```bash
+# Create test workspace
+npx create-nx-workspace@latest test-workspace --preset=empty
+cd test-workspace
+
+# Install your local plugin
+npm install /path/to/nx-plugins/packages/nx-surrealdb/*.tgz
+
+# Test plugin functionality
+nx g @deepbrainspace/nx-surrealdb:init database
+nx g @deepbrainspace/nx-surrealdb:migration setup --project=database
 ```
-
-**Quality Gates:**
-- ✅ ESLint with zero warnings policy
-- ✅ Jest tests with 278+ test cases
-- ✅ TypeScript compilation
-- ✅ Build artifact validation
-
-**Automated Publishing:**
-- **Beta releases**: Every merge to `main` → `npm publish --tag beta` + GitHub prerelease
-- **Production releases**: Git tags → `npm publish` + GitHub release with artifacts
 
 ### Architecture
 
