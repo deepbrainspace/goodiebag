@@ -1,8 +1,8 @@
 # Goodie-Bag 🎒
 
-[![CI](https://dl.circleci.com/status-badge/img/circleci/L1L7Dg2J95eoimkWR3ScDb/c8be0d2d-a616-459e-8c35-e4a9390c9c3c/tree/main.svg?style=svg&label=CI)](https://dl.circleci.com/status-badge/redirect/circleci/L1L7Dg2J95eoimkWR3ScDb/c8be0d2d-a616-459e-8c35-e4a9390c9c3c/tree/main)
-[![CD Main](https://dl.circleci.com/status-badge/img/circleci/L1L7Dg2J95eoimkWR3ScDb/9eb38ead-395f-4faa-9579-43d6447c05f9/tree/main.svg?style=svg&label=CD%20Main)](https://dl.circleci.com/status-badge/redirect/circleci/L1L7Dg2J95eoimkWR3ScDb/9eb38ead-395f-4faa-9579-43d6447c05f9/tree/main)
-[![CD Tags](https://dl.circleci.com/status-badge/img/circleci/L1L7Dg2J95eoimkWR3ScDb/1b1eb493-6500-43df-9f43-4344e3c8b673/tree/main.svg?style=svg&label=CD%20Tags)](https://dl.circleci.com/status-badge/redirect/circleci/L1L7Dg2J95eoimkWR3ScDb/1b1eb493-6500-43df-9f43-4344e3c8b673/tree/main)
+[![CI](https://github.com/deepbrainspace/goodiebag/actions/workflows/ci.yml/badge.svg)](https://github.com/deepbrainspace/goodiebag/actions/workflows/ci.yml)
+[![CD](https://github.com/deepbrainspace/goodiebag/actions/workflows/cd.yml/badge.svg?branch=main)](https://github.com/deepbrainspace/goodiebag/actions/workflows/cd.yml)
+[![Release](https://github.com/deepbrainspace/goodiebag/actions/workflows/release.yml/badge.svg)](https://github.com/deepbrainspace/goodiebag/actions/workflows/release.yml)
 
 A streamlined monorepo of developer utilities, NX plugins, MCP servers, and tools - featuring intelligent CI/CD, comprehensive testing, and production-ready automation.
 
@@ -147,7 +147,7 @@ goodiebag/
 
 ## CI/CD Pipeline
 
-Our CircleCI pipeline demonstrates production-grade monorepo CI/CD with intelligent package detection:
+Our GitHub Actions pipeline demonstrates production-grade monorepo CI/CD with intelligent package detection:
 
 ```
    dependencies
