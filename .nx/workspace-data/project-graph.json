@@ -18,7 +18,7 @@
           "targetGroups": {},
           "description": "NX plugin for SurrealDB migrations with modular architecture",
           "js": {
-            "packageName": "@idance/nx-surrealdb",
+            "packageName": "@deepbrainspace/nx-surrealdb",
             "packageMain": "./dist/src/index.js",
             "isInPackageManagerWorkspaces": false
           }
@@ -11414,5 +11414,5 @@
   },
   "version": "6.0",
   "errors": [],
-  "computedAt": 1750020745998
+  "computedAt": 1750046784867
 }

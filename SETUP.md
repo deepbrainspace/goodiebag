@@ -1,10 +1,10 @@
-# Setup Guide for IDance NX Plugins
+# Setup Guide for DeepBrain NX Plugins
 
 This document provides step-by-step instructions for setting up CI/CD and publishing for the nx-plugins repository.
 
 ## Overview
 
-This repository contains NX plugins for iDance projects. The main plugin is `@idance/nx-surrealdb` which provides SurrealDB migration capabilities.
+This repository contains NX plugins for DeepBrain projects. The main plugin is `@deepbrainspace/nx-surrealdb` which provides SurrealDB migration capabilities.
 
 ## Current Status
 
@@ -124,7 +124,7 @@ Once published, integrate with the ileads project:
 #### 6.1 Install the Plugin
 ```bash
 # In ileads project directory
-pnpm add @idance/nx-surrealdb
+pnpm add @deepbrainspace/nx-surrealdb
 ```
 
 #### 6.2 Configure NX
@@ -133,7 +133,7 @@ Edit `ileads/nx.json`:
 {
   "plugins": [
     {
-      "plugin": "@idance/nx-surrealdb",
+      "plugin": "@deepbrainspace/nx-surrealdb",
       "options": {}
     }
   ]
@@ -143,7 +143,7 @@ Edit `ileads/nx.json`:
 #### 6.3 Test Integration
 ```bash
 # Generate a migration
-nx g @idance/nx-surrealdb:migration test-migration
+nx g @deepbrainspace/nx-surrealdb:migration test-migration
 
 # Run database commands
 nx run database:status

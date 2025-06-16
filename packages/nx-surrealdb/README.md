@@ -52,12 +52,12 @@ A comprehensive SurrealDB toolkit for [Nx](https://nx.dev/) monorepos featuring 
 
 1. **Add the Plugin to Your Nx Workspace**:
    ```bash
-   npm install @idance/nx-surrealdb --save-dev
+   npm install @deepbrainspace/nx-surrealdb --save-dev
    ```
 
 2. **Verify Installation**:
    ```bash
-   nx list @idance/nx-surrealdb
+   nx list @deepbrainspace/nx-surrealdb
    ```
 
 ## Quick Start
@@ -80,7 +80,7 @@ Update your `database/project.json`:
   "name": "database",
   "targets": {
     "migrate": {
-      "executor": "@idance/nx-surrealdb:migrate",
+      "executor": "@deepbrainspace/nx-surrealdb:migrate",
       "options": {
         "url": "${SURREALDB_URL}",
         "user": "${SURREALDB_ROOT_USER}",
@@ -91,7 +91,7 @@ Update your `database/project.json`:
       }
     },
     "rollback": {
-      "executor": "@idance/nx-surrealdb:rollback",
+      "executor": "@deepbrainspace/nx-surrealdb:rollback",
       "options": {
         "url": "${SURREALDB_URL}",
         "user": "${SURREALDB_ROOT_USER}",
@@ -102,7 +102,7 @@ Update your `database/project.json`:
       }
     },
     "status": {
-      "executor": "@idance/nx-surrealdb:status",
+      "executor": "@deepbrainspace/nx-surrealdb:status",
       "options": {
         "url": "${SURREALDB_URL}",
         "user": "${SURREALDB_ROOT_USER}",
@@ -184,10 +184,10 @@ database/
 
 ```bash
 # Generate migration in existing module
-nx g @idance/nx-surrealdb:migration create-users --project database --module auth
+nx g @deepbrainspace/nx-surrealdb:migration create-users --project database --module auth
 
 # Generate migration with new module creation  
-nx g @idance/nx-surrealdb:migration setup-notifications --project database --module notifications --createModule
+nx g @deepbrainspace/nx-surrealdb:migration setup-notifications --project database --module notifications --createModule
 ```
 
 ### Apply Migrations
@@ -844,6 +844,6 @@ MIT License - see LICENSE file for details.
 
 ## Support
 
-- [GitHub Issues](https://github.com/idancelive/idance/issues)
-- [Documentation](https://github.com/idancelive/idance/tree/main/tools/plugins/nx-surrealdb)
+- [GitHub Issues](https://github.com/deepbrainspace/nx-plugins/issues)
+- [Documentation](https://github.com/deepbrainspace/nx-plugins/tree/main/packages/nx-surrealdb)
 - [SurrealDB Community](https://surrealdb.com/community)

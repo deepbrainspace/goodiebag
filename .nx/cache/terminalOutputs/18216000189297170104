@@ -1,0 +1,35 @@
+Compiling TypeScript files for project "nx-surrealdb"...
+[1m[31m[91merror[0m[90m TS2688: [0mCannot find type definition file for 'node'.[39m[22m
+[1m[31m  The file is in the program because:[39m[22m
+[1m[31m    Entry point of type library 'node' specified in compilerOptions[39m[22m
+[1m[31m[39m[22m
+
+[2m../../../../dist/src/generators/migration/files/__timestamp_____name___down.surql[22m
+
+[2m../../../../dist/src/generators/migration/files/__timestamp_____name___up.surql[22m
+
+[2mdist/ARCHITECTURE.md[22m
+
+[2mdist/README.md[22m
+
+[2mdist/executors.json[22m
+
+[2mdist/generators.json[22m
+
+[2mdist/package.json[22m
+
+[2m../../../dist/src/executors/migrate/schema.json[22m
+
+[2m../../../dist/src/executors/reset/schema.json[22m
+
+[2m../../../dist/src/executors/rollback/schema.json[22m
+
+[2m../../../dist/src/executors/status/schema.json[22m
+
+[2m../../../dist/src/generators/export-module/schema.json[22m
+
+[2m../../../dist/src/generators/import-module/schema.json[22m
+
+[2m../../../dist/src/generators/migration/schema.json[22m
+
+[2m../../dist/src/schema/system_migrations.surql[22m

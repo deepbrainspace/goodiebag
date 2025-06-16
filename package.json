@@ -1,7 +1,7 @@
 {
-  "name": "@idance/nx-plugins",
+  "name": "@deepbrainspace/nx-plugins",
   "version": "1.0.0",
-  "description": "Collection of NX plugins for iDance projects",
+  "description": "Collection of NX plugins for DeepBrain projects",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@9.0.0",

@@ -1,10 +1,10 @@
-# IDance NX Plugins
+# DeepBrain NX Plugins
 
-A collection of NX plugins for iDance projects, featuring database migrations and tooling.
+A collection of NX plugins for DeepBrain projects, featuring database migrations and tooling.
 
 ## Packages
 
-### @idance/nx-surrealdb
+### @deepbrainspace/nx-surrealdb
 
 An NX plugin for SurrealDB migrations with modular architecture support.
 
@@ -18,15 +18,15 @@ An NX plugin for SurrealDB migrations with modular architecture support.
 
 **Installation:**
 ```bash
-npm install @idance/nx-surrealdb
+npm install @deepbrainspace/nx-surrealdb
 # or
-pnpm add @idance/nx-surrealdb
+pnpm add @deepbrainspace/nx-surrealdb
 ```
 
 **Usage:**
 ```bash
 # Generate a new migration
-nx g @idance/nx-surrealdb:migration my-migration
+nx g @deepbrainspace/nx-surrealdb:migration my-migration
 
 # Run migrations
 nx run database:migrate
