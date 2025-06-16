@@ -61,6 +61,13 @@ workflows:
             branches:
               only:
                 - main
+      - github-release-latest:
+          requires:
+            - dependencies
+          filters:
+            branches:
+              only:
+                - main
       - npm-publish-dev:
           requires:
             - dependencies
@@ -195,8 +202,86 @@ jobs:
               PACKAGE_PATH=$(npx nx show project $package --json | jq -r '.root')
               cd "$PACKAGE_PATH"
               
-              npm version patch --no-git-tag-version
-              npm publish --tag latest
+              # Get current version and increment patch
+              CURRENT_VERSION=$(node -p "require('./package.json').version")
+              echo "Current version: $CURRENT_VERSION"
+              
+              # Only bump version if this exact version doesn't exist on npm
+              if npm view "@deepbrainspace/$package@$CURRENT_VERSION" version >/dev/null 2>&1; then
+                echo "Version $CURRENT_VERSION already exists, bumping patch version"
+                npm version patch --no-git-tag-version
+              else
+                echo "Version $CURRENT_VERSION is new, using as-is"
+              fi
+              
+              # Attempt to publish, but don't fail if version already exists
+              if ! npm publish --tag latest; then
+                echo "Failed to publish $package - may already exist"
+              fi
+              
+              cd - > /dev/null
+            done
+
+  # Create GitHub releases for main branch (runs in parallel with npm publish)
+  github-release-latest:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - attach_workspace:
+          at: .
+      - nx/set-shas:
+          main-branch-name: << pipeline.parameters.main-branch >>
+      - run:
+          name: Install GitHub CLI
+          command: |
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+            sudo apt update
+            sudo apt install gh -y
+      - run:
+          name: Authenticate with GitHub
+          command: echo "$GITHUB_TOKEN" | gh auth login --with-token
+      - run:
+          name: Create GitHub releases for affected packages
+          command: |
+            # NX Cloud will retrieve cached build artifacts if available
+            AFFECTED_PACKAGES=$(npx nx show projects --affected --with-target=build --json | jq -r '.[]')
+            
+            if [ -z "$AFFECTED_PACKAGES" ]; then
+              echo "No packages affected - no releases to create"
+              exit 0
+            fi
+            
+            echo "Creating GitHub releases for: $AFFECTED_PACKAGES"
+            
+            # Build affected packages (will use cache if available)
+            npx nx affected --target=build --parallel=3 --ci
+            
+            # Create GitHub releases for affected packages
+            for package in $AFFECTED_PACKAGES; do
+              echo "Creating GitHub release for: $package"
+              PACKAGE_PATH=$(npx nx show project $package --json | jq -r '.root')
+              cd "$PACKAGE_PATH"
+              
+              # Get version for release
+              VERSION=$(node -p "require('./package.json').version")
+              RELEASE_TAG="${package}-v${VERSION}-beta"
+              
+              # Create tarball
+              npm pack
+              TARBALL=$(ls *.tgz)
+              
+              # Create GitHub release (or update if exists)
+              if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+                echo "Release $RELEASE_TAG already exists, updating..."
+                gh release upload "$RELEASE_TAG" "$TARBALL" --clobber
+              else
+                echo "Creating new release $RELEASE_TAG"
+                gh release create "$RELEASE_TAG" "$TARBALL" \
+                  --title "Beta Release ${package} v${VERSION}" \
+                  --notes "Beta release of @deepbrainspace/${package} v${VERSION} from main branch" \
+                  --prerelease
+              fi
               
               cd - > /dev/null
             done
