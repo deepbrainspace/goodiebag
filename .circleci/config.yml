@@ -1,0 +1,297 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5.2.0
+  nx: nrwl/nx@1.7.0
+
+parameters:
+  main-branch:
+    type: string
+    default: main
+
+workflows:
+  # CI workflow - runs on PRs and feature branches
+  ci:
+    jobs:
+      - dependencies:
+          filters:
+            branches:
+              ignore:
+                - main
+                - develop
+      - lint:
+          requires:
+            - dependencies
+          filters:
+            branches:
+              ignore:
+                - main
+                - develop
+      - test:
+          requires:
+            - dependencies
+          filters:
+            branches:
+              ignore:
+                - main
+                - develop
+      - build:
+          requires:
+            - lint
+            - test
+          filters:
+            branches:
+              ignore:
+                - main
+                - develop
+
+  # CD workflow - runs on main/develop merges
+  cd:
+    jobs:
+      - dependencies:
+          filters:
+            branches:
+              only:
+                - main
+                - develop
+      - npm-publish-latest:
+          requires:
+            - dependencies
+          filters:
+            branches:
+              only:
+                - main
+      - npm-publish-dev:
+          requires:
+            - dependencies
+          filters:
+            branches:
+              only:
+                - develop
+
+  # Tag release workflow - runs on version tags
+  tag-release:
+    jobs:
+      - dependencies:
+          filters:
+            tags:
+              only: /^.*-v.*/
+            branches:
+              ignore: /.*/
+      - npm-publish-tag:
+          requires:
+            - dependencies
+          filters:
+            tags:
+              only: /^.*-v.*/
+            branches:
+              ignore: /.*/ 
+
+jobs:
+  dependencies:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm
+          command: |
+            sudo corepack enable
+            corepack prepare pnpm@9.0.0 --activate
+      - restore_cache:
+          keys:
+            - pnpm-deps-v2-{{ checksum "pnpm-lock.yaml" }}
+            - pnpm-deps-v2-
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - save_cache:
+          key: pnpm-deps-v2-{{ checksum "pnpm-lock.yaml" }}
+          paths:
+            - ~/.pnpm-store
+            - node_modules
+      - nx/set-shas:
+          main-branch-name: << pipeline.parameters.main-branch >>
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+  lint:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - attach_workspace:
+          at: .
+      - nx/set-shas:
+          main-branch-name: << pipeline.parameters.main-branch >>
+      - run:
+          name: Run affected linting
+          command: npx nx affected --target=lint --parallel=3 --ci
+
+  test:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - attach_workspace:
+          at: .
+      - nx/set-shas:
+          main-branch-name: << pipeline.parameters.main-branch >>
+      - run:
+          name: Run affected tests
+          command: npx nx affected --target=test --parallel=3 --ci --code-coverage
+      - store_test_results:
+          path: coverage
+      - store_artifacts:
+          path: coverage
+
+  build:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - attach_workspace:
+          at: .
+      - nx/set-shas:
+          main-branch-name: << pipeline.parameters.main-branch >>
+      - run:
+          name: Build affected packages
+          command: npx nx affected --target=build --parallel=3 --ci
+      - persist_to_workspace:
+          root: .
+          paths:
+            - packages/*/dist
+
+  # Publish latest packages to npm (main branch)
+  npm-publish-latest:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - attach_workspace:
+          at: .
+      - nx/set-shas:
+          main-branch-name: << pipeline.parameters.main-branch >>
+      - run:
+          name: Authenticate with npm
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+      - run:
+          name: Build and publish affected packages
+          command: |
+            # NX Cloud will retrieve cached build artifacts if available
+            AFFECTED_PACKAGES=$(npx nx show projects --affected --with-target=build --json | jq -r '.[]')
+            
+            if [ -z "$AFFECTED_PACKAGES" ]; then
+              echo "No packages affected - nothing to publish"
+              exit 0
+            fi
+            
+            echo "Affected packages: $AFFECTED_PACKAGES"
+            
+            # Build affected packages (will use cache if available)
+            npx nx affected --target=build --parallel=3 --ci
+            
+            # Publish affected packages
+            for package in $AFFECTED_PACKAGES; do
+              echo "Publishing package: $package"
+              PACKAGE_PATH=$(npx nx show project $package --json | jq -r '.root')
+              cd "$PACKAGE_PATH"
+              
+              npm version patch --no-git-tag-version
+              npm publish --tag latest
+              
+              cd - > /dev/null
+            done
+
+  # Publish dev packages to npm (develop branch)
+  npm-publish-dev:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - attach_workspace:
+          at: .
+      - nx/set-shas:
+          main-branch-name: << pipeline.parameters.main-branch >>
+      - run:
+          name: Authenticate with npm
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+      - run:
+          name: Build and publish affected packages (dev)
+          command: |
+            # NX Cloud will retrieve cached build artifacts if available
+            AFFECTED_PACKAGES=$(npx nx show projects --affected --with-target=build --json | jq -r '.[]')
+            
+            if [ -z "$AFFECTED_PACKAGES" ]; then
+              echo "No packages affected - nothing to publish"
+              exit 0
+            fi
+            
+            echo "Affected packages: $AFFECTED_PACKAGES"
+            
+            # Build affected packages (will use cache if available)
+            npx nx affected --target=build --parallel=3 --ci
+            
+            # Publish affected packages with dev tag
+            for package in $AFFECTED_PACKAGES; do
+              echo "Publishing dev package: $package"
+              PACKAGE_PATH=$(npx nx show project $package --json | jq -r '.root')
+              cd "$PACKAGE_PATH"
+              
+              npm version prerelease --preid=dev --no-git-tag-version
+              npm publish --tag dev
+              
+              cd - > /dev/null
+            done
+
+  # Publish specific version from tag and create GitHub release
+  npm-publish-tag:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install GitHub CLI
+          command: |
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+            sudo apt update
+            sudo apt install gh -y
+      - run:
+          name: Authenticate with registries
+          command: |
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+            echo "$GITHUB_TOKEN" | gh auth login --with-token
+      - run:
+          name: Build, publish to npm and create GitHub release
+          command: |
+            # Extract package name and version from tag
+            PACKAGE_NAME=$(echo "$CIRCLE_TAG" | sed 's/-v[0-9].*//')
+            PACKAGE_VERSION=$(echo "$CIRCLE_TAG" | sed 's/.*-v//')
+            
+            echo "Processing release for: $PACKAGE_NAME version: $PACKAGE_VERSION"
+            
+            # Verify package exists
+            if ! npx nx show project "$PACKAGE_NAME" --json >/dev/null 2>&1; then
+              echo "Error: Package $PACKAGE_NAME not found"
+              exit 1
+            fi
+            
+            # Build the specific package (fresh build for releases)
+            npx nx build "$PACKAGE_NAME" --skip-nx-cache
+            
+            # Navigate to package directory
+            PACKAGE_PATH=$(npx nx show project "$PACKAGE_NAME" --json | jq -r '.root')
+            cd "$PACKAGE_PATH"
+            
+            # Set version and publish to npm
+            npm version "$PACKAGE_VERSION" --no-git-tag-version
+            npm publish --tag latest
+            
+            # Create tarball for GitHub release
+            npm pack
+            TARBALL=$(ls *.tgz)
+            
+            # Create GitHub release
+            gh release create "$CIRCLE_TAG" "$TARBALL" \
+              --title "Release ${PACKAGE_NAME} v${PACKAGE_VERSION}" \
+              --notes "Production release of @deepbrainspace/${PACKAGE_NAME} v${PACKAGE_VERSION}" \
+              --verify-tag
