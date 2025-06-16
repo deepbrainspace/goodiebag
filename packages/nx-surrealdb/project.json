@@ -75,7 +75,7 @@
       "executor": "nx:run-commands",
       "dependsOn": ["build"],
       "options": {
-        "command": "cd packages/nx-surrealdb && pnpm publish"
+        "command": "echo 'Package ready for publishing'"
       }
     }
   }

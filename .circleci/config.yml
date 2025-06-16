@@ -111,8 +111,8 @@ jobs:
       - nx/set-shas:
           main-branch-name: << pipeline.parameters.main-branch >>
       - run:
-          name: Build all packages
-          command: npx nx run-many --target=build --all --parallel=3 --ci
+          name: Build affected packages
+          command: npx nx affected --target=build --parallel=3 --ci
       - persist_to_workspace:
           root: .
           paths:
@@ -128,17 +128,27 @@ jobs:
           name: Authenticate with npm
           command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
       - run:
-          name: Publish to npm
+          name: Publish affected packages to npm
           command: |
-            cd packages/nx-surrealdb
-            if [ "$CIRCLE_TAG" ]; then
-              # Tag-based release (production)
-              npm publish
-            elif [ "$CIRCLE_BRANCH" = "main" ]; then
-              # Main branch release (beta)
-              npm version patch --no-git-tag-version
-              npm publish --tag beta
-            fi
+            # Get list of affected publishable packages
+            AFFECTED_PACKAGES=$(npx nx show projects --affected --with-target=publish --json | jq -r '.[]')
+            
+            for package in $AFFECTED_PACKAGES; do
+              echo "Publishing package: $package"
+              PACKAGE_PATH=$(npx nx show project $package --json | jq -r '.root')
+              cd "$PACKAGE_PATH"
+              
+              if [ "$CIRCLE_TAG" ]; then
+                # Tag-based release (production)
+                npm publish
+              elif [ "$CIRCLE_BRANCH" = "main" ]; then
+                # Main branch release (beta)
+                npm version patch --no-git-tag-version
+                npm publish --tag beta
+              fi
+              
+              cd - > /dev/null
+            done
       - persist_to_workspace:
           root: .
           paths:
@@ -161,23 +171,34 @@ jobs:
           name: Authenticate with GitHub
           command: echo "$GITHUB_TOKEN" | gh auth login --with-token
       - run:
-          name: Create GitHub release with tarball
+          name: Create GitHub releases for affected packages
           command: |
-            cd packages/nx-surrealdb
-            if [ "$CIRCLE_TAG" ]; then
-              # Tag-based release (production)
-              npm pack
-              TARBALL=$(ls *.tgz)
-              gh release create "$CIRCLE_TAG" "$TARBALL" \
-                --title "Release $CIRCLE_TAG" \
-                --notes "Production release of @deepbrainspace/nx-surrealdb $CIRCLE_TAG"
-            elif [ "$CIRCLE_BRANCH" = "main" ]; then
-              # Main branch release (beta) - get version from workspace
-              NEW_VERSION=$(node -p "require('./package.json').version")
-              npm pack
-              TARBALL=$(ls *.tgz)
-              gh release create "v$NEW_VERSION-beta" "$TARBALL" \
-                --title "Beta Release v$NEW_VERSION" \
-                --notes "Beta release of @deepbrainspace/nx-surrealdb v$NEW_VERSION" \
-                --prerelease
-            fi
+            # Get list of affected publishable packages
+            AFFECTED_PACKAGES=$(npx nx show projects --affected --with-target=publish --json | jq -r '.[]')
+            
+            for package in $AFFECTED_PACKAGES; do
+              echo "Creating GitHub release for: $package"
+              PACKAGE_PATH=$(npx nx show project $package --json | jq -r '.root')
+              PACKAGE_NAME=$(npx nx show project $package --json | jq -r '.name')
+              cd "$PACKAGE_PATH"
+              
+              if [ "$CIRCLE_TAG" ]; then
+                # Tag-based release (production)
+                npm pack
+                TARBALL=$(ls *.tgz)
+                gh release create "${PACKAGE_NAME}-${CIRCLE_TAG}" "$TARBALL" \
+                  --title "Release ${PACKAGE_NAME} ${CIRCLE_TAG}" \
+                  --notes "Production release of @deepbrainspace/${PACKAGE_NAME} ${CIRCLE_TAG}"
+              elif [ "$CIRCLE_BRANCH" = "main" ]; then
+                # Main branch release (beta)
+                NEW_VERSION=$(node -p "require('./package.json').version")
+                npm pack
+                TARBALL=$(ls *.tgz)
+                gh release create "${PACKAGE_NAME}-v${NEW_VERSION}-beta" "$TARBALL" \
+                  --title "Beta Release ${PACKAGE_NAME} v${NEW_VERSION}" \
+                  --notes "Beta release of @deepbrainspace/${PACKAGE_NAME} v${NEW_VERSION}" \
+                  --prerelease
+              fi
+              
+              cd - > /dev/null
+            done
