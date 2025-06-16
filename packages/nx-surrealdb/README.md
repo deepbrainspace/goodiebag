@@ -59,13 +59,13 @@ A comprehensive SurrealDB toolkit for [Nx](https://nx.dev/) monorepos featuring 
 
 2. **Alternative: GitHub Releases**
    
-   Download packages directly from [GitHub Releases](https://github.com/deepbrainspace/nx-plugins/releases):
-   - **Production releases**: Tagged versions (e.g., `v1.0.0`)
-   - **Beta releases**: Main branch builds with `-beta` suffix (e.g., `v1.0.1-beta`)
+   Download packages directly from [GitHub Releases](https://github.com/deepbrainspace/goodiebag/releases):
+   - **Production releases**: Tagged versions (e.g., `nx-surrealdb-v1.0.0`)
+   - **SHA-based releases**: Main branch builds with commit SHA (e.g., `nx-surrealdb-a59d989`)
 
    ```bash
    # Download and install from GitHub release
-   curl -L https://github.com/deepbrainspace/nx-plugins/releases/download/v1.0.0/deepbrainspace-nx-surrealdb-1.0.0.tgz -o package.tgz
+   curl -L https://github.com/deepbrainspace/goodiebag/releases/download/nx-surrealdb-v1.0.0/deepbrainspace-nx-surrealdb-1.0.0.tgz -o package.tgz
    npm install package.tgz
    ```
 
@@ -919,6 +919,6 @@ MIT License - see LICENSE file for details.
 
 ## Support
 
-- [GitHub Issues](https://github.com/deepbrainspace/nx-plugins/issues)
-- [Documentation](https://github.com/deepbrainspace/nx-plugins/tree/main/packages/nx-surrealdb)
+- [GitHub Issues](https://github.com/deepbrainspace/goodiebag/issues)
+- [Documentation](https://github.com/deepbrainspace/goodiebag/tree/main/packages/nx-surrealdb)
 - [SurrealDB Community](https://surrealdb.com/community)
