@@ -24,41 +24,25 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
     pass: options.pass || 'root'
   };
 
-<<<<<<< HEAD
   // Create the initial module configuration and write it to config.json
-=======
-  // Create the initial module configuration
->>>>>>> 5c54b5b (feat: implement self-contained nx-surrealdb package with init generator)
   const moduleConfig: MigrationsConfig = {
     modules: {
       '000_admin': {
         name: 'System Administration',
         description: 'Core database setup and administrative functions',
-<<<<<<< HEAD
         dependencies: [],
-=======
-        depends: [],
->>>>>>> 5c54b5b (feat: implement self-contained nx-surrealdb package with init generator)
         locked: true,
         lockReason: 'Critical system module - contains core admin setup and permissions'
       },
       '010_auth': {
         name: 'Authentication & Users',
         description: 'User authentication and authorization system',
-<<<<<<< HEAD
         dependencies: ['000_admin']
-=======
-        depends: ['000_admin']
->>>>>>> 5c54b5b (feat: implement self-contained nx-surrealdb package with init generator)
       },
       '020_schema': {
         name: 'Application Schema',
         description: 'Core application data models and relationships',
-<<<<<<< HEAD
         dependencies: ['010_auth']
-=======
-        depends: ['010_auth']
->>>>>>> 5c54b5b (feat: implement self-contained nx-surrealdb package with init generator)
       }
     },
     settings: {
