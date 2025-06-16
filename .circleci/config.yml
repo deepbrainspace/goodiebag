@@ -18,11 +18,22 @@ workflows:
             - dependencies
       - test:
           requires:
-            - lint
+            - dependencies
       - build:
           requires:
+            - lint
             - test
-      - publish:
+      - npm-publish:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - main
+                - develop
+            tags:
+              only: /^v.*/
+      - github-release:
           requires:
             - build
           filters:
