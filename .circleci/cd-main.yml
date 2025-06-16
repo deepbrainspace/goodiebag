@@ -11,7 +11,7 @@ parameters:
 
 workflows:
   # CD workflow - runs on main/develop merges
-  cd:
+  cd-main:
     jobs:
       - dependencies:
           filters:
