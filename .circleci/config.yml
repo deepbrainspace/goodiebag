@@ -195,6 +195,7 @@ jobs:
           name: Authenticate with registries
           command: |
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+            pnpm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
             echo "$GITHUB_TOKEN" | gh auth login --with-token
       - run:
           name: Determine version strategy
@@ -230,14 +231,14 @@ jobs:
                 PACKAGE_PATH=$(npx nx show project $package --json | jq -r '.root')
                 cd "$PACKAGE_PATH"
                 
-                # Set SHA as version
-                npm version "$VERSION_VALUE" --no-git-tag-version
+                # Set SHA as version using pnpm
+                pnpm version "$VERSION_VALUE" --no-git-tag-version
                 
-                # Publish with SHA as npm tag
-                npm publish --tag "${VERSION_VALUE}${NPM_TAG_SUFFIX}"
+                # Publish with SHA as npm tag using pnpm
+                pnpm publish --tag "${VERSION_VALUE}${NPM_TAG_SUFFIX}" --no-git-checks
                 
                 # Create GitHub release
-                npm pack
+                pnpm pack
                 TARBALL=$(ls *.tgz)
                 RELEASE_TAG="${package}-${VERSION_VALUE}${NPM_TAG_SUFFIX}"
                 
@@ -263,14 +264,14 @@ jobs:
               PACKAGE_PATH=$(npx nx show project "$PACKAGE_NAME" --json | jq -r '.root')
               cd "$PACKAGE_PATH"
               
-              # Set semantic version
-              npm version "$VERSION_VALUE" --no-git-tag-version
+              # Set semantic version using pnpm
+              pnpm version "$VERSION_VALUE" --no-git-tag-version
               
-              # Publish with version as npm tag
-              npm publish --tag "$VERSION_VALUE"
+              # Publish with version as npm tag using pnpm
+              pnpm publish --tag "$VERSION_VALUE" --no-git-checks
               
               # Create GitHub release
-              npm pack
+              pnpm pack
               TARBALL=$(ls *.tgz)
               
               gh release create "$CIRCLE_TAG" "$TARBALL" \
