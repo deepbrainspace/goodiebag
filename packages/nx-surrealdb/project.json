@@ -3,14 +3,14 @@
   "sourceRoot": "packages/nx-surrealdb/src",
   "projectType": "library",
   "targets": {
-    "build": {
+    "build-ts": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "cache": false,
       "options": {
-        "outputPath": "packages/nx-surrealdb/dist",
-        "main": "packages/nx-surrealdb/src/index.ts",
-        "tsConfig": "packages/nx-surrealdb/tsconfig.lib.json",
+        "outputPath": "{workspaceRoot}/packages/nx-surrealdb/dist",
+        "main": "{workspaceRoot}/packages/nx-surrealdb/src/index.ts",
+        "tsConfig": "{workspaceRoot}/packages/nx-surrealdb/tsconfig.lib.json",
         "assets": [
           {
             "input": "./src/generators/migration/files",
@@ -21,11 +21,6 @@
             "input": "./src/generators/init/files",
             "glob": "**/*",
             "output": "src/generators/init/files"
-          },
-          {
-            "input": ".",
-            "glob": "{package.json,generators.json,executors.json,README.md,LICENSE.md,ARCHITECTURE.md}",
-            "output": "./"
           },
           {
             "input": "./src",
@@ -41,6 +36,20 @@
       },
       "configurations": {
         "production": {}
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build-ts"],
+      "options": {
+        "commands": [
+          {
+            "command": "cp README.md ARCHITECTURE.md executors.json generators.json package.json dist/",
+            "forwardAllArgs": false
+          }
+        ],
+        "cwd": "packages/nx-surrealdb",
+        "parallel": false
       }
     },
     "lint": {
