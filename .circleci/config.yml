@@ -13,27 +13,47 @@ workflows:
   # CI workflow - runs on PRs and feature branches
   ci:
     jobs:
-      - dependencies
+      - dependencies:
+          filters:
+            branches:
+              ignore:
+                - main
+                - develop
       - lint:
           requires:
             - dependencies
+          filters:
+            branches:
+              ignore:
+                - main
+                - develop
       - test:
           requires:
             - dependencies
+          filters:
+            branches:
+              ignore:
+                - main
+                - develop
       - build:
           requires:
             - lint
             - test
-    filters:
-      branches:
-        ignore:
-          - main
-          - develop
+          filters:
+            branches:
+              ignore:
+                - main
+                - develop
 
   # CD workflow - runs on main/develop merges
   cd:
     jobs:
-      - dependencies
+      - dependencies:
+          filters:
+            branches:
+              only:
+                - main
+                - develop
       - npm-publish-latest:
           requires:
             - dependencies
@@ -52,7 +72,12 @@ workflows:
   # Tag release workflow - runs on version tags
   tag-release:
     jobs:
-      - dependencies
+      - dependencies:
+          filters:
+            tags:
+              only: /^.*-v.*/
+            branches:
+              ignore: /.*/
       - npm-publish-tag:
           requires:
             - dependencies
