@@ -224,7 +224,7 @@ async function validateDependencies(
   
   const targetConfig = TreeUtils.readJsonFile(tree, targetConfigPath);
   if (targetConfig) {
-    const missingDeps = config.dependencies.filter(dep => !(targetConfig as any).modules || !(targetConfig as any).modules[dep]);
+    const missingDeps = config.dependencies.filter(dep => !(targetConfig as { modules?: Record<string, unknown> }).modules || !(targetConfig as { modules?: Record<string, unknown> }).modules[dep]);
     
     if (missingDeps.length > 0) {
       throw new Error(

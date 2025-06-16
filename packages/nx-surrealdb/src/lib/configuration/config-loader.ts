@@ -102,27 +102,27 @@ export class ConfigLoader {
       throw new Error('Configuration must be an object');
     }
 
-    if (!(config as any).modules || typeof (config as any).modules !== 'object') {
+    if (!(config as { modules?: unknown }).modules || typeof (config as { modules?: unknown }).modules !== 'object') {
       errors.push({
         field: 'modules',
         message: 'modules field is required and must be an object',
-        value: (config as any).modules
+        value: (config as { modules?: unknown }).modules
       });
     } else {
       // Validate each module
-      for (const [moduleId, moduleConfig] of Object.entries((config as any).modules)) {
+      for (const [moduleId, moduleConfig] of Object.entries((config as { modules: Record<string, unknown> }).modules)) {
         this.validateModule(moduleId, moduleConfig, errors);
       }
 
       // Validate dependencies exist
-      this.validateDependencies((config as any).modules, errors);
+      this.validateDependencies((config as { modules: Record<string, unknown> }).modules, errors);
     }
 
-    if ((config as any).settings && typeof (config as any).settings !== 'object') {
+    if ((config as { settings?: unknown }).settings && typeof (config as { settings?: unknown }).settings !== 'object') {
       errors.push({
         field: 'settings',
         message: 'settings must be an object',
-        value: (config as any).settings
+        value: (config as { settings?: unknown }).settings
       });
     }
 
@@ -153,23 +153,23 @@ export class ConfigLoader {
       return;
     }
 
-    if (!(moduleConfig as any).name || typeof (moduleConfig as any).name !== 'string') {
+    if (!(moduleConfig as Record<string, unknown>).name || typeof (moduleConfig as Record<string, unknown>).name !== 'string') {
       errors.push({
         field: `${fieldPrefix}.name`,
         message: 'Module name is required and must be a string',
-        value: (moduleConfig as any).name
+        value: (moduleConfig as Record<string, unknown>).name
       });
     }
 
-    if (!Array.isArray((moduleConfig as any).dependencies)) {
+    if (!Array.isArray((moduleConfig as Record<string, unknown>).dependencies)) {
       errors.push({
         field: `${fieldPrefix}.dependencies`,
         message: 'Module dependencies must be an array',
-        value: (moduleConfig as any).dependencies
+        value: (moduleConfig as Record<string, unknown>).dependencies
       });
     } else {
       // Validate each dependency is a string
-      (moduleConfig as any).dependencies.forEach((dep: unknown, index: number) => {
+      (moduleConfig as Record<string, unknown>).dependencies.forEach((dep: unknown, index: number) => {
         if (typeof dep !== 'string') {
           errors.push({
             field: `${fieldPrefix}.dependencies[${index}]`,

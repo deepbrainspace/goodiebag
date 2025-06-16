@@ -7,6 +7,9 @@ import globals from 'globals';
 export default [
   js.configs.recommended,
   {
+    ignores: ['dist/**', 'coverage/**', 'node_modules/**'],
+  },
+  {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     languageOptions: {
       parser: tsparser,

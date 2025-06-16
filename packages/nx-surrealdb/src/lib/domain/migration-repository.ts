@@ -217,7 +217,7 @@ export class MigrationRepository {
       
       if (!migration) return null;
       
-      const migrationData = migration as any;
+      const migrationData = migration as MigrationRecord;
       return {
         id: migrationData.id,
         number: migrationData.number,
@@ -267,7 +267,7 @@ export class MigrationRepository {
       this.debug.log(`result[0] length:`, Array.isArray(result[0]) ? result[0].length : 'not array');
       this.debug.log(`result[0]?.result length:`, Array.isArray(result[0]?.result) ? result[0].result.length : 'not array');
       
-      const migrations = ((result[0] as unknown) as any[] || []).map((m: any) => ({
+      const migrations = ((result[0] as unknown) as MigrationRecord[] || []).map((m: MigrationRecord) => ({
         id: m.id,
         number: m.number,
         name: m.name,
@@ -313,11 +313,11 @@ export class MigrationRepository {
         ORDER BY applied_at DESC
       `);
 
-      const migrations = (result[0] as unknown) as any[] || [];
+      const migrations = (result[0] as unknown) as MigrationRecord[] || [];
       this.debug.log(`Found ${migrations.length} latest migration records across modules`);
       
       // Filter to only include migrations where the latest record is UP + SUCCESS (case insensitive)
-      const eligibleMigrations = migrations.filter((migration: any) => 
+      const eligibleMigrations = migrations.filter((migration: MigrationRecord) => 
         migration.direction?.toLowerCase() === 'up' && migration.status?.toLowerCase() === 'success'
       );
       

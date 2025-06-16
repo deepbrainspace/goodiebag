@@ -37,10 +37,10 @@ export default async function (tree: Tree, options: ExportModuleGeneratorSchema)
   const config = await loadModuleConfig(normalizedOptions, moduleDir.name);
   
   // Create export package structure
-  await createExportPackage(tree, normalizedOptions, moduleDir, config as any);
+  await createExportPackage(tree, normalizedOptions, moduleDir, config as ModuleConfig | null);
   
   // Generate package files
-  await generatePackageFiles(tree, normalizedOptions, moduleDir, config as any);
+  await generatePackageFiles(tree, normalizedOptions, moduleDir, config as ModuleConfig | null);
   
   // Create the package archive if requested
   if (normalizedOptions.packageFormat !== 'directory') {
