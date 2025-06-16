@@ -122,8 +122,8 @@ jobs:
           PACKAGE_NAME=$(jq -r '.name' $PACKAGE_PATH/package.json)
           SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
           
-          # Create SHA version (e.g., 1.0.0-sha.a59d989)
-          SHA_VERSION="${CURRENT_VERSION}-sha.${SHORT_SHA}"
+          # Create SHA-only version (e.g., sha.a59d989)
+          SHA_VERSION="sha.${SHORT_SHA}"
           
           echo "path=$PACKAGE_PATH" >> $GITHUB_OUTPUT
           echo "name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
@@ -170,6 +170,8 @@ jobs:
             **Package**: `${{ steps.package-info.outputs.name }}`
             **Version**: `${{ steps.package-info.outputs.version }}`
             **Commit**: ${{ github.sha }}
+            
+            > This is a SHA-based development release from the main branch.
             
             ### Installation
             
