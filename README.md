@@ -101,6 +101,13 @@ Our CircleCI pipeline is optimized for speed and reliability with parallel job e
                   │           └── github-release
 ```
 
+```
+   dependencies
+       ├── lint ──┐
+       └── test ──┼── build ──┬── npm-publish
+                  │           └── github-release
+```
+
 ### Pipeline Stages
 
 1. **`dependencies`** - Install pnpm and project dependencies
