@@ -107,7 +107,33 @@ jobs:
           paths:
             - packages/*/dist
 
-  publish:
+  npm-publish:
+    docker:
+      - image: cimg/node:20.11
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Authenticate with npm
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+      - run:
+          name: Publish to npm
+          command: |
+            cd packages/nx-surrealdb
+            if [ "$CIRCLE_TAG" ]; then
+              # Tag-based release (production)
+              npm publish
+            elif [ "$CIRCLE_BRANCH" = "main" ]; then
+              # Main branch release (beta)
+              npm version patch --no-git-tag-version
+              npm publish --tag beta
+            fi
+      - persist_to_workspace:
+          root: .
+          paths:
+            - packages/nx-surrealdb/package.json
+
+  github-release:
     docker:
       - image: cimg/node:20.11
     steps:
@@ -121,29 +147,23 @@ jobs:
             sudo apt update
             sudo apt install gh -y
       - run:
-          name: Authenticate with npm
-          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
-      - run:
           name: Authenticate with GitHub
           command: echo "$GITHUB_TOKEN" | gh auth login --with-token
       - run:
-          name: Publish to npm and create GitHub release
+          name: Create GitHub release with tarball
           command: |
             cd packages/nx-surrealdb
             if [ "$CIRCLE_TAG" ]; then
               # Tag-based release (production)
               npm pack
-              npm publish
               TARBALL=$(ls *.tgz)
               gh release create "$CIRCLE_TAG" "$TARBALL" \
                 --title "Release $CIRCLE_TAG" \
                 --notes "Production release of @deepbrainspace/nx-surrealdb $CIRCLE_TAG"
             elif [ "$CIRCLE_BRANCH" = "main" ]; then
-              # Main branch release (beta)
-              npm version patch --no-git-tag-version
+              # Main branch release (beta) - get version from workspace
               NEW_VERSION=$(node -p "require('./package.json').version")
               npm pack
-              npm publish --tag beta
               TARBALL=$(ls *.tgz)
               gh release create "v$NEW_VERSION-beta" "$TARBALL" \
                 --title "Beta Release v$NEW_VERSION" \
