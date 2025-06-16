@@ -11,11 +11,6 @@
         "index": 0
       }
     },
-    "directory": {
-      "type": "string",
-      "description": "Directory where to create the database project",
-      "default": "."
-    },
     "url": {
       "type": "string",
       "description": "SurrealDB connection URL",

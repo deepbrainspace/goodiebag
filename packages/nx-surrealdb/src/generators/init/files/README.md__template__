@@ -1,0 +1,42 @@
+# <%= name %> - SurrealDB Migrations
+
+This directory contains the SurrealDB migrations for the <%= name %> project.
+
+## Structure
+
+```
+<%= name %>/
+├── config.json             # Module configuration
+├── project.json            # NX project configuration  
+├── 000_admin/              # System administration module
+├── 010_auth/               # Authentication module
+└── 020_schema/             # Application schema module
+```
+
+## Environment Variables
+
+Add these to your `.env` file:
+
+```bash
+SURREALDB_URL=<%= url %>
+SURREALDB_NAMESPACE=<%= namespace %>
+SURREALDB_DATABASE=<%= database %>
+SURREALDB_ROOT_USER=<%= user %>
+SURREALDB_ROOT_PASS=<%= pass %>
+```
+
+## Commands
+
+```bash
+# Generate a new migration
+nx g @deepbrainspace/nx-surrealdb:migration --name=my-migration --project=<%= name %>
+
+# Run migrations
+nx run <%= name %>:migrate
+
+# Check migration status
+nx run <%= name %>:status
+
+# Rollback migrations
+nx run <%= name %>:rollback
+```

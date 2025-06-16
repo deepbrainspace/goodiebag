@@ -1,5 +1,10 @@
 {
   "generators": {
+    "init": {
+      "factory": "./src/generators/init/generator.js",
+      "schema": "./src/generators/init/schema.json",
+      "description": "Initialize a new SurrealDB database project with module structure"
+    },
     "migration": {
       "factory": "./src/generators/migration/generator.js",
       "schema": "./src/generators/migration/schema.json",
