@@ -57,6 +57,6 @@
     "build": "nx build nx-surrealdb",
     "test": "nx test nx-surrealdb",
     "lint": "nx lint nx-surrealdb",
-    "publish": "pnpm publish"
+    "publish": "pnpm publish --no-git-checks"
   }
 }
