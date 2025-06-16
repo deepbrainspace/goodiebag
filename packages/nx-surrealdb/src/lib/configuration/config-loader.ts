@@ -115,7 +115,7 @@ export class ConfigLoader {
       }
 
       // Validate dependencies exist
-      this.validateDependencies((config as { modules: Record<string, unknown> }).modules, errors);
+      this.validateDependencies((config as { modules: Record<string, ModuleConfig> }).modules, errors);
     }
 
     if ((config as { settings?: unknown }).settings && typeof (config as { settings?: unknown }).settings !== 'object') {
@@ -169,7 +169,7 @@ export class ConfigLoader {
       });
     } else {
       // Validate each dependency is a string
-      (moduleConfig as Record<string, unknown>).dependencies.forEach((dep: unknown, index: number) => {
+      ((moduleConfig as Record<string, unknown>).dependencies as unknown[]).forEach((dep: unknown, index: number) => {
         if (typeof dep !== 'string') {
           errors.push({
             field: `${fieldPrefix}.dependencies[${index}]`,

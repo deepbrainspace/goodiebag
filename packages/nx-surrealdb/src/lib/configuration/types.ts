@@ -56,6 +56,7 @@ export interface Migration {
 }
 
 export interface MigrationRecord {
+  id?: string; // SurrealDB auto-generated record ID
   number: string;
   name: string;
   direction: string;
