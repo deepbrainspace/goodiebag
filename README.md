@@ -129,6 +129,26 @@ Our CircleCI pipeline is optimized for speed and reliability with parallel job e
 - **Early failure detection** with lint-first approach
 - **Artifact redundancy** via both npm registry and GitHub releases
 
+Both npm packages and GitHub release artifacts are created, providing multiple distribution channels and backup options.
+
+## Contributing
+
+1. **Fork** the repository
+2. **Create** feature branch: `git checkout -b feature/amazing-feature`
+3. **Follow** patterns in existing packages
+4. **Add** comprehensive tests
+5. **Ensure** zero ESLint warnings: `pnpm lint`
+6. **Run** full test suite: `pnpm test`
+7. **Submit** pull request with clear description
+
+### Repository Standards
+
+- ✅ **Zero ESLint warnings** policy
+- ✅ **Repository Pattern** for data access
+- ✅ **Comprehensive testing** (aim for >90% coverage)
+- ✅ **TypeScript strict mode** for all code
+- ✅ **Self-contained packages** with independent configs
+
 ### Versioning
 
 This project follows [Semantic Versioning](https://semver.org/):
@@ -136,20 +156,11 @@ This project follows [Semantic Versioning](https://semver.org/):
 - **Minor** (v0.1.0): New features, backwards compatible
 - **Patch** (v0.0.1): Bug fixes, backwards compatible
 
-### Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Make your changes
-4. Run tests: `pnpm test`
-5. Commit changes: `git commit -m "feat: add my feature"`
-6. Push to branch: `git push origin feature/my-feature`
-7. Create a Pull Request
-
-### Architecture
+## Architecture
 
 See individual package documentation:
 - [nx-surrealdb Architecture](./packages/nx-surrealdb/ARCHITECTURE.md)
+- [nx-surrealdb CLAUDE.md](./packages/nx-surrealdb/CLAUDE.md) - Development guide
 
 ## License
 
