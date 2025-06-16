@@ -109,9 +109,9 @@ jobs:
           command: |
             if [ "$CIRCLE_TAG" ]; then
               cd packages/nx-surrealdb
-              npm publish --provenance
+              npm publish
             elif [ "$CIRCLE_BRANCH" = "main" ]; then
               cd packages/nx-surrealdb
               npm version patch --no-git-tag-version
-              npm publish --tag beta --provenance
+              npm publish --tag beta
             fi
