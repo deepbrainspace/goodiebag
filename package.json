@@ -9,14 +9,8 @@
     "build": "nx run-many --target=build --all",
     "test": "nx run-many --target=test --all",
     "lint": "nx run-many --target=lint --all",
-    "publish:all": "nx run-many --target=publish --all",
-    "publish:affected": "nx affected --target=publish",
-    "version:patch": "nx affected --target=version --configuration=patch",
-    "version:minor": "nx affected --target=version --configuration=minor",
-    "version:major": "nx affected --target=version --configuration=major",
-    "release:patch": "pnpm version:patch && pnpm publish:affected",
-    "release:minor": "pnpm version:minor && pnpm publish:affected",
-    "release:major": "pnpm version:major && pnpm publish:affected"
+    "release": "nx release",
+    "release:dry-run": "nx release --dry-run"
   },
   "devDependencies": {
     "@nx/workspace": "^21.2.0",

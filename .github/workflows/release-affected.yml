@@ -1,0 +1,103 @@
+name: 🚀 Release Affected Packages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+
+jobs:
+  release:
+    name: 🚀 Release Packages
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
+
+      - name: Check for affected publishable projects
+        id: affected
+        run: |
+          AFFECTED=$(nx show projects --affected --with-target=publish)
+          echo "projects=$AFFECTED" >> $GITHUB_OUTPUT
+          echo "count=$(echo $AFFECTED | wc -w)" >> $GITHUB_OUTPUT
+
+      - name: Skip if no affected projects
+        if: steps.affected.outputs.count == '0'
+        run: |
+          echo "🔍 No affected publishable projects found. Skipping release."
+          exit 0
+
+      - name: Display affected projects
+        if: steps.affected.outputs.count != '0'
+        run: |
+          echo "🔍 Found ${{ steps.affected.outputs.count }} affected project(s):"
+          echo "${{ steps.affected.outputs.projects }}"
+
+      - name: Run affected tests
+        if: steps.affected.outputs.count != '0'
+        run: nx run-many -t test --projects=${{ steps.affected.outputs.projects }}
+
+      - name: Run affected linting
+        if: steps.affected.outputs.count != '0'
+        run: nx run-many -t lint --projects=${{ steps.affected.outputs.projects }}
+
+      - name: Build affected projects
+        if: steps.affected.outputs.count != '0'
+        run: nx run-many -t build --projects=${{ steps.affected.outputs.projects }}
+
+      - name: Release affected packages
+        if: steps.affected.outputs.count != '0'
+        run: |
+          # Configure git for commits
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Determine version bump
+          VERSION_BUMP="${{ github.event.inputs.version || 'patch' }}"
+          
+          # Release with NX
+          nx release $VERSION_BUMP --yes
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        if: steps.affected.outputs.count != '0'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "release-${{ github.run_number }}"
+          name: "Release ${{ github.run_number }}"
+          body: |
+            🚀 **Automated Release**
+            
+            Released packages:
+            ${{ steps.affected.outputs.projects }}
+            
+            **Changes:**
+            - Version bump: ${{ github.event.inputs.version || 'patch' }}
+            - Triggered by: ${{ github.actor }}
+            - Commit: ${{ github.sha }}
+            
+            **Workflow:** ${{ github.workflow }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
