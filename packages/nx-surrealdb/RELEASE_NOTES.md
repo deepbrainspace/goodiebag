@@ -8,6 +8,7 @@
 - fix: correct package.json main/types paths for published package
 - fix: ensure schema files are copied to built package
 - fix: change "depends" to "dependencies" in config.json template to match validation
+- fix: add dependency labels to status command pending files display for clarity
 
 ### ✨ Features  
 - feat: add helpful console output after init with next steps

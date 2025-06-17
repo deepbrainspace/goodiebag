@@ -285,12 +285,16 @@ Example .env file:
 
       // Show detailed info if requested
       if (options.detailed) {
-        // Get pending migrations for this module
+        // Get pending migrations for this module (includes dependencies)
         const pendingMigrations = await engine.findPendingMigrations([module.moduleId]);
         if (pendingMigrations.length > 0) {
           logger.info(`      Pending Files:`);
           for (const migration of pendingMigrations) {
-            logger.info(`        • ${migration.filename}`);
+            // Add dependency label if file is from a different module
+            const dependencyLabel = migration.moduleId !== module.moduleId 
+              ? ` (dependency: ${migration.moduleId})`
+              : '';
+            logger.info(`        • ${migration.filename}${dependencyLabel}`);
           }
         }
       }
