@@ -404,58 +404,101 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body-path: preview-comment.md
 
-  # Phase 6: Persist Version Data for Release
-  persist-versions:
-    name: 💾 Persist Version Data
+  # Phase 6: Update Package Versions
+  update-versions:
+    name: 📝 Update Package Versions
     needs: [detect-affected, release-notes]
     if: needs.detect-affected.outputs.has-packages == 'true'
     runs-on: ubuntu-latest
     
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.event.pull_request.head.ref }}
+
       - name: Download all version info
         uses: actions/download-artifact@v4
         with:
           pattern: version-*
           merge-multiple: true
 
-      - name: Create version mapping
+      - name: Download all release notes
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-notes-*
+          merge-multiple: true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.0.0
+
+      - name: Update package.json files
         run: |
-          echo "💾 Creating version mapping for release workflow..."
-          
-          # Create consolidated version mapping
-          echo '{' > version-mapping.json
-          first=true
+          echo "📝 Updating package.json files with new versions..."
           
           for file in version-*.json; do
             if [ -f "$file" ]; then
               package=$(basename "$file" .json | sed 's/version-//')
               new_version=$(jq -r '.newVersion' "$file")
-              bump_type=$(jq -r '.bumpType' "$file")
               
-              if [ "$first" = true ]; then
-                first=false
-              else
-                echo ',' >> version-mapping.json
+              echo "Updating packages/$package/package.json to version $new_version"
+              cd packages/$package
+              pnpm version $new_version --no-git-tag-version
+              cd - > /dev/null
+              
+              # Also copy the release notes
+              if [ -f "RELEASE_NOTES.md" ]; then
+                cp "RELEASE_NOTES.md" "packages/$package/"
+                echo "Copied RELEASE_NOTES.md to packages/$package/"
               fi
-              
-              echo "  \"$package\": {" >> version-mapping.json
-              echo "    \"version\": \"$new_version\"," >> version-mapping.json
-              echo "    \"bumpType\": \"$bump_type\"" >> version-mapping.json
-              echo "  }" >> version-mapping.json
             fi
           done
-          
-          echo '}' >> version-mapping.json
-          
-          echo "📋 Version mapping created:"
-          cat version-mapping.json
 
-      - name: Upload version mapping
-        uses: actions/upload-artifact@v4
+      - name: Commit version updates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Add all package.json and release notes changes
+          git add packages/*/package.json packages/*/RELEASE_NOTES.md
+          
+          if git diff --staged --quiet; then
+            echo "No version changes to commit"
+          else
+            git commit -m "chore: update package versions for release
+
+            🤖 Automated by CI workflow"
+            git push
+            echo "✅ Version updates committed to PR"
+          fi
+
+  # Phase 7: Summary Comment
+  persist-versions:
+    name: 💬 Post Summary
+    needs: [detect-affected, preview, update-versions]
+    if: needs.detect-affected.outputs.has-packages == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Post summary comment
+        uses: peter-evans/create-or-update-comment@v4
         with:
-          name: version-mapping
-          path: version-mapping.json
-          retention-days: 30
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## ✅ CI Complete - Ready for Merge
+            
+            **Package versions have been updated** and are ready for release upon merge.
+            
+            When you merge this PR:
+            1. Packages will be published to npm
+            2. GitHub releases will be created
+            3. You'll receive a confirmation comment with all the links
+            
+            ---
+            *🤖 Automated by CI workflow*
 
 
   # No affected packages notification
