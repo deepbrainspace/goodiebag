@@ -85,33 +85,6 @@
       "options": {
         "jestConfig": "packages/nx-surrealdb/jest.config.js"
       }
-    },
-    "publish": {
-      "executor": "nx:run-commands",
-      "dependsOn": ["build"],
-      "options": {
-        "command": "pnpm publish --no-git-checks"
-      }
-    },
-    "version": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "pnpm version {args.type}"
-      },
-      "configurations": {
-        "patch": {
-          "command": "pnpm version patch"
-        },
-        "minor": {
-          "command": "pnpm version minor"
-        },
-        "major": {
-          "command": "pnpm version major"
-        },
-        "prerelease": {
-          "command": "pnpm version prerelease"
-        }
-      }
     }
   }
 }
