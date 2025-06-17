@@ -377,8 +377,10 @@ jobs:
           ### 📦 Published Packages:
           EOF
           
-          # Add package details for each affected package
-          echo '${{ needs.detect-affected.outputs.packages }}' | jq -r '.[]' | while read package; do
+          # Add package details using NX affected
+          AFFECTED_PACKAGES=$(nx show projects --affected --with-target=publish --json | jq -r '.[]')
+          
+          for package in $AFFECTED_PACKAGES; do
             PACKAGE_PATH="packages/$package"
             if [ -d "$PACKAGE_PATH" ]; then
               PACKAGE_NAME=$(jq -r '.name' $PACKAGE_PATH/package.json)

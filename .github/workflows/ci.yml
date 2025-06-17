@@ -323,16 +323,8 @@ jobs:
             fi
           done <<< "${{ steps.version.outputs.changes }}"
           
-          # Create release notes with preview block at top
+          # Create release notes (clean, no preview block)
           cat > $PACKAGE_PATH/RELEASE_NOTES.md << EOF
-          <!-- PREVIEW START -->
-          ## 🚀 Release Preview for ${{ steps.version.outputs.package-name }}
-          **Version**: ${{ steps.version.outputs.current-version }} → **${{ steps.version.outputs.new-version }}** (${{ steps.version.outputs.bump-type }})
-          **Branch**: \`${{ github.head_ref }}\`
-          
-          This will be published when the PR is merged.
-          <!-- PREVIEW END -->
-          
           # Release notes
           
           ## ${{ steps.version.outputs.new-version }} ($(date +%Y-%m-%d))
@@ -343,13 +335,24 @@ jobs:
           $(if [ -n "$OTHER" ]; then echo "### 🏠 Internal"; echo; echo -e "$OTHER"; echo; fi)
           EOF
           
+          # Create preview comment for this package
+          cat > preview-${{ matrix.package }}.md << EOF
+          ## 🚀 Release Preview for ${{ steps.version.outputs.package-name }}
+          **Version**: ${{ steps.version.outputs.current-version }} → **${{ steps.version.outputs.new-version }}** (${{ steps.version.outputs.bump-type }})
+          **Branch**: \`${{ github.head_ref }}\`
+          
+          This will be published when the PR is merged.
+          EOF
+          
           echo "✅ Release notes generated at $PACKAGE_PATH/RELEASE_NOTES.md"
 
-      - name: Upload release notes as artifact
+      - name: Upload release notes and preview
         uses: actions/upload-artifact@v4
         with:
           name: release-notes-${{ matrix.package }}
-          path: packages/${{ matrix.package }}/RELEASE_NOTES.md
+          path: |
+            packages/${{ matrix.package }}/RELEASE_NOTES.md
+            preview-${{ matrix.package }}.md
           retention-days: 30
 
       - name: Create version info for release
@@ -383,26 +386,16 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Download release notes for ${{ matrix.package }}
+      - name: Download preview for ${{ matrix.package }}
         uses: actions/download-artifact@v4
         with:
           name: release-notes-${{ matrix.package }}
-
-      - name: Extract preview block for ${{ matrix.package }}
-        run: |
-          echo "📝 Extracting preview for ${{ matrix.package }}..."
-          
-          # Extract preview block from release notes
-          sed -n '/<!-- PREVIEW START -->/,/<!-- PREVIEW END -->/p' RELEASE_NOTES.md | \
-            grep -v '<!-- PREVIEW' > preview-comment.md
-          
-          echo "📋 Preview extracted for ${{ matrix.package }}"
 
       - name: Post preview comment for ${{ matrix.package }}
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          body-path: preview-comment.md
+          body-path: preview-${{ matrix.package }}.md
 
   # Phase 6: Update Package Versions
   update-versions:
@@ -435,14 +428,16 @@ jobs:
         with:
           version: 9.0.0
 
-      - name: Update package.json files
+      - name: Update package.json files using NX
         run: |
           echo "📝 Updating package.json files with new versions..."
           
-          for file in version-*.json; do
-            if [ -f "$file" ]; then
-              package=$(basename "$file" .json | sed 's/version-//')
-              new_version=$(jq -r '.newVersion' "$file")
+          # Get affected packages and update versions
+          AFFECTED_PACKAGES=$(nx show projects --affected --with-target=publish --json | jq -r '.[]')
+          
+          for package in $AFFECTED_PACKAGES; do
+            if [ -f "version-$package.json" ]; then
+              new_version=$(jq -r '.newVersion' "version-$package.json")
               
               echo "Updating packages/$package/package.json to version $new_version"
               cd packages/$package
