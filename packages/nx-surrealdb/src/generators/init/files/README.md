@@ -4,15 +4,7 @@ This directory contains the SurrealDB migrations for the <%= name %> project.
 
 ## Getting Started
 
-### 1. Install Dependencies
-
-First, install the required dependencies in your workspace:
-
-```bash
-npm install surrealdb dotenv picocolors
-```
-
-### 2. Configure Environment
+### 1. Configure Environment
 
 Add these to your `.env` file:
 
@@ -24,7 +16,7 @@ SURREALDB_ROOT_USER=<%= user %>
 SURREALDB_ROOT_PASS=<%= pass %>
 ```
 
-### 3. Create Module Structure
+### 2. Create Module Structure
 
 The project uses a modular architecture. Create your first migration:
 
@@ -71,9 +63,6 @@ nx run <%= name %>:reset
 ```
 
 ## Troubleshooting
-
-If you get "Cannot find module 'surrealdb'" error:
-- Make sure you've installed the dependencies: `npm install surrealdb dotenv picocolors`
 
 If you get connection errors:
 - Check your .env file has the correct SurrealDB connection details

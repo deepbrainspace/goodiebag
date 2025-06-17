@@ -50,11 +50,12 @@ export default async function runExecutor(
     logger.error(`
 ${pc.red('✖')} Missing dependencies for nx-surrealdb
 
-Please install the required dependencies in your workspace:
+Dependencies should have been installed automatically during setup.
+If you're seeing this error, try:
   ${pc.cyan('npm install surrealdb dotenv picocolors')}
 
-Or if using the published package:
-  ${pc.cyan('npm install @deepbrainspace/nx-surrealdb')}
+Or re-run the generator to auto-install dependencies:
+  ${pc.cyan('nx g @deepbrainspace/nx-surrealdb:init --force')}
 `);
     return { success: false };
   }

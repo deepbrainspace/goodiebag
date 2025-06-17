@@ -29,16 +29,6 @@
         "tsConfig": "{workspaceRoot}/packages/nx-surrealdb/tsconfig.lib.json",
         "assets": [
           {
-            "input": "./src/generators/migration/files",
-            "glob": "**/*",
-            "output": "src/generators/migration/files"
-          },
-          {
-            "input": "packages/nx-surrealdb/src/generators/init/files",
-            "glob": "**/*",
-            "output": "src/generators/init/files"
-          },
-          {
             "input": "packages/nx-surrealdb",
             "glob": "{package.json,generators.json,executors.json,README.md,LICENSE.md,ARCHITECTURE.md}",
             "output": "./"
@@ -66,6 +56,14 @@
         "commands": [
           {
             "command": "cp README.md ARCHITECTURE.md executors.json generators.json package.json pnpm-lock.yaml dist/",
+            "forwardAllArgs": false
+          },
+          {
+            "command": "cp -r src/generators/init/files dist/src/generators/init/",
+            "forwardAllArgs": false
+          },
+          {
+            "command": "cp -r src/generators/migration/files dist/src/generators/migration/",
             "forwardAllArgs": false
           }
         ],
