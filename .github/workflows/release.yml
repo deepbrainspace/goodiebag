@@ -193,17 +193,17 @@ jobs:
           
           # Update package.json version
           cd $PACKAGE_PATH
-          npm version $NEW_VERSION --no-git-tag-version
+          pnpm version $NEW_VERSION --no-git-tag-version
           
           # Configure npm
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
           
           # Publish to npm
           echo "📤 Publishing to npm..."
-          npm publish --tag $NPM_TAG --access public
+          pnpm publish --tag $NPM_TAG --access public
           
           # Create tarball for GitHub release
-          npm pack
+          pnpm pack
           
           echo "success=true" >> $GITHUB_OUTPUT
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
@@ -395,7 +395,7 @@ jobs:
             
             echo "Updating $PACKAGE_PATH/package.json to $NEW_VERSION"
             cd $PACKAGE_PATH
-            npm version $NEW_VERSION --no-git-tag-version
+            pnpm version $NEW_VERSION --no-git-tag-version
             cd - > /dev/null
             
             echo "$PACKAGE_PATH/package.json" >> changed_files.txt
