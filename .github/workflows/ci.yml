@@ -29,29 +29,8 @@ jobs:
       package-count: ${{ steps.detect.outputs.package-count }}
     
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: '9.0.0'
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Set SHAs for NX
-        uses: nrwl/nx-set-shas@v4
-        with:
-          main-branch-name: 'main'
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
 
       - name: Detect affected packages
         id: detect
