@@ -102,9 +102,9 @@ jobs:
             echo "mapping={}" >> $GITHUB_OUTPUT
           fi
 
-  # Phase 3: Apply cached builds (from CI) and publish (parallel per package)
-  publish:
-    name: 📦 Publish
+  # Phase 3: NPM Publish (parallel per package)
+  npm-publish:
+    name: 📦 NPM Publish
     needs: [detect-affected, download-versions]
     if: needs.detect-affected.outputs.has-packages == 'true'
     strategy:
@@ -112,9 +112,6 @@ jobs:
         package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
       fail-fast: false
     runs-on: ubuntu-latest
-    outputs:
-      published-${{ matrix.package }}: ${{ steps.publish.outputs.success }}
-      version-${{ matrix.package }}: ${{ steps.publish.outputs.version }}
     
     steps:
       - name: Checkout repository
@@ -147,10 +144,10 @@ jobs:
           echo "🏗️ Building ${{ matrix.package }} (should hit cache)..."
           nx build ${{ matrix.package }}
 
-      - name: Apply semantic version and publish
-        id: publish
+      - name: Apply semantic version
+        id: version
         run: |
-          echo "📦 Publishing ${{ matrix.package }}..."
+          echo "📦 Preparing ${{ matrix.package }} for publishing..."
           
           # Get package info
           PACKAGE_PATH="packages/${{ matrix.package }}"
@@ -191,40 +188,35 @@ jobs:
           echo "📋 New Version: $NEW_VERSION ($BUMP_TYPE)"
           echo "📋 npm tag: $NPM_TAG"
           
-          # Update package.json version
-          cd $PACKAGE_PATH
-          pnpm version $NEW_VERSION --no-git-tag-version
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "npm-tag=$NPM_TAG" >> $GITHUB_OUTPUT
+          echo "bump-type=$BUMP_TYPE" >> $GITHUB_OUTPUT
+          echo "package-name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+
+      - name: Update package version
+        run: |
+          cd packages/${{ matrix.package }}
+          pnpm version ${{ steps.version.outputs.version }} --no-git-tag-version
+
+      - name: Publish to NPM
+        run: |
+          echo "📤 Publishing ${{ steps.version.outputs.package-name }} to npm..."
           
           # Configure npm
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
           
           # Publish to npm
-          echo "📤 Publishing to npm..."
-          pnpm publish --tag $NPM_TAG --access public
+          cd packages/${{ matrix.package }}
+          pnpm publish --tag ${{ steps.version.outputs.npm-tag }} --access public
           
-          # Create tarball for GitHub release
-          pnpm pack
-          
-          echo "success=true" >> $GITHUB_OUTPUT
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "npm-tag=$NPM_TAG" >> $GITHUB_OUTPUT
-          echo "bump-type=$BUMP_TYPE" >> $GITHUB_OUTPUT
-          
-          echo "✅ Successfully published $PACKAGE_NAME@$NEW_VERSION ($BUMP_TYPE)"
+          echo "✅ Successfully published ${{ steps.version.outputs.package-name }}@${{ steps.version.outputs.version }}"
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Upload package tarball
-        uses: actions/upload-artifact@v4
-        with:
-          name: tarball-${{ matrix.package }}
-          path: packages/${{ matrix.package }}/*.tgz
-          retention-days: 30
 
   # Phase 4: GitHub Releases (parallel per package)
   github-release:
     name: 🏷️ GitHub Release
-    needs: [detect-affected, download-versions, publish]
+    needs: [detect-affected, download-versions]
     if: needs.detect-affected.outputs.has-packages == 'true'
     strategy:
       matrix:
@@ -236,11 +228,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download package tarball
-        uses: actions/download-artifact@v4
-        with:
-          name: tarball-${{ matrix.package }}
-          path: ./
+      - name: Create package tarball
+        run: |
+          cd packages/${{ matrix.package }}
+          pnpm pack
+          mv *.tgz ../../
 
       - name: Create GitHub release for ${{ matrix.package }}
         run: |
@@ -340,7 +332,7 @@ jobs:
   # Phase 5: Commit version updates back to repo
   finalize:
     name: 🔄 Commit Version Updates
-    needs: [detect-affected, download-versions, publish, github-release]
+    needs: [detect-affected, download-versions, npm-publish, github-release]
     if: needs.detect-affected.outputs.has-packages == 'true'
     runs-on: ubuntu-latest
     
@@ -433,6 +425,109 @@ jobs:
           else
             echo "ℹ️ No version files to commit"
           fi
+
+  # Phase 6: Post release confirmation comment
+  release-comment:
+    name: 💬 Post Release Confirmation
+    needs: [detect-affected, download-versions, npm-publish, github-release, finalize]
+    if: needs.detect-affected.outputs.has-packages == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download version mapping
+        uses: actions/download-artifact@v4
+        with:
+          name: version-mapping
+
+      - name: Find PR that was merged
+        id: find-pr
+        run: |
+          echo "🔍 Finding the PR that was merged..."
+          
+          # Get the merge commit message to extract PR number
+          MERGE_MESSAGE=$(git log -1 --pretty=%B)
+          echo "Merge commit message: $MERGE_MESSAGE"
+          
+          # Extract PR number from merge commit message (format: "Merge pull request #123")
+          PR_NUMBER=$(echo "$MERGE_MESSAGE" | grep -oP '(?<=#)\d+' | head -1)
+          
+          if [ -z "$PR_NUMBER" ]; then
+            # Try GitHub API as fallback
+            PR_NUMBER=$(gh api repos/${{ github.repository }}/commits/${{ github.sha }}/pulls --jq '.[0].number' 2>/dev/null || echo "")
+          fi
+          
+          if [ -n "$PR_NUMBER" ]; then
+            echo "✅ Found PR #$PR_NUMBER"
+            echo "pr-number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Could not find PR number"
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate release confirmation comment
+        run: |
+          echo "📝 Generating release confirmation..."
+          
+          # Create comment header
+          cat > release-comment.md << 'EOF'
+          ## ✅ Release Completed Successfully!
+          
+          All packages have been published to npm and GitHub releases have been created.
+          
+          ### 📦 Published Packages:
+          EOF
+          
+          # Parse version mapping and add package details
+          VERSION_MAPPING=$(cat version-mapping.json)
+          
+          echo "$VERSION_MAPPING" | jq -r 'to_entries[] | "\(.key) \(.value.version) \(.value.bumpType)"' | while read package version bump_type; do
+            PACKAGE_NAME=$(jq -r --arg pkg "$package" '.[$pkg].name // ("@deepbrainspace/" + $pkg)' packages/$package/package.json 2>/dev/null || echo "@deepbrainspace/$package")
+            
+            cat >> release-comment.md << EOF
+          
+          #### 📦 \`$PACKAGE_NAME@$version\` ($bump_type)
+          - **npm**: [\`npm install $PACKAGE_NAME@$version\`](https://www.npmjs.com/package/$PACKAGE_NAME/v/$version)
+          - **GitHub Release**: [View Release](https://github.com/${{ github.repository }}/releases/tag/$package-v$version)
+          - **Changelog**: [View RELEASE_NOTES.md](https://github.com/${{ github.repository }}/blob/main/packages/$package/RELEASE_NOTES.md)
+          EOF
+          done
+          
+          # Add footer
+          cat >> release-comment.md << 'EOF'
+          
+          ---
+          
+          ### 🚀 Installation
+          
+          To install the latest versions:
+          ```bash
+          # Using npm
+          npm install @deepbrainspace/[package-name]@latest
+          
+          # Using pnpm
+          pnpm add @deepbrainspace/[package-name]@latest
+          ```
+          
+          ### 📋 Next Steps
+          - Test the released packages in your projects
+          - Report any issues in the [issue tracker](https://github.com/${{ github.repository }}/issues)
+          
+          ---
+          *🤖 Automated by GitHub Actions Release Pipeline*
+          EOF
+
+      - name: Post release confirmation comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ steps.find-pr.outputs.pr-number }}
+          body-path: release-comment.md
 
   # No affected packages notification
   no-packages:
