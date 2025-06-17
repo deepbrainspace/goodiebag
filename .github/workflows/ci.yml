@@ -2,7 +2,7 @@ name: CI
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - 'packages/**'
       - 'apps/**'
@@ -22,6 +22,7 @@ jobs:
   detect-affected:
     name: 🔍 Detect Affected Packages
     runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
     outputs:
       packages: ${{ steps.detect.outputs.packages }}
       has-packages: ${{ steps.detect.outputs.has-packages }}
@@ -33,25 +34,9 @@ jobs:
 
       - name: Detect affected packages
         id: detect
-        run: |
-          # Get affected projects with publish target
-          AFFECTED=$(nx show projects --affected --with-target=publish --json || echo '[]')
-          echo "🔍 Affected packages detected: $AFFECTED"
-          
-          if [ "$AFFECTED" = "[]" ] || [ -z "$AFFECTED" ]; then
-            echo "packages=[]" >> $GITHUB_OUTPUT
-            echo "has-packages=false" >> $GITHUB_OUTPUT
-            echo "package-count=0" >> $GITHUB_OUTPUT
-            echo "ℹ️ No affected packages found"
-          else
-            PACKAGE_COUNT=$(echo $AFFECTED | jq length)
-            echo "packages=$AFFECTED" >> $GITHUB_OUTPUT
-            echo "has-packages=true" >> $GITHUB_OUTPUT
-            echo "package-count=$PACKAGE_COUNT" >> $GITHUB_OUTPUT
-            echo "🎯 Found $PACKAGE_COUNT affected packages: $AFFECTED"
-          fi
+        uses: ./.github/actions/detect-affected
 
-  # Phase 2: Validation (All Parallel)
+  # Phase 2: Validation (Parallel per Package)
   lint:
     name: 🔍 Lint
     needs: detect-affected
@@ -65,14 +50,6 @@ jobs:
     steps:
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
-
-      - name: Cache NX
-        uses: actions/cache@v4
-        with:
-          path: .nx/cache
-          key: nx-${{ runner.os }}-lint-${{ matrix.package }}-${{ github.sha }}
-          restore-keys: |
-            nx-${{ runner.os }}-lint-${{ matrix.package }}-
 
       - name: Run lint for ${{ matrix.package }}
         run: |
@@ -92,14 +69,6 @@ jobs:
     steps:
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
-
-      - name: Cache NX
-        uses: actions/cache@v4
-        with:
-          path: .nx/cache
-          key: nx-${{ runner.os }}-test-${{ matrix.package }}-${{ github.sha }}
-          restore-keys: |
-            nx-${{ runner.os }}-test-${{ matrix.package }}-
 
       - name: Run tests for ${{ matrix.package }}
         run: |
@@ -128,317 +97,31 @@ jobs:
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
-      - name: Cache NX
-        uses: actions/cache@v4
-        with:
-          path: .nx/cache
-          key: nx-${{ runner.os }}-build-${{ matrix.package }}-${{ github.sha }}
-          restore-keys: |
-            nx-${{ runner.os }}-build-${{ matrix.package }}-
-
       - name: Build ${{ matrix.package }}
         run: |
           echo "🏗️ Building ${{ matrix.package }}..."
           nx build ${{ matrix.package }}
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-${{ matrix.package }}
-          path: |
-            packages/${{ matrix.package }}/dist/
-            packages/${{ matrix.package }}/package.json
-          retention-days: 7
-
-  # Phase 4: Generate Release Notes (Parallel per Package)
-  release-notes:
-    name: 📝 Release Notes
-    needs: [detect-affected, build]
-    if: needs.detect-affected.outputs.has-packages == 'true'
-    strategy:
-      matrix:
-        package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
-      fail-fast: false
+  # Summary
+  summary:
+    name: ✅ CI Summary
+    needs: [detect-affected, lint, test, build]
+    if: always()
     runs-on: ubuntu-latest
     
     steps:
-      - name: Setup workspace
-        uses: ./.github/actions/setup-workspace
-
-      - name: Parse PR description for package changes
-        id: version
+      - name: Post CI summary
         run: |
-          echo "📊 Parsing PR description for ${{ matrix.package }}..."
-          
-          # Get package info
-          PACKAGE_PATH="packages/${{ matrix.package }}"
-          CURRENT_VERSION=$(jq -r '.version' $PACKAGE_PATH/package.json)
-          PACKAGE_NAME=$(jq -r '.name' $PACKAGE_PATH/package.json)
-          
-          # Parse PR description to extract changes for this package
-          PR_BODY="${{ github.event.pull_request.body }}"
-          
-          # Extract the section for this package from PR description
-          PACKAGE_SECTION=""
-          if echo "$PR_BODY" | grep -q "### $PACKAGE_NAME"; then
-            PACKAGE_SECTION=$(echo "$PR_BODY" | sed -n "/### $PACKAGE_NAME/,/### /p" | sed '$d' | tail -n +2)
-          elif echo "$PR_BODY" | grep -q "### ${{ matrix.package }}"; then
-            PACKAGE_SECTION=$(echo "$PR_BODY" | sed -n "/### ${{ matrix.package }}/,/### /p" | sed '$d' | tail -n +2)
-          fi
-          
-          # If no specific section found, check for Breaking Changes section
-          BREAKING_SECTION=""
-          if echo "$PR_BODY" | grep -q "## Breaking Changes" && ! echo "$PR_BODY" | grep -q "None"; then
-            BREAKING_SECTION=$(echo "$PR_BODY" | sed -n "/## Breaking Changes/,/## /p" | sed '$d' | tail -n +2)
-          fi
-          
-          # Determine bump type from changes
-          BUMP_TYPE="patch"
-          
-          if [ -n "$BREAKING_SECTION" ] && [ "$BREAKING_SECTION" != "None" ]; then
-            BUMP_TYPE="major"
-          elif echo "$PACKAGE_SECTION" | grep -iE "^- feat" > /dev/null; then
-            BUMP_TYPE="minor"
-          elif echo "$PACKAGE_SECTION" | grep -iE "^- (fix|chore|docs)" > /dev/null; then
-            BUMP_TYPE="patch"
-          fi
-          
-          # Calculate new version
-          if [ "$BUMP_TYPE" = "major" ]; then
-            NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print ($1+1)".0.0"}')
-          elif [ "$BUMP_TYPE" = "minor" ]; then
-            NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."($2+1)".0"}')
+          if [[ "${{ needs.detect-affected.outputs.has-packages }}" == "true" ]]; then
+            echo "✅ CI completed for ${{ needs.detect-affected.outputs.package-count }} packages"
+            echo "📦 Packages: ${{ needs.detect-affected.outputs.packages }}"
+            echo ""
+            echo "💡 To prepare for release, comment 'prepare_release' on this PR"
           else
-            NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."$2"."($3+1)}')
-          fi
-          
-          echo "📋 Analysis: $BUMP_TYPE ($CURRENT_VERSION → $NEW_VERSION)"
-          echo "📝 Package changes:"
-          echo "$PACKAGE_SECTION"
-          
-          echo "bump-type=$BUMP_TYPE" >> $GITHUB_OUTPUT
-          echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "current-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          echo "package-name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
-          echo "changes<<EOF" >> $GITHUB_OUTPUT
-          echo "$PACKAGE_SECTION" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Generate release notes
-        run: |
-          echo "📝 Generating release notes for ${{ matrix.package }}..."
-          
-          PACKAGE_PATH="packages/${{ matrix.package }}"
-          
-          # Parse changes from PR description into categories
-          FEATURES=""
-          FIXES=""
-          BREAKING=""
-          OTHER=""
-          
-          # Get breaking changes from PR body if any
-          PR_BODY="${{ github.event.pull_request.body }}"
-          if echo "$PR_BODY" | grep -q "## Breaking Changes" && ! echo "$PR_BODY" | grep -q "None"; then
-            BREAKING_SECTION=$(echo "$PR_BODY" | sed -n "/## Breaking Changes/,/## /p" | sed '$d' | tail -n +2)
-            if [ -n "$BREAKING_SECTION" ]; then
-              BREAKING="$BREAKING_SECTION"
-            fi
-          fi
-          
-          # Parse package-specific changes
-          while IFS= read -r line; do
-            if [ -n "$line" ]; then
-              if echo "$line" | grep -iE "^- feat" > /dev/null; then
-                FEATURES="$FEATURES\n$line"
-              elif echo "$line" | grep -iE "^- fix" > /dev/null; then
-                FIXES="$FIXES\n$line"
-              elif echo "$line" | grep -iE "^- (chore|docs|style|refactor|test)" > /dev/null; then
-                OTHER="$OTHER\n$line"
-              else
-                OTHER="$OTHER\n$line"
-              fi
-            fi
-          done <<< "${{ steps.version.outputs.changes }}"
-          
-          # Create release notes (clean, no preview block)
-          cat > $PACKAGE_PATH/RELEASE_NOTES.md << EOF
-          # Release notes
-          
-          ## ${{ steps.version.outputs.new-version }} ($(date +%Y-%m-%d))
-          
-          $(if [ -n "$BREAKING" ]; then echo "### 💥 BREAKING CHANGES"; echo; echo -e "$BREAKING"; echo; fi)
-          $(if [ -n "$FEATURES" ]; then echo "### ✨ Features"; echo; echo -e "$FEATURES"; echo; fi)
-          $(if [ -n "$FIXES" ]; then echo "### 🐛 Bug Fixes"; echo; echo -e "$FIXES"; echo; fi)
-          $(if [ -n "$OTHER" ]; then echo "### 🏠 Internal"; echo; echo -e "$OTHER"; echo; fi)
-          EOF
-          
-          # Create preview comment for this package
-          cat > preview-${{ matrix.package }}.md << EOF
-          ## 🚀 Release Preview for ${{ steps.version.outputs.package-name }}
-          **Version**: ${{ steps.version.outputs.current-version }} → **${{ steps.version.outputs.new-version }}** (${{ steps.version.outputs.bump-type }})
-          **Branch**: \`${{ github.head_ref }}\`
-          
-          This will be published when the PR is merged.
-          EOF
-          
-          echo "✅ Release notes generated at $PACKAGE_PATH/RELEASE_NOTES.md"
-
-      - name: Upload release notes and preview
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-notes-${{ matrix.package }}
-          path: |
-            packages/${{ matrix.package }}/RELEASE_NOTES.md
-            preview-${{ matrix.package }}.md
-          retention-days: 30
-
-      - name: Create version info for release
-        run: |
-          cat > version-${{ matrix.package }}.json << EOF
-          {
-            "package": "${{ matrix.package }}",
-            "name": "${{ steps.version.outputs.package-name }}",
-            "currentVersion": "${{ steps.version.outputs.current-version }}",
-            "newVersion": "${{ steps.version.outputs.new-version }}",
-            "bumpType": "${{ steps.version.outputs.bump-type }}"
-          }
-          EOF
-
-      - name: Upload version info
-        uses: actions/upload-artifact@v4
-        with:
-          name: version-${{ matrix.package }}
-          path: version-${{ matrix.package }}.json
-          retention-days: 30
-
-  # Phase 5: Post PR Comments (Parallel per Package)
-  preview:
-    name: 💬 Post Preview
-    needs: [detect-affected, release-notes]
-    if: needs.detect-affected.outputs.has-packages == 'true'
-    strategy:
-      matrix:
-        package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
-      fail-fast: false
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Download preview for ${{ matrix.package }}
-        uses: actions/download-artifact@v4
-        with:
-          name: release-notes-${{ matrix.package }}
-
-      - name: Post preview comment for ${{ matrix.package }}
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body-path: preview-${{ matrix.package }}.md
-
-  # Phase 6: Update Package Versions
-  update-versions:
-    name: 📝 Update Package Versions
-    needs: [detect-affected, release-notes]
-    if: needs.detect-affected.outputs.has-packages == 'true'
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Setup workspace
-        uses: ./.github/actions/setup-workspace
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Checkout PR branch
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.event.pull_request.head.ref }}
-
-      - name: Download all version info
-        uses: actions/download-artifact@v4
-        with:
-          pattern: version-*
-          merge-multiple: true
-
-      - name: Download all release notes
-        uses: actions/download-artifact@v4
-        with:
-          pattern: release-notes-*
-          merge-multiple: true
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 9.0.0
-
-      - name: Update package.json files using NX
-        run: |
-          echo "📝 Updating package.json files with new versions..."
-          
-          # Get affected packages and update versions
-          AFFECTED_PACKAGES=$(nx show projects --affected --with-target=publish --json | jq -r '.[]')
-          
-          for package in $AFFECTED_PACKAGES; do
-            if [ -f "version-$package.json" ]; then
-              new_version=$(jq -r '.newVersion' "version-$package.json")
-              
-              echo "Updating packages/$package/package.json to version $new_version"
-              cd packages/$package
-              pnpm version $new_version --no-git-tag-version
-              cd - > /dev/null
-              
-              # Also copy the release notes
-              if [ -f "RELEASE_NOTES.md" ]; then
-                cp "RELEASE_NOTES.md" "packages/$package/"
-                echo "Copied RELEASE_NOTES.md to packages/$package/"
-              fi
-            fi
-          done
-
-      - name: Commit version updates
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Add all package.json and release notes changes
-          git add packages/*/package.json packages/*/RELEASE_NOTES.md
-          
-          if git diff --staged --quiet; then
-            echo "No version changes to commit"
-          else
-            git commit -m "chore: update package versions for release
-
-            🤖 Automated by CI workflow"
-            git push
-            echo "✅ Version updates committed to PR"
+            echo "ℹ️ No affected packages found - documentation or config changes only"
           fi
 
-  # Phase 7: Summary Comment
-  persist-versions:
-    name: 💬 Post Summary
-    needs: [detect-affected, preview, update-versions]
-    if: needs.detect-affected.outputs.has-packages == 'true'
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Post summary comment
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ## ✅ CI Complete - Ready for Merge
-            
-            **Package versions have been updated** and are ready for release upon merge.
-            
-            When you merge this PR:
-            1. Packages will be published to npm
-            2. GitHub releases will be created
-            3. You'll receive a confirmation comment with all the links
-            
-            ---
-            *🤖 Automated by CI workflow*
-
-
-  # No affected packages notification
+  # No affected packages notification  
   no-packages:
     name: ℹ️ No Packages Affected
     needs: detect-affected
@@ -450,4 +133,3 @@ jobs:
         run: |
           echo "ℹ️ No packages with publish targets were affected by this PR."
           echo "The changes appear to be documentation, configuration, or non-publishable code."
-          echo "No release preview will be generated."

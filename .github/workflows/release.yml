@@ -2,63 +2,227 @@ name: Release
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [main]
     paths:
-      - 'packages/**'
-      - 'apps/**'
-      - 'libs/**'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
+      - '**'                           # Include everything by default
+      - '!packages/*/package.json'     # EXCLUDE package.json (version changes)
+      - '!packages/*/RELEASE_NOTES.md' # EXCLUDE release notes
 
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  # Phase 1: Detect affected packages (reuse CI logic)
-  detect-affected:
-    name: 🔍 Detect Affected Packages
+  # Phase 1: Check if this push is from a release-ready PR
+  check-release:
+    name: 🔍 Check Release Status
     runs-on: ubuntu-latest
     outputs:
-      packages: ${{ steps.detect.outputs.packages }}
-      has-packages: ${{ steps.detect.outputs.has-packages }}
-      package-count: ${{ steps.detect.outputs.package-count }}
+      should-release: ${{ steps.check.outputs.should-release }}
+      pr-number: ${{ steps.find-pr.outputs.pr-number }}
     
     steps:
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Detect affected packages
-        id: detect
+      - name: Find PR associated with merge commit
+        id: find-pr
         run: |
-          # Get affected projects with publish target
-          AFFECTED=$(nx show projects --affected --with-target=publish --json || echo '[]')
-          echo "🔍 Affected packages detected: $AFFECTED"
+          echo "🔍 Finding PR associated with merge commit..."
           
-          if [ "$AFFECTED" = "[]" ] || [ -z "$AFFECTED" ]; then
-            echo "packages=[]" >> $GITHUB_OUTPUT
-            echo "has-packages=false" >> $GITHUB_OUTPUT
-            echo "package-count=0" >> $GITHUB_OUTPUT
-            echo "ℹ️ No affected packages found"
+          # Get merge commit message to extract PR number
+          MERGE_MESSAGE=$(git log -1 --pretty=%B)
+          echo "Merge commit message: $MERGE_MESSAGE"
+          
+          # Extract PR number from merge commit message (format: "Merge pull request #123")
+          PR_NUMBER=$(echo "$MERGE_MESSAGE" | grep -oP '(?<=#)\d+' | head -1)
+          
+          if [ -z "$PR_NUMBER" ]; then
+            # Try alternative method via GitHub API
+            PR_NUMBER=$(gh api repos/${{ github.repository }}/commits/${{ github.sha }}/pulls --jq '.[0].number' 2>/dev/null || echo "")
+          fi
+          
+          if [ -n "$PR_NUMBER" ]; then
+            echo "✅ Found associated PR #$PR_NUMBER"
+            echo "pr-number=$PR_NUMBER" >> $GITHUB_OUTPUT
           else
-            PACKAGE_COUNT=$(echo $AFFECTED | jq length)
-            echo "packages=$AFFECTED" >> $GITHUB_OUTPUT
-            echo "has-packages=true" >> $GITHUB_OUTPUT
+            echo "❌ Could not find PR number for this merge"
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check if PR had prepare_release comment
+        id: check
+        run: |
+          echo "🔍 Checking if PR #${{ steps.find-pr.outputs.pr-number }} had prepare_release comment..."
+          
+          # Check for prepare_release comments on the PR
+          COMMENTS=$(gh api repos/${{ github.repository }}/issues/${{ steps.find-pr.outputs.pr-number }}/comments --jq '.[].body')
+          
+          if echo "$COMMENTS" | grep -q "prepare_release"; then
+            echo "✅ PR had prepare_release comment - proceeding with release"
+            echo "should-release=true" >> $GITHUB_OUTPUT
+          else
+            echo "ℹ️ PR did not have prepare_release comment - skipping release process"
+            echo "should-release=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Phase 2: Apply patches and release
+  apply-patches:
+    name: 🔄 Apply Version Patches
+    needs: check-release
+    if: needs.check-release.outputs.should-release == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.summary.outputs.packages }}
+      has-packages: ${{ steps.summary.outputs.has-packages }}
+      package-count: ${{ steps.summary.outputs.package-count }}
+    
+    steps:
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Find prepare-release workflow run for this PR
+        id: find-prepare
+        run: |
+          echo "🔍 Finding prepare-release workflow run for PR #${{ needs.check-release.outputs.pr-number }}..."
+          
+          # Get the prepare-release workflow run ID for this PR
+          PREPARE_RUN_ID=$(gh api repos/${{ github.repository }}/actions/workflows/prepare-release.yml/runs \
+            --jq ".workflow_runs[] | select(.pull_requests[]?.number == ${{ needs.check-release.outputs.pr-number }}) | .id" | head -1)
+          
+          if [ -n "$PREPARE_RUN_ID" ]; then
+            echo "✅ Found prepare-release run ID: $PREPARE_RUN_ID"
+            echo "prepare-run-id=$PREPARE_RUN_ID" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Could not find prepare-release run ID"
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download release summary from prepare-release
+        uses: actions/download-artifact@v4
+        with:
+          name: release-summary-${{ steps.find-prepare.outputs.prepare-run-id }}
+          run-id: ${{ steps.find-prepare.outputs.prepare-run-id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read release summary
+        id: summary
+        run: |
+          if [ -f "release-summary.json" ]; then
+            echo "📋 Reading release summary from CI workflow..."
+            cat release-summary.json
+            
+            PACKAGES=$(jq -r '.packages' release-summary.json)
+            PACKAGE_COUNT=$(jq -r '.packageCount' release-summary.json)
+            
+            echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
             echo "package-count=$PACKAGE_COUNT" >> $GITHUB_OUTPUT
-            echo "🎯 Found $PACKAGE_COUNT affected packages: $AFFECTED"
+            
+            if [ "$PACKAGES" = "[]" ] || [ "$PACKAGE_COUNT" = "0" ]; then
+              echo "has-packages=false" >> $GITHUB_OUTPUT
+              echo "ℹ️ No packages to release"
+            else
+              echo "has-packages=true" >> $GITHUB_OUTPUT
+              echo "🎯 Found $PACKAGE_COUNT packages to release: $PACKAGES"
+            fi
+          else
+            echo "❌ No release summary found"
+            echo "has-packages=false" >> $GITHUB_OUTPUT
+            echo "packages=[]" >> $GITHUB_OUTPUT
+            echo "package-count=0" >> $GITHUB_OUTPUT
+            exit 1
           fi
 
+      - name: Download version patches from prepare-release
+        if: steps.summary.outputs.has-packages == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: release-prep-${{ steps.find-prepare.outputs.prepare-run-id }}
+          run-id: ${{ steps.find-prepare.outputs.prepare-run-id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-  # Phase 2: NPM Publish (parallel per package)
+      - name: Apply version patches to main branch
+        if: steps.summary.outputs.has-packages == 'true'
+        run: |
+          echo "🔄 Applying version patches to main branch..."
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Apply each package's patch
+          PACKAGES=$(echo '${{ steps.summary.outputs.packages }}' | jq -r '.[]')
+          
+          # Build descriptive commit message
+          COMMIT_TITLE="release: "
+          COMMIT_BODY=""
+          
+          for package in $PACKAGES; do
+            PATCH_FILE="${package}-version.patch"
+            JSON_FILE="${package}-version.json"
+            
+            if [ -f "$PATCH_FILE" ] && [ -f "$JSON_FILE" ]; then
+              echo "📦 Applying patch for $package..."
+              
+              # Apply the patch
+              if git apply "$PATCH_FILE"; then
+                PACKAGE_NAME=$(jq -r '.name' "$JSON_FILE")
+                NEW_VERSION=$(jq -r '.newVersion' "$JSON_FILE")
+                BUMP_TYPE=$(jq -r '.bumpType' "$JSON_FILE")
+                
+                # Add to commit message
+                COMMIT_TITLE="${COMMIT_TITLE}${package}-v${NEW_VERSION}, "
+                COMMIT_BODY="${COMMIT_BODY}
+    - ${PACKAGE_NAME}@${NEW_VERSION} (${BUMP_TYPE})"
+                
+                echo "✅ Applied version update for $package → $NEW_VERSION"
+              else
+                echo "❌ Failed to apply patch for $package"
+                echo "Patch content:"
+                cat "$PATCH_FILE"
+                exit 1
+              fi
+            else
+              echo "⚠️ Missing patch files for $package"
+            fi
+          done
+          
+          # Remove trailing comma and space
+          COMMIT_TITLE=$(echo "$COMMIT_TITLE" | sed 's/, $//')
+          
+          # Commit all version updates with detailed message
+          git add packages/*/package.json packages/*/RELEASE_NOTES.md
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "${COMMIT_TITLE}${COMMIT_BODY}
+
+            🤖 Automated release commit
+            
+            Co-Authored-By: github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+            
+            git push origin main
+            echo "✅ Version updates committed and pushed to main"
+          else
+            echo "ℹ️ No version changes to commit"
+          fi
+
+  # Phase 3: NPM Publish (parallel per package)
   npm-publish:
     name: 📦 NPM Publish
-    needs: detect-affected
-    if: needs.detect-affected.outputs.has-packages == 'true'
+    needs: [check-release, apply-patches]
+    if: needs.apply-patches.outputs.has-packages == 'true'
     strategy:
       matrix:
-        package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
+        package: ${{ fromJSON(needs.apply-patches.outputs.packages) }}
       fail-fast: false
     runs-on: ubuntu-latest
     
@@ -66,17 +230,9 @@ jobs:
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
-      - name: Cache NX (restore from CI)
-        uses: actions/cache@v4
-        with:
-          path: .nx/cache
-          key: nx-${{ runner.os }}-build-${{ matrix.package }}-${{ github.sha }}
-          restore-keys: |
-            nx-${{ runner.os }}-build-${{ matrix.package }}-
-
-      - name: Build ${{ matrix.package }} (use cache)
+      - name: Build ${{ matrix.package }}
         run: |
-          echo "🏗️ Building ${{ matrix.package }} (should hit cache)..."
+          echo "🏗️ Building ${{ matrix.package }}..."
           nx build ${{ matrix.package }}
 
       - name: Get package info
@@ -84,14 +240,12 @@ jobs:
         run: |
           echo "📦 Getting package info for ${{ matrix.package }}..."
           
-          # Get package info
           PACKAGE_PATH="packages/${{ matrix.package }}"
           PACKAGE_NAME=$(jq -r '.name' $PACKAGE_PATH/package.json)
           VERSION=$(jq -r '.version' $PACKAGE_PATH/package.json)
           
           # Determine npm tag based on version
           if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            # Semantic version - check if major bump
             MAJOR=$(echo $VERSION | cut -d. -f1)
             if [ "$MAJOR" -gt 0 ]; then
               NPM_TAG="latest"
@@ -125,14 +279,14 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  # Phase 3: GitHub Releases (parallel per package)
+  # Phase 4: GitHub Releases (parallel per package)
   github-release:
     name: 🏷️ GitHub Release
-    needs: detect-affected
-    if: needs.detect-affected.outputs.has-packages == 'true'
+    needs: [check-release, apply-patches]
+    if: needs.apply-patches.outputs.has-packages == 'true'
     strategy:
       matrix:
-        package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
+        package: ${{ fromJSON(needs.apply-patches.outputs.packages) }}
       fail-fast: false
     runs-on: ubuntu-latest
     
@@ -150,78 +304,35 @@ jobs:
         run: |
           echo "🏷️ Creating GitHub release for ${{ matrix.package }}..."
           
-          # Get package info
           PACKAGE_PATH="packages/${{ matrix.package }}"
           PACKAGE_NAME=$(jq -r '.name' $PACKAGE_PATH/package.json)
-          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
-          
-          # Get current version from package.json
           VERSION=$(jq -r '.version' $PACKAGE_PATH/package.json)
-          
-          # Determine release type from version
-          if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            # Semantic version - determine type
-            PREV_VERSION=$(git show HEAD~1:$PACKAGE_PATH/package.json | jq -r '.version' || echo "0.0.0")
-            
-            MAJOR=$(echo $VERSION | cut -d. -f1)
-            MINOR=$(echo $VERSION | cut -d. -f2)
-            PATCH=$(echo $VERSION | cut -d. -f3)
-            
-            PREV_MAJOR=$(echo $PREV_VERSION | cut -d. -f1)
-            PREV_MINOR=$(echo $PREV_VERSION | cut -d. -f2)
-            PREV_PATCH=$(echo $PREV_VERSION | cut -d. -f3)
-            
-            if [ "$MAJOR" -gt "$PREV_MAJOR" ]; then
-              RELEASE_TYPE="Major Release"
-              BUMP_TYPE="major"
-            elif [ "$MINOR" -gt "$PREV_MINOR" ]; then
-              RELEASE_TYPE="Minor Release"
-              BUMP_TYPE="minor"
-            else
-              RELEASE_TYPE="Patch Release"
-              BUMP_TYPE="patch"
-            fi
-          else
-            RELEASE_TYPE="Development Preview"
-            BUMP_TYPE="dev"
-          fi
-          
-          # Create tag name
           TAG_NAME="${{ matrix.package }}-v${VERSION}"
           
-          # Get recent commits for release notes
-          RECENT_COMMITS=$(git log --oneline -n 5 -- $PACKAGE_PATH/ | head -5 || echo "- Initial release")
-          
-          # Generate release notes
-          cat > release-notes.md << EOF
-          ## 🚀 $RELEASE_TYPE
+          # Use release notes if they exist
+          if [ -f "$PACKAGE_PATH/RELEASE_NOTES.md" ]; then
+            RELEASE_NOTES="$PACKAGE_PATH/RELEASE_NOTES.md"
+          else
+            # Generate simple release notes
+            cat > release-notes.md << EOF
+          ## 🚀 Release ${{ matrix.package }} v${VERSION}
           
           **Package**: \`$PACKAGE_NAME\`
-          **Version**: \`$VERSION\` ($BUMP_TYPE)
+          **Version**: \`$VERSION\`
           **Commit**: ${{ github.sha }}
-          **Branch**: ${{ github.ref_name }}
           
           ### Installation
           
           \`\`\`bash
-          # npm
-          npm install $PACKAGE_NAME@$NEW_VERSION
-          
-          # pnpm
-          pnpm add $PACKAGE_NAME@$NEW_VERSION
-          
-          # yarn
-          yarn add $PACKAGE_NAME@$NEW_VERSION
+          npm install $PACKAGE_NAME@$VERSION
           \`\`\`
-          
-          ### Recent Changes
-          
-          $(echo "$RECENT_COMMITS" | sed 's/^/- /')
           
           ---
           
-          > 🔄 This is an automated release from the ${{ github.ref_name }} branch.
+          > 🔄 This is an automated release from the main branch.
           EOF
+            RELEASE_NOTES="release-notes.md"
+          fi
           
           # Find tarball
           TARBALL=$(find . -name "*.tgz" -type f | head -1)
@@ -232,108 +343,29 @@ jobs:
           
           # Create release
           gh release create $TAG_NAME $TARBALL \
-            --title "${{ matrix.package }} $NEW_VERSION" \
-            --notes-file release-notes.md \
-            --prerelease=true \
+            --title "${{ matrix.package }} v$VERSION" \
+            --notes-file "$RELEASE_NOTES" \
             --target ${{ github.sha }}
           
           echo "✅ GitHub release created: $TAG_NAME"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # Phase 4: Finalize
-  finalize:
-    name: 🔄 Finalize Release
-    needs: [detect-affected, npm-publish, github-release]
-    if: needs.detect-affected.outputs.has-packages == 'true'
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
-
-      - name: Setup git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Download release notes
-        uses: actions/download-artifact@v4
-        with:
-          pattern: release-notes-*
-          merge-multiple: true
-
-      - name: Check for uncommitted changes
-        run: |
-          echo "🔍 Checking for any uncommitted changes..."
-          
-          if ! git diff --quiet || ! git diff --staged --quiet; then
-            echo "⚠️ Found uncommitted changes:"
-            git status --short
-            
-            # Commit any remaining changes
-            git add -A
-            git commit -m "chore: finalize release
-
-            🤖 Automated by Release Pipeline
-            
-            Co-Authored-By: github-actions[bot] <github-actions[bot]@users.noreply.github.com>" || echo "No changes to commit"
-            
-            git push origin ${{ github.ref_name }}
-            echo "✅ Changes committed and pushed"
-          else
-            echo "✅ Working tree is clean"
-          fi
-
   # Phase 5: Post release confirmation comment
   release-comment:
     name: 💬 Post Release Confirmation
-    needs: [detect-affected, npm-publish, github-release, finalize]
-    if: needs.detect-affected.outputs.has-packages == 'true'
+    needs: [check-release, apply-patches, npm-publish, github-release]
+    if: needs.apply-patches.outputs.has-packages == 'true'
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-
-      - name: Find PR that was merged
-        id: find-pr
-        run: |
-          echo "🔍 Finding the PR that was merged..."
-          
-          # Get the merge commit message to extract PR number
-          MERGE_MESSAGE=$(git log -1 --pretty=%B)
-          echo "Merge commit message: $MERGE_MESSAGE"
-          
-          # Extract PR number from merge commit message (format: "Merge pull request #123")
-          PR_NUMBER=$(echo "$MERGE_MESSAGE" | grep -oP '(?<=#)\d+' | head -1)
-          
-          if [ -z "$PR_NUMBER" ]; then
-            # Try GitHub API as fallback
-            PR_NUMBER=$(gh api repos/${{ github.repository }}/commits/${{ github.sha }}/pulls --jq '.[0].number' 2>/dev/null || echo "")
-          fi
-          
-          if [ -n "$PR_NUMBER" ]; then
-            echo "✅ Found PR #$PR_NUMBER"
-            echo "pr-number=$PR_NUMBER" >> $GITHUB_OUTPUT
-          else
-            echo "❌ Could not find PR number"
-            exit 1
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate release confirmation comment
         run: |
-          echo "📝 Generating release confirmation..."
+          echo "📝 Generating release confirmation for PR #${{ needs.check-release.outputs.pr-number }}..."
           
-          # Create comment header
           cat > release-comment.md << 'EOF'
           ## ✅ Release Completed Successfully!
           
@@ -342,36 +374,24 @@ jobs:
           ### 📦 Published Packages:
           EOF
           
-          # Add package details using NX affected
-          AFFECTED_PACKAGES=$(nx show projects --affected --with-target=publish --json | jq -r '.[]')
+          # Add package details
+          PACKAGES=$(echo '${{ needs.apply-patches.outputs.packages }}' | jq -r '.[]')
           
-          for package in $AFFECTED_PACKAGES; do
+          for package in $PACKAGES; do
             PACKAGE_PATH="packages/$package"
             if [ -d "$PACKAGE_PATH" ]; then
               PACKAGE_NAME=$(jq -r '.name' $PACKAGE_PATH/package.json)
               VERSION=$(jq -r '.version' $PACKAGE_PATH/package.json)
               
-              # Determine bump type from version change
-              PREV_VERSION=$(git show HEAD~1:$PACKAGE_PATH/package.json 2>/dev/null | jq -r '.version' || echo "0.0.0")
-              if [ "$(echo $VERSION | cut -d. -f1)" -gt "$(echo $PREV_VERSION | cut -d. -f1)" ]; then
-                BUMP_TYPE="major"
-              elif [ "$(echo $VERSION | cut -d. -f2)" -gt "$(echo $PREV_VERSION | cut -d. -f2)" ]; then
-                BUMP_TYPE="minor"
-              else
-                BUMP_TYPE="patch"
-              fi
-              
               cat >> release-comment.md << EOF
           
-          #### 📦 \`$PACKAGE_NAME@$VERSION\` ($BUMP_TYPE)
+          #### 📦 \`$PACKAGE_NAME@$VERSION\`
           - **npm**: [\`npm install $PACKAGE_NAME@$VERSION\`](https://www.npmjs.com/package/$PACKAGE_NAME/v/$VERSION)
           - **GitHub Release**: [View Release](https://github.com/${{ github.repository }}/releases/tag/$package-v$VERSION)
-          - **Changelog**: [View RELEASE_NOTES.md](https://github.com/${{ github.repository }}/blob/main/packages/$package/RELEASE_NOTES.md)
           EOF
             fi
           done
           
-          # Add footer
           cat >> release-comment.md << 'EOF'
           
           ---
@@ -387,10 +407,6 @@ jobs:
           pnpm add @deepbrainspace/[package-name]@latest
           ```
           
-          ### 📋 Next Steps
-          - Test the released packages in your projects
-          - Report any issues in the [issue tracker](https://github.com/${{ github.repository }}/issues)
-          
           ---
           *🤖 Automated by GitHub Actions Release Pipeline*
           EOF
@@ -398,18 +414,18 @@ jobs:
       - name: Post release confirmation comment
         uses: peter-evans/create-or-update-comment@v4
         with:
-          issue-number: ${{ steps.find-pr.outputs.pr-number }}
+          issue-number: ${{ needs.check-release.outputs.pr-number }}
           body-path: release-comment.md
 
-  # No affected packages notification
-  no-packages:
-    name: ℹ️ No Packages to Release
-    needs: detect-affected
-    if: needs.detect-affected.outputs.has-packages == 'false'
+  # No release needed
+  no-release:
+    name: ℹ️ No Release Needed
+    needs: check-release
+    if: needs.check-release.outputs.should-release == 'false'
     runs-on: ubuntu-latest
     
     steps:
       - name: Report status
         run: |
-          echo "ℹ️ No packages with publish targets were affected by this push."
-          echo "No releases will be created."
+          echo "ℹ️ This merge was not marked for release."
+          echo "To release packages, comment 'prepare_release' on PRs."

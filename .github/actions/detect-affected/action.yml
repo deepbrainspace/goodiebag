@@ -1,0 +1,38 @@
+name: 'Detect Affected Packages'
+description: 'Detect packages affected by changes using NX'
+
+outputs:
+  packages:
+    description: 'JSON array of affected packages'
+    value: ${{ steps.detect.outputs.packages }}
+  has-packages:
+    description: 'Whether any packages were affected'
+    value: ${{ steps.detect.outputs.has-packages }}
+  package-count:
+    description: 'Number of affected packages'
+    value: ${{ steps.detect.outputs.package-count }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Detect affected packages
+      id: detect
+      shell: bash
+      run: |
+        # Get affected projects with publish target
+        AFFECTED=$(nx show projects --affected --with-target=publish --json || echo '[]')
+        echo "🔍 Affected packages detected: $AFFECTED"
+        
+        if [ "$AFFECTED" = "[]" ] || [ -z "$AFFECTED" ]; then
+          echo "packages=[]" >> $GITHUB_OUTPUT
+          echo "has-packages=false" >> $GITHUB_OUTPUT
+          echo "package-count=0" >> $GITHUB_OUTPUT
+          echo "ℹ️ No affected packages found"
+        else
+          PACKAGE_COUNT=$(echo $AFFECTED | jq length)
+          echo "packages=$AFFECTED" >> $GITHUB_OUTPUT
+          echo "has-packages=true" >> $GITHUB_OUTPUT
+          echo "package-count=$PACKAGE_COUNT" >> $GITHUB_OUTPUT
+          echo "🎯 Found $PACKAGE_COUNT affected packages"
+          echo "📋 Packages: $AFFECTED"
+        fi
