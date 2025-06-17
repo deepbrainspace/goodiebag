@@ -1,5 +1,5 @@
 name: 'Setup Workspace'
-description: 'Setup Node.js, pnpm, install dependencies, and configure NX'
+description: 'Checkout repository, setup Node.js, pnpm, install dependencies, and configure NX'
 
 inputs:
   node-version:
@@ -8,10 +8,22 @@ inputs:
   pnpm-version:
     description: 'pnpm version to use'
     default: '9.0.0'
+  fetch-depth:
+    description: 'Git fetch depth for checkout'
+    default: '0'
+  token:
+    description: 'GitHub token for checkout'
+    default: ${{ github.token }}
 
 runs:
   using: 'composite'
   steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: ${{ inputs.fetch-depth }}
+        token: ${{ inputs.token }}
+
     - name: Setup pnpm
       uses: pnpm/action-setup@v2
       with:

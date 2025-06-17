@@ -28,11 +28,6 @@ jobs:
       package-count: ${{ steps.detect.outputs.package-count }}
     
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
@@ -68,9 +63,6 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
@@ -98,9 +90,6 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
@@ -136,9 +125,6 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
@@ -176,8 +162,8 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
 
       - name: Parse PR description for package changes
         id: version
@@ -356,7 +342,12 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout repository
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Checkout PR branch
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
