@@ -29,6 +29,11 @@ jobs:
       package-count: ${{ steps.detect.outputs.package-count }}
     
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
@@ -48,6 +53,11 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
@@ -67,6 +77,11 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
@@ -94,6 +109,11 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
