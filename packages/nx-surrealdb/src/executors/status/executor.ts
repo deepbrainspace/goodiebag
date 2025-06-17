@@ -43,12 +43,48 @@ export default async function runExecutor(
   options: StatusExecutorSchema,
   context: ExecutorContext
 ): Promise<{ success: boolean }> {
+  // Check for required dependencies
+  try {
+    require('surrealdb');
+  } catch (e) {
+    logger.error(`
+${pc.red('✖')} Missing dependencies for nx-surrealdb
+
+Please install the required dependencies in your workspace:
+  ${pc.cyan('npm install surrealdb dotenv picocolors')}
+
+Or if using the published package:
+  ${pc.cyan('npm install @deepbrainspace/nx-surrealdb')}
+`);
+    return { success: false };
+  }
+
+  // Check for environment variables
+  const requiredEnvVars = ['SURREALDB_URL', 'SURREALDB_ROOT_USER', 'SURREALDB_ROOT_PASS'];
+  const missingEnvVars = requiredEnvVars.filter(v => !process.env[v] && !options[v.replace('SURREALDB_', '').toLowerCase()]);
+  
+  if (missingEnvVars.length > 0) {
+    logger.warn(`
+${pc.yellow('⚠')} Missing environment variables:
+${missingEnvVars.map(v => `  - ${v}`).join('\n')}
+
+Please add these to your .env file or pass them as options.
+Example .env file:
+  SURREALDB_URL=ws://localhost:8000/rpc
+  SURREALDB_ROOT_USER=root
+  SURREALDB_ROOT_PASS=root
+  SURREALDB_NAMESPACE=development
+  SURREALDB_DATABASE=main
+`);
+  }
+
   const engine = new MigrationService(context);
 
   // Enable debug mode if requested
   Debug.setEnabled(!!options.debug);
-
+  
   try {
+
     // Initialize migration engine
     await engine.initialize({
       url: options.url || '',

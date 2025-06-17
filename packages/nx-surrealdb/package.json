@@ -2,8 +2,8 @@
   "name": "@deepbrainspace/nx-surrealdb",
   "version": "0.1.3",
   "description": "NX plugin for SurrealDB migrations with modular architecture",
-  "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
   "generators": "./generators.json",
   "executors": "./executors.json",
   "files": [
@@ -11,7 +11,8 @@
     "generators.json",
     "executors.json",
     "README.md",
-    "ARCHITECTURE.md"
+    "ARCHITECTURE.md",
+    "pnpm-lock.yaml"
   ],
   "keywords": [
     "nx",

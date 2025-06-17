@@ -3,9 +3,25 @@
   "sourceRoot": "packages/nx-surrealdb/src",
   "projectType": "library",
   "targets": {
+    "install": {
+      "executor": "nx:run-commands",
+      "outputs": [],
+      "cache": false,
+      "options": {
+        "commands": [
+          {
+            "command": "pnpm install --frozen-lockfile",
+            "forwardAllArgs": false
+          }
+        ],
+        "cwd": "packages/nx-surrealdb",
+        "parallel": false
+      }
+    },
     "build-ts": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
+      "dependsOn": ["install"],
       "cache": false,
       "options": {
         "outputPath": "{workspaceRoot}/packages/nx-surrealdb/dist",
@@ -28,12 +44,12 @@
             "output": "./"
           },
           {
-            "input": "./src",
-            "glob": "**/*/schema.json",
+            "input": "packages/nx-surrealdb/src",
+            "glob": "**/schema.json",
             "output": "src"
           },
           {
-            "input": "./src/schema",
+            "input": "packages/nx-surrealdb/src/schema",
             "glob": "**/*",
             "output": "src/schema"
           }
@@ -49,7 +65,7 @@
       "options": {
         "commands": [
           {
-            "command": "cp README.md ARCHITECTURE.md executors.json generators.json package.json dist/",
+            "command": "cp README.md ARCHITECTURE.md executors.json generators.json package.json pnpm-lock.yaml dist/",
             "forwardAllArgs": false
           }
         ],

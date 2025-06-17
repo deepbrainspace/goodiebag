@@ -1,4 +1,4 @@
-import { Tree, formatFiles, generateFiles, addProjectConfiguration, ProjectConfiguration } from '@nx/devkit';
+import { Tree, formatFiles, generateFiles, addProjectConfiguration, ProjectConfiguration, readProjectConfiguration } from '@nx/devkit';
 import { MigrationsConfig } from '../../lib/configuration/config-loader';
 import * as path from 'path';
 
@@ -13,6 +13,39 @@ export interface InitGeneratorSchema {
 
 export default async function (tree: Tree, options: InitGeneratorSchema) {
   const { name } = options;
+  
+  // Check and install required dependencies
+  const packageJson = tree.read('package.json');
+  if (packageJson) {
+    const pkg = JSON.parse(packageJson.toString());
+    const requiredDeps = {
+      'surrealdb': '^1.3.2',
+      'dotenv': '^16.5.0',
+      'picocolors': '^1.1.1'
+    };
+    
+    let depsToAdd = false;
+    pkg.dependencies = pkg.dependencies || {};
+    
+    for (const [dep, version] of Object.entries(requiredDeps)) {
+      if (!pkg.dependencies[dep]) {
+        pkg.dependencies[dep] = version;
+        depsToAdd = true;
+      }
+    }
+    
+    if (depsToAdd) {
+      tree.write('package.json', JSON.stringify(pkg, null, 2));
+      console.log(`
+📦 Added required dependencies to package.json:
+   - surrealdb
+   - dotenv
+   - picocolors
+   
+   Run 'npm install' or 'pnpm install' to install them.
+`);
+    }
+  }
   
   // Set defaults using the same pattern as the library
   const config = {
@@ -119,4 +152,28 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
   addProjectConfiguration(tree, name, projectConfig);
 
   await formatFiles(tree);
+  
+  // Log helpful next steps
+  console.log(`
+✅ Database project '${name}' created successfully!
+
+📋 Next steps:
+1. Install dependencies (if not already installed):
+   npm install  # or pnpm install
+
+2. Set up your environment variables in .env:
+   - SURREALDB_URL=ws://localhost:8000/rpc
+   - SURREALDB_ROOT_USER=root
+   - SURREALDB_ROOT_PASS=root
+   - SURREALDB_NAMESPACE=${config.namespace}
+   - SURREALDB_DATABASE=${config.database}
+
+3. Create your first migration:
+   nx g @deepbrainspace/nx-surrealdb:migration --name=init --module=000_admin --project=${name}
+
+4. Run migrations:
+   nx run ${name}:migrate
+
+For more info, see ${name}/README.md
+  `);
 }
