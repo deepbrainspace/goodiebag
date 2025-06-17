@@ -79,10 +79,11 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
+      "dependsOn": ["install"],
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "cache": false,
       "options": {
-        "jestConfig": "packages/nx-surrealdb/jest.config.ts"
+        "jestConfig": "packages/nx-surrealdb/jest.config.js"
       }
     },
     "publish": {

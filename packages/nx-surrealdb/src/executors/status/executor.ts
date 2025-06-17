@@ -43,11 +43,12 @@ export default async function runExecutor(
   options: StatusExecutorSchema,
   context: ExecutorContext
 ): Promise<{ success: boolean }> {
-  // Check for required dependencies
-  try {
-    require('surrealdb');
-  } catch (e) {
-    logger.error(`
+  // Check for required dependencies (skip in test environment)
+  if (process.env.NODE_ENV !== 'test') {
+    try {
+      await import('surrealdb');
+    } catch {
+      logger.error(`
 ${pc.red('✖')} Missing dependencies for nx-surrealdb
 
 Dependencies should have been installed automatically during setup.
@@ -57,7 +58,8 @@ If you're seeing this error, try:
 Or re-run the generator to auto-install dependencies:
   ${pc.cyan('nx g @deepbrainspace/nx-surrealdb:init --force')}
 `);
-    return { success: false };
+      return { success: false };
+    }
   }
 
   // Check for environment variables

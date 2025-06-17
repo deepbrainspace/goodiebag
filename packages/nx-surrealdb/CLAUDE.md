@@ -125,7 +125,19 @@ database/                    # Root migrations directory (configurable via initP
 - Build package: `nx run nx-surrealdb:build` (builds to `packages/nx-surrealdb/dist/`)
 - Run tests: `nx run nx-surrealdb:test`
 - Run single test: `nx run nx-surrealdb:test --testFile=src/lib/client.spec.ts`
-- Pack for testing: `npm pack` (from package directory)
+- Pack for testing: `pnpm pack` (from package directory)
+
+## Package Manager Rules
+**CRITICAL**: NEVER use npm. Always use NX commands first, then pnpm.
+- ✅ `nx build nx-surrealdb`, `nx test nx-surrealdb` 
+- ✅ `pnpm install`, `pnpm publish`, `pnpm pack`
+- ❌ `npm install`, `npm publish`, `npm pack` (FORBIDDEN)
+
+## Critical Rule: NEVER Skip Tests or Lints
+**MANDATORY**: All tests and lints MUST pass before any publish or release.
+- ❌ NEVER skip tests or lints
+- ❌ NEVER publish with failing tests  
+- ✅ Always fix the root cause of test/lint failures
 
 ## Critical Reminders
 

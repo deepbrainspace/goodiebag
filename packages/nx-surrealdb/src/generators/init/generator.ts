@@ -1,4 +1,4 @@
-import { Tree, formatFiles, generateFiles, addProjectConfiguration, ProjectConfiguration, readProjectConfiguration, installPackagesTask } from '@nx/devkit';
+import { Tree, formatFiles, generateFiles, addProjectConfiguration, ProjectConfiguration, installPackagesTask } from '@nx/devkit';
 import { MigrationsConfig } from '../../lib/configuration/config-loader';
 import * as path from 'path';
 
