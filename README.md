@@ -152,6 +152,8 @@ goodiebag/
 
 Our GitHub Actions pipeline demonstrates production-grade monorepo CI/CD with intelligent package detection:
 
+> 📖 **[View Complete Release Process Documentation →](./docs/RELEASE-PROCESS.md)**
+
 ```
    dependencies
        ├── lint ──┐

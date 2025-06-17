@@ -100,6 +100,80 @@ The repository requires:
 
 ## CI/CD Integration
 
-- **CircleCI**: Primary CI/CD pipeline (`.circleci/config.yml`)
+- **GitHub Actions**: Primary CI/CD pipeline (`.github/workflows/`)
 - **NX Cloud**: Distributed caching and execution
-- **Publishing**: Triggered by git tags (e.g., `v1.0.0`)
+- **Publishing**: Automatic on merge to main (semantic versioning)
+
+## Pull Request Format
+
+When creating PRs for this repository, use the following structured format. This enables our automated CI/CD to properly version and release multiple packages.
+
+### PR Title Format
+Use conventional commit format: `type: description`
+- `feat:` for new features (triggers minor version bump)
+- `fix:` for bug fixes (triggers patch version bump)
+- `chore:` for maintenance tasks (triggers patch version bump)
+- `docs:` for documentation (triggers patch version bump)
+- `breaking:` or `feat!:` for breaking changes (triggers major version bump)
+
+### PR Description Template
+```markdown
+## Summary
+Brief description of what this PR accomplishes.
+
+## Packages
+### @deepbrainspace/package-name
+- feat: description of new feature
+- fix: description of bug fix
+- chore: description of maintenance task
+
+### @deepbrainspace/another-package
+- feat: another feature description
+- docs: documentation update
+
+## Breaking Changes
+None
+OR
+- Description of breaking change
+- Migration instructions
+
+## Testing
+- Description of tests added/modified
+- How to test the changes
+```
+
+### Example PR
+
+**Title**: `feat: add migration rollback validation system`
+
+**Description**:
+```markdown
+## Summary
+This PR adds a new migration rollback validation system with dependency conflict detection to prevent data corruption during rollbacks.
+
+## Packages
+### @deepbrainspace/nx-surrealdb
+- feat: add migration rollback validation
+- feat: implement dependency conflict detection
+- fix: resolve connection timeout in long migrations
+- docs: update rollback documentation
+
+### @deepbrainspace/mcp-server-surrealdb
+- feat: add rollback support to MCP server
+- chore: update dependencies to support rollback
+
+## Breaking Changes
+None
+
+## Testing
+- Added unit tests for rollback validation logic
+- Added integration tests for dependency detection
+- Manual testing: nx rollback nx-surrealdb --to=3
+```
+
+### Important Notes
+1. **Package sections are parsed automatically** - use exact package names or folder names
+2. **Each change must start with a type prefix** (feat:, fix:, chore:, etc.)
+3. **Breaking changes affect ALL packages** - use sparingly
+4. **The CI will generate semantic versions** based on the change types
+5. **Release notes are auto-generated** from the PR description

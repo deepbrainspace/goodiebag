@@ -56,7 +56,7 @@ jobs:
         id: detect
         run: |
           # Get affected projects with publish target
-          AFFECTED=$(pnpm nx show projects --affected --with-target=publish --json || echo '[]')
+          AFFECTED=$(nx show projects --affected --with-target=publish --json || echo '[]')
           echo "🔍 Affected packages detected: $AFFECTED"
           
           if [ "$AFFECTED" = "[]" ] || [ -z "$AFFECTED" ]; then
@@ -112,7 +112,7 @@ jobs:
       - name: Run lint for ${{ matrix.package }}
         run: |
           echo "🔍 Linting ${{ matrix.package }}..."
-          pnpm nx run ${{ matrix.package }}:lint
+          nx run ${{ matrix.package }}:lint
 
   test:
     name: 🧪 Test
@@ -153,7 +153,7 @@ jobs:
       - name: Run tests for ${{ matrix.package }}
         run: |
           echo "🧪 Testing ${{ matrix.package }}..."
-          pnpm nx run ${{ matrix.package }}:test --ci --code-coverage
+          nx run ${{ matrix.package }}:test --ci --code-coverage
 
       - name: Upload coverage
         uses: actions/upload-artifact@v4
@@ -202,7 +202,7 @@ jobs:
       - name: Build ${{ matrix.package }}
         run: |
           echo "🏗️ Building ${{ matrix.package }}..."
-          pnpm nx build ${{ matrix.package }}
+          nx build ${{ matrix.package }}
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -213,9 +213,9 @@ jobs:
             packages/${{ matrix.package }}/package.json
           retention-days: 7
 
-  # Phase 4: Analysis (Parallel per Package)
-  analyze:
-    name: 📊 Analyze Changes
+  # Phase 4: Generate Release Notes (Parallel per Package)
+  release-notes:
+    name: 📝 Release Notes
     needs: [detect-affected, build]
     if: needs.detect-affected.outputs.has-packages == 'true'
     strategy:
@@ -227,53 +227,43 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 9.0.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Set SHAs for NX
-        uses: nrwl/nx-set-shas@v4
-        with:
-          main-branch-name: 'main'
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-${{ matrix.package }}
-          path: packages/${{ matrix.package }}/
-
-      - name: Analyze changes for ${{ matrix.package }}
-        id: analyze
+      - name: Parse PR description for package changes
+        id: version
         run: |
-          echo "📊 Analyzing changes for ${{ matrix.package }}..."
+          echo "📊 Parsing PR description for ${{ matrix.package }}..."
           
           # Get package info
           PACKAGE_PATH="packages/${{ matrix.package }}"
           CURRENT_VERSION=$(jq -r '.version' $PACKAGE_PATH/package.json)
           PACKAGE_NAME=$(jq -r '.name' $PACKAGE_PATH/package.json)
           
-          # Get changes since main branch
-          CHANGES=$(git diff ${{ github.event.pull_request.base.sha }}..HEAD --name-only -- $PACKAGE_PATH/ || echo "")
+          # Parse PR description to extract changes for this package
+          PR_BODY="${{ github.event.pull_request.body }}"
           
-          # Simple version bump logic (can be enhanced with AI later)
+          # Extract the section for this package from PR description
+          PACKAGE_SECTION=""
+          if echo "$PR_BODY" | grep -q "### $PACKAGE_NAME"; then
+            PACKAGE_SECTION=$(echo "$PR_BODY" | sed -n "/### $PACKAGE_NAME/,/### /p" | sed '$d' | tail -n +2)
+          elif echo "$PR_BODY" | grep -q "### ${{ matrix.package }}"; then
+            PACKAGE_SECTION=$(echo "$PR_BODY" | sed -n "/### ${{ matrix.package }}/,/### /p" | sed '$d' | tail -n +2)
+          fi
+          
+          # If no specific section found, check for Breaking Changes section
+          BREAKING_SECTION=""
+          if echo "$PR_BODY" | grep -q "## Breaking Changes" && ! echo "$PR_BODY" | grep -q "None"; then
+            BREAKING_SECTION=$(echo "$PR_BODY" | sed -n "/## Breaking Changes/,/## /p" | sed '$d' | tail -n +2)
+          fi
+          
+          # Determine bump type from changes
           BUMP_TYPE="patch"
-          if echo "$CHANGES" | grep -E "(BREAKING|breaking|major)" > /dev/null; then
+          
+          if [ -n "$BREAKING_SECTION" ] && [ "$BREAKING_SECTION" != "None" ]; then
             BUMP_TYPE="major"
-          elif echo "$CHANGES" | grep -E "(feat|feature|minor)" > /dev/null; then
+          elif echo "$PACKAGE_SECTION" | grep -iE "^- feat" > /dev/null; then
             BUMP_TYPE="minor"
+          elif echo "$PACKAGE_SECTION" | grep -iE "^- (fix|chore|docs)" > /dev/null; then
+            BUMP_TYPE="patch"
           fi
           
           # Calculate new version
@@ -285,38 +275,106 @@ jobs:
             NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."$2"."($3+1)}')
           fi
           
-          # Generate change summary
-          COMMIT_MESSAGES=$(git log ${{ github.event.pull_request.base.sha }}..HEAD --oneline --grep="${{ matrix.package }}" || echo "")
-          if [ -z "$COMMIT_MESSAGES" ]; then
-            COMMIT_MESSAGES=$(git log ${{ github.event.pull_request.base.sha }}..HEAD --oneline -- $PACKAGE_PATH/ || echo "- Various improvements")
+          echo "📋 Analysis: $BUMP_TYPE ($CURRENT_VERSION → $NEW_VERSION)"
+          echo "📝 Package changes:"
+          echo "$PACKAGE_SECTION"
+          
+          echo "bump-type=$BUMP_TYPE" >> $GITHUB_OUTPUT
+          echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "current-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "package-name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+          echo "changes<<EOF" >> $GITHUB_OUTPUT
+          echo "$PACKAGE_SECTION" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Generate release notes
+        run: |
+          echo "📝 Generating release notes for ${{ matrix.package }}..."
+          
+          PACKAGE_PATH="packages/${{ matrix.package }}"
+          
+          # Parse changes from PR description into categories
+          FEATURES=""
+          FIXES=""
+          BREAKING=""
+          OTHER=""
+          
+          # Get breaking changes from PR body if any
+          PR_BODY="${{ github.event.pull_request.body }}"
+          if echo "$PR_BODY" | grep -q "## Breaking Changes" && ! echo "$PR_BODY" | grep -q "None"; then
+            BREAKING_SECTION=$(echo "$PR_BODY" | sed -n "/## Breaking Changes/,/## /p" | sed '$d' | tail -n +2)
+            if [ -n "$BREAKING_SECTION" ]; then
+              BREAKING="$BREAKING_SECTION"
+            fi
           fi
           
-          # Create analysis output
-          cat > analysis-${{ matrix.package }}.json << EOF
-          {
-            "package": "${{ matrix.package }}",
-            "name": "$PACKAGE_NAME",
-            "currentVersion": "$CURRENT_VERSION",
-            "newVersion": "$NEW_VERSION",
-            "bumpType": "$BUMP_TYPE",
-            "changes": $(echo "$COMMIT_MESSAGES" | jq -R -s 'split("\n") | map(select(length > 0))'),
-            "changedFiles": $(echo "$CHANGES" | jq -R -s 'split("\n") | map(select(length > 0))')
-          }
+          # Parse package-specific changes
+          while IFS= read -r line; do
+            if [ -n "$line" ]; then
+              if echo "$line" | grep -iE "^- feat" > /dev/null; then
+                FEATURES="$FEATURES\n$line"
+              elif echo "$line" | grep -iE "^- fix" > /dev/null; then
+                FIXES="$FIXES\n$line"
+              elif echo "$line" | grep -iE "^- (chore|docs|style|refactor|test)" > /dev/null; then
+                OTHER="$OTHER\n$line"
+              else
+                OTHER="$OTHER\n$line"
+              fi
+            fi
+          done <<< "${{ steps.version.outputs.changes }}"
+          
+          # Create release notes with preview block at top
+          cat > $PACKAGE_PATH/RELEASE_NOTES.md << EOF
+          <!-- PREVIEW START -->
+          ## 🚀 Release Preview for ${{ steps.version.outputs.package-name }}
+          **Version**: ${{ steps.version.outputs.current-version }} → **${{ steps.version.outputs.new-version }}** (${{ steps.version.outputs.bump-type }})
+          **Branch**: \`${{ github.head_ref }}\`
+          
+          This will be published when the PR is merged.
+          <!-- PREVIEW END -->
+          
+          # Release notes
+          
+          ## ${{ steps.version.outputs.new-version }} ($(date +%Y-%m-%d))
+          
+          $(if [ -n "$BREAKING" ]; then echo "### 💥 BREAKING CHANGES"; echo; echo -e "$BREAKING"; echo; fi)
+          $(if [ -n "$FEATURES" ]; then echo "### ✨ Features"; echo; echo -e "$FEATURES"; echo; fi)
+          $(if [ -n "$FIXES" ]; then echo "### 🐛 Bug Fixes"; echo; echo -e "$FIXES"; echo; fi)
+          $(if [ -n "$OTHER" ]; then echo "### 🏠 Internal"; echo; echo -e "$OTHER"; echo; fi)
           EOF
           
-          echo "📋 Analysis complete for ${{ matrix.package }}: $CURRENT_VERSION → $NEW_VERSION ($BUMP_TYPE)"
+          echo "✅ Release notes generated at $PACKAGE_PATH/RELEASE_NOTES.md"
 
-      - name: Upload analysis
+      - name: Upload release notes as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: analysis-${{ matrix.package }}
-          path: analysis-${{ matrix.package }}.json
-          retention-days: 7
+          name: release-notes-${{ matrix.package }}
+          path: packages/${{ matrix.package }}/RELEASE_NOTES.md
+          retention-days: 30
 
-  # Phase 5: Release Preview (Parallel per Package)
+      - name: Create version info for release
+        run: |
+          cat > version-${{ matrix.package }}.json << EOF
+          {
+            "package": "${{ matrix.package }}",
+            "name": "${{ steps.version.outputs.package-name }}",
+            "currentVersion": "${{ steps.version.outputs.current-version }}",
+            "newVersion": "${{ steps.version.outputs.new-version }}",
+            "bumpType": "${{ steps.version.outputs.bump-type }}"
+          }
+          EOF
+
+      - name: Upload version info
+        uses: actions/upload-artifact@v4
+        with:
+          name: version-${{ matrix.package }}
+          path: version-${{ matrix.package }}.json
+          retention-days: 30
+
+  # Phase 5: Post PR Comments (Parallel per Package)
   preview:
-    name: 📝 Generate Preview
-    needs: [detect-affected, analyze]
+    name: 💬 Post Preview
+    needs: [detect-affected, release-notes]
     if: needs.detect-affected.outputs.has-packages == 'true'
     strategy:
       matrix:
@@ -325,115 +383,80 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download analysis
+      - name: Download release notes for ${{ matrix.package }}
         uses: actions/download-artifact@v4
         with:
-          name: analysis-${{ matrix.package }}
+          name: release-notes-${{ matrix.package }}
 
-      - name: Generate release preview for ${{ matrix.package }}
+      - name: Extract preview block for ${{ matrix.package }}
         run: |
-          echo "📝 Generating release preview for ${{ matrix.package }}..."
+          echo "📝 Extracting preview for ${{ matrix.package }}..."
           
-          # Read analysis
-          ANALYSIS=$(cat analysis-${{ matrix.package }}.json)
-          PACKAGE_NAME=$(echo $ANALYSIS | jq -r '.name')
-          CURRENT_VERSION=$(echo $ANALYSIS | jq -r '.currentVersion')
-          NEW_VERSION=$(echo $ANALYSIS | jq -r '.newVersion')
-          BUMP_TYPE=$(echo $ANALYSIS | jq -r '.bumpType')
+          # Extract preview block from release notes
+          sed -n '/<!-- PREVIEW START -->/,/<!-- PREVIEW END -->/p' RELEASE_NOTES.md | \
+            grep -v '<!-- PREVIEW' > preview-comment.md
           
-          # Generate preview markdown
-          cat > preview-${{ matrix.package }}.md << EOF
-          ## 📦 \`$PACKAGE_NAME\` $CURRENT_VERSION → $NEW_VERSION ($BUMP_TYPE)
-          
-          **Why $BUMP_TYPE?** Detected from commit analysis
-          
-          ### Changes:
-          $(echo $ANALYSIS | jq -r '.changes[]' | sed 's/^/- /')
-          
-          ### Files Modified:
-          $(echo $ANALYSIS | jq -r '.changedFiles[]' | head -10 | sed 's/^/- `/' | sed 's/$/`/')
-          
-          ---
-          EOF
-          
-          echo "✅ Preview generated for ${{ matrix.package }}"
+          echo "📋 Preview extracted for ${{ matrix.package }}"
 
-      - name: Upload preview
-        uses: actions/upload-artifact@v4
+      - name: Post preview comment for ${{ matrix.package }}
+        uses: peter-evans/create-or-update-comment@v4
         with:
-          name: preview-${{ matrix.package }}
-          path: preview-${{ matrix.package }}.md
-          retention-days: 7
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: preview-comment.md
 
-  # Phase 6: Aggregate and Comment
-  comment:
-    name: 💬 Post Release Preview
-    needs: [detect-affected, preview]
+  # Phase 6: Persist Version Data for Release
+  persist-versions:
+    name: 💾 Persist Version Data
+    needs: [detect-affected, release-notes]
     if: needs.detect-affected.outputs.has-packages == 'true'
     runs-on: ubuntu-latest
     
     steps:
-      - name: Download all previews
+      - name: Download all version info
         uses: actions/download-artifact@v4
         with:
-          pattern: preview-*
+          pattern: version-*
           merge-multiple: true
 
-      - name: Aggregate release preview
+      - name: Create version mapping
         run: |
-          echo "💬 Aggregating release preview..."
+          echo "💾 Creating version mapping for release workflow..."
           
-          # Create header
-          cat > final-preview.md << 'EOF'
-          # 🚀 Release Preview
+          # Create consolidated version mapping
+          echo '{' > version-mapping.json
+          first=true
           
-          **Affected Packages:** ${{ needs.detect-affected.outputs.package-count }}
-          
-          ### 📋 What happens on merge:
-          1. ✅ Version bumps applied automatically
-          2. 📦 Packages published to npm with \`next\` tag
-          3. 🏷️ GitHub releases created  
-          4. 🔄 Version commits pushed back to repository
-          
-          ---
-          
-          EOF
-          
-          # Append all package previews
-          for file in preview-*.md; do
+          for file in version-*.json; do
             if [ -f "$file" ]; then
-              cat "$file" >> final-preview.md
+              package=$(basename "$file" .json | sed 's/version-//')
+              new_version=$(jq -r '.newVersion' "$file")
+              bump_type=$(jq -r '.bumpType' "$file")
+              
+              if [ "$first" = true ]; then
+                first=false
+              else
+                echo ',' >> version-mapping.json
+              fi
+              
+              echo "  \"$package\": {" >> version-mapping.json
+              echo "    \"version\": \"$new_version\"," >> version-mapping.json
+              echo "    \"bumpType\": \"$bump_type\"" >> version-mapping.json
+              echo "  }" >> version-mapping.json
             fi
           done
           
-          # Add footer
-          cat >> final-preview.md << 'EOF'
+          echo '}' >> version-mapping.json
           
-          ---
-          
-          *🤖 Generated by AI Release Assistant - Enhanced Parallel Pipeline*
-          EOF
-          
-          echo "📋 Final preview generated"
+          echo "📋 Version mapping created:"
+          cat version-mapping.json
 
-      - name: Find existing comment
-        uses: peter-evans/find-comment@v3
-        id: find-comment
+      - name: Upload version mapping
+        uses: actions/upload-artifact@v4
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: '🚀 Release Preview'
+          name: version-mapping
+          path: version-mapping.json
+          retention-days: 30
 
-      - name: Update or create PR comment
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body-path: final-preview.md
-          edit-mode: replace
 
   # No affected packages notification
   no-packages:

@@ -55,7 +55,7 @@ jobs:
         id: detect
         run: |
           # Get affected projects with publish target
-          AFFECTED=$(pnpm nx show projects --affected --with-target=publish --json || echo '[]')
+          AFFECTED=$(nx show projects --affected --with-target=publish --json || echo '[]')
           echo "🔍 Affected packages detected: $AFFECTED"
           
           if [ "$AFFECTED" = "[]" ] || [ -z "$AFFECTED" ]; then
@@ -71,10 +71,41 @@ jobs:
             echo "🎯 Found $PACKAGE_COUNT affected packages: $AFFECTED"
           fi
 
-  # Phase 2: Apply cached builds (from CI) and publish (parallel per package)
+  # Phase 2: Download version mapping from CI
+  download-versions:
+    name: 📥 Download Version Mapping
+    needs: detect-affected
+    if: needs.detect-affected.outputs.has-packages == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      version-mapping: ${{ steps.load-versions.outputs.mapping }}
+    
+    steps:
+      - name: Download version mapping from CI
+        uses: actions/download-artifact@v4
+        with:
+          name: version-mapping
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Load version mapping
+        id: load-versions
+        run: |
+          echo "📥 Loading version mapping from CI analysis..."
+          if [ -f version-mapping.json ]; then
+            MAPPING=$(cat version-mapping.json)
+            echo "📋 Version mapping loaded:"
+            echo "$MAPPING" | jq .
+            echo "mapping=$MAPPING" >> $GITHUB_OUTPUT
+          else
+            echo "❌ No version mapping found - falling back to patch versions"
+            echo '{}' > fallback-mapping.json
+            echo "mapping={}" >> $GITHUB_OUTPUT
+          fi
+
+  # Phase 3: Apply cached builds (from CI) and publish (parallel per package)
   publish:
     name: 📦 Publish
-    needs: detect-affected
+    needs: [detect-affected, download-versions]
     if: needs.detect-affected.outputs.has-packages == 'true'
     strategy:
       matrix:
@@ -114,9 +145,9 @@ jobs:
       - name: Build ${{ matrix.package }} (use cache)
         run: |
           echo "🏗️ Building ${{ matrix.package }} (should hit cache)..."
-          pnpm nx build ${{ matrix.package }}
+          nx build ${{ matrix.package }}
 
-      - name: Generate SHA version and publish
+      - name: Apply semantic version and publish
         id: publish
         run: |
           echo "📦 Publishing ${{ matrix.package }}..."
@@ -125,20 +156,39 @@ jobs:
           PACKAGE_PATH="packages/${{ matrix.package }}"
           CURRENT_VERSION=$(jq -r '.version' $PACKAGE_PATH/package.json)
           PACKAGE_NAME=$(jq -r '.name' $PACKAGE_PATH/package.json)
-          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
           
-          # Generate SHA-based version
-          if [ "${{ github.ref_name }}" = "main" ]; then
-            NEW_VERSION="sha.${SHORT_SHA}"
-            NPM_TAG="next"
+          # Get version from CI analysis
+          VERSION_MAPPING='${{ needs.download-versions.outputs.version-mapping }}'
+          
+          if [ "$VERSION_MAPPING" != "{}" ] && [ -n "$VERSION_MAPPING" ]; then
+            NEW_VERSION=$(echo "$VERSION_MAPPING" | jq -r --arg pkg "${{ matrix.package }}" '.[$pkg].version // empty')
+            BUMP_TYPE=$(echo "$VERSION_MAPPING" | jq -r --arg pkg "${{ matrix.package }}" '.[$pkg].bumpType // "patch"')
+            
+            if [ -z "$NEW_VERSION" ] || [ "$NEW_VERSION" = "null" ]; then
+              echo "⚠️ No version found in mapping for ${{ matrix.package }}, calculating patch bump"
+              NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."$2"."($3+1)}')
+              BUMP_TYPE="patch"
+            fi
           else
-            NEW_VERSION="${CURRENT_VERSION}-dev.${SHORT_SHA}"
+            echo "⚠️ No version mapping available, calculating patch bump"
+            NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."$2"."($3+1)}')
+            BUMP_TYPE="patch"
+          fi
+          
+          # Set npm tag based on branch and bump type
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            if [ "$BUMP_TYPE" = "major" ]; then
+              NPM_TAG="latest"
+            else
+              NPM_TAG="next"
+            fi
+          else
             NPM_TAG="dev"
           fi
           
           echo "📋 Package: $PACKAGE_NAME"
           echo "📋 Current Version: $CURRENT_VERSION"
-          echo "📋 New Version: $NEW_VERSION"
+          echo "📋 New Version: $NEW_VERSION ($BUMP_TYPE)"
           echo "📋 npm tag: $NPM_TAG"
           
           # Update package.json version
@@ -158,8 +208,9 @@ jobs:
           echo "success=true" >> $GITHUB_OUTPUT
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "npm-tag=$NPM_TAG" >> $GITHUB_OUTPUT
+          echo "bump-type=$BUMP_TYPE" >> $GITHUB_OUTPUT
           
-          echo "✅ Successfully published $PACKAGE_NAME@$NEW_VERSION"
+          echo "✅ Successfully published $PACKAGE_NAME@$NEW_VERSION ($BUMP_TYPE)"
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -170,10 +221,10 @@ jobs:
           path: packages/${{ matrix.package }}/*.tgz
           retention-days: 30
 
-  # Phase 3: GitHub Releases (parallel per package)
+  # Phase 4: GitHub Releases (parallel per package)
   github-release:
     name: 🏷️ GitHub Release
-    needs: [detect-affected, publish]
+    needs: [detect-affected, download-versions, publish]
     if: needs.detect-affected.outputs.has-packages == 'true'
     strategy:
       matrix:
@@ -200,13 +251,34 @@ jobs:
           PACKAGE_NAME=$(jq -r '.name' $PACKAGE_PATH/package.json)
           SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
           
-          # Generate version (same logic as publish job)
-          if [ "${{ github.ref_name }}" = "main" ]; then
-            NEW_VERSION="sha.${SHORT_SHA}"
-            RELEASE_TYPE="Development Release"
+          # Get version from CI analysis (same as publish job)
+          VERSION_MAPPING='${{ needs.download-versions.outputs.version-mapping }}'
+          
+          if [ "$VERSION_MAPPING" != "{}" ] && [ -n "$VERSION_MAPPING" ]; then
+            NEW_VERSION=$(echo "$VERSION_MAPPING" | jq -r --arg pkg "${{ matrix.package }}" '.[$pkg].version // empty')
+            BUMP_TYPE=$(echo "$VERSION_MAPPING" | jq -r --arg pkg "${{ matrix.package }}" '.[$pkg].bumpType // "patch"')
+            
+            if [ -z "$NEW_VERSION" ] || [ "$NEW_VERSION" = "null" ]; then
+              CURRENT_VERSION=$(jq -r '.version' $PACKAGE_PATH/package.json)
+              NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."$2"."($3+1)}')
+              BUMP_TYPE="patch"
+            fi
           else
             CURRENT_VERSION=$(jq -r '.version' $PACKAGE_PATH/package.json)
-            NEW_VERSION="${CURRENT_VERSION}-dev.${SHORT_SHA}"
+            NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."$2"."($3+1)}')
+            BUMP_TYPE="patch"
+          fi
+          
+          # Determine release type
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            if [ "$BUMP_TYPE" = "major" ]; then
+              RELEASE_TYPE="Major Release"
+            elif [ "$BUMP_TYPE" = "minor" ]; then
+              RELEASE_TYPE="Minor Release"
+            else
+              RELEASE_TYPE="Patch Release"
+            fi
+          else
             RELEASE_TYPE="Development Preview"
           fi
           
@@ -221,7 +293,7 @@ jobs:
           ## 🚀 $RELEASE_TYPE
           
           **Package**: \`$PACKAGE_NAME\`
-          **Version**: \`$NEW_VERSION\`
+          **Version**: \`$NEW_VERSION\` ($BUMP_TYPE)
           **Commit**: ${{ github.sha }}
           **Branch**: ${{ github.ref_name }}
           
@@ -265,10 +337,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # Phase 4: Commit version updates back to repo
+  # Phase 5: Commit version updates back to repo
   finalize:
     name: 🔄 Commit Version Updates
-    needs: [detect-affected, publish, github-release]
+    needs: [detect-affected, download-versions, publish, github-release]
     if: needs.detect-affected.outputs.has-packages == 'true'
     runs-on: ubuntu-latest
     
@@ -284,6 +356,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Download release notes
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-notes-*
+          merge-multiple: true
+
       - name: Update package versions and commit
         run: |
           echo "🔄 Updating package versions..."
@@ -292,17 +370,27 @@ jobs:
           CHANGED_FILES=""
           RELEASED_PACKAGES=""
           
+          # Get version mapping from CI analysis
+          VERSION_MAPPING='${{ needs.download-versions.outputs.version-mapping }}'
+          
           # Update each affected package
           echo '${{ needs.detect-affected.outputs.packages }}' | jq -r '.[]' | while read package; do
             PACKAGE_PATH="packages/$package"
             PACKAGE_NAME=$(jq -r '.name' $PACKAGE_PATH/package.json)
             CURRENT_VERSION=$(jq -r '.version' $PACKAGE_PATH/package.json)
             
-            # Generate same version as publish job
-            if [ "${{ github.ref_name }}" = "main" ]; then
-              NEW_VERSION="sha.${SHORT_SHA}"
+            # Get semantic version from CI analysis
+            if [ "$VERSION_MAPPING" != "{}" ] && [ -n "$VERSION_MAPPING" ]; then
+              NEW_VERSION=$(echo "$VERSION_MAPPING" | jq -r --arg pkg "$package" '.[$pkg].version // empty')
+              BUMP_TYPE=$(echo "$VERSION_MAPPING" | jq -r --arg pkg "$package" '.[$pkg].bumpType // "patch"')
+              
+              if [ -z "$NEW_VERSION" ] || [ "$NEW_VERSION" = "null" ]; then
+                NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."$2"."($3+1)}')
+                BUMP_TYPE="patch"
+              fi
             else
-              NEW_VERSION="${CURRENT_VERSION}-dev.${SHORT_SHA}"
+              NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."$2"."($3+1)}')
+              BUMP_TYPE="patch"
             fi
             
             echo "Updating $PACKAGE_PATH/package.json to $NEW_VERSION"
@@ -311,7 +399,14 @@ jobs:
             cd - > /dev/null
             
             echo "$PACKAGE_PATH/package.json" >> changed_files.txt
-            echo "- $PACKAGE_NAME@$NEW_VERSION" >> released_packages.txt
+            echo "- $PACKAGE_NAME@$NEW_VERSION ($BUMP_TYPE)" >> released_packages.txt
+            
+            # Also commit the release notes
+            if [ -f "RELEASE_NOTES.md" ]; then
+              cp "RELEASE_NOTES.md" "$PACKAGE_PATH/"
+              echo "$PACKAGE_PATH/RELEASE_NOTES.md" >> changed_files.txt
+              echo "  📝 Release notes updated" >> released_packages.txt
+            fi
           done
           
           # Check if we have changes to commit
@@ -322,12 +417,12 @@ jobs:
             cat > commit_message.txt << EOF
           chore: release versions
           
-          📦 Automated version updates from release pipeline
+          📦 Automated semantic version updates from AI analysis
           
           Packages released:
           $(cat released_packages.txt)
           
-          🤖 Generated with Enhanced Parallel Pipeline
+          🤖 Generated with AI-Driven Release Pipeline
           
           Co-Authored-By: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
           EOF
