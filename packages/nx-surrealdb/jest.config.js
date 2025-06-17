@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   displayName: 'nx-surrealdb',
   preset: 'ts-jest',
   testEnvironment: 'node',
@@ -14,7 +14,7 @@ export default {
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/files/**',
-    '!jest.config.ts',
+    '!jest.config.js',
   ],
   testMatch: [
     '<rootDir>/src/**/*.spec.ts'

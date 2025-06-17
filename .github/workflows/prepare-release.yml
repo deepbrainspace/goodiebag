@@ -4,6 +4,11 @@ on:
   issue_comment:
     types: [created]
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
 jobs:
   # Only run if comment contains "prepare_release" and is on a PR
   prepare-release:
@@ -14,6 +19,15 @@ jobs:
       contains(github.event.comment.body, 'prepare_release')
     
     steps:
+      - name: Acknowledge request
+        run: |
+          echo "📝 Acknowledging release preparation request..."
+          gh pr comment ${{ github.event.issue.number }} --body "🤖 **Release preparation started...**
+
+Request by @${{ github.event.comment.user.login }} acknowledged. Checking CI status..."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Get PR details
         id: pr
         run: |
@@ -34,6 +48,43 @@ jobs:
           echo "📋 PR #$PR_NUMBER"
           echo "📋 Head SHA: $PR_HEAD_SHA"
           echo "📋 Base SHA: $PR_BASE_SHA"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Wait for CI to complete
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ steps.pr.outputs.head-sha }}
+          check-regexp: ^(🔍|🧪|🏗️|✅).*  # Match our CI job names
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
+          running-workflow-name: '🚀 Prepare Release'
+
+      - name: Check CI status
+        id: ci-check
+        run: |
+          echo "🔍 Checking final CI status..."
+          
+          # Get check runs for the head SHA
+          CHECK_RUNS=$(gh api repos/${{ github.repository }}/commits/${{ steps.pr.outputs.head-sha }}/check-runs)
+          
+          # Check if all required checks passed
+          FAILED_CHECKS=$(echo "$CHECK_RUNS" | jq -r '.check_runs[] | select(.conclusion != "success" and .conclusion != "skipped" and .conclusion != null and .name != "🚀 Prepare Release") | .name')
+          
+          if [ -n "$FAILED_CHECKS" ]; then
+            echo "❌ CI checks failed."
+            
+            # Comment on PR
+            gh pr comment ${{ steps.pr.outputs.pr-number }} --body "❌ **Release preparation blocked**
+
+CI checks have failed. Please fix the failing checks before preparing the release.
+
+Failed checks:
+$(echo "$FAILED_CHECKS" | sed 's/^/- /')"
+            exit 1
+          fi
+          
+          echo "✅ All CI checks passed!"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

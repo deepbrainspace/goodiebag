@@ -43,12 +43,51 @@ export default async function runExecutor(
   options: StatusExecutorSchema,
   context: ExecutorContext
 ): Promise<{ success: boolean }> {
+  // Check for required dependencies (skip in test environment)
+  if (process.env.NODE_ENV !== 'test') {
+    try {
+      await import('surrealdb');
+    } catch {
+      logger.error(`
+${pc.red('✖')} Missing dependencies for nx-surrealdb
+
+Dependencies should have been installed automatically during setup.
+If you're seeing this error, try:
+  ${pc.cyan('npm install surrealdb dotenv picocolors')}
+
+Or re-run the generator to auto-install dependencies:
+  ${pc.cyan('nx g @deepbrainspace/nx-surrealdb:init --force')}
+`);
+      return { success: false };
+    }
+  }
+
+  // Check for environment variables
+  const requiredEnvVars = ['SURREALDB_URL', 'SURREALDB_ROOT_USER', 'SURREALDB_ROOT_PASS'];
+  const missingEnvVars = requiredEnvVars.filter(v => !process.env[v] && !options[v.replace('SURREALDB_', '').toLowerCase()]);
+  
+  if (missingEnvVars.length > 0) {
+    logger.warn(`
+${pc.yellow('⚠')} Missing environment variables:
+${missingEnvVars.map(v => `  - ${v}`).join('\n')}
+
+Please add these to your .env file or pass them as options.
+Example .env file:
+  SURREALDB_URL=ws://localhost:8000/rpc
+  SURREALDB_ROOT_USER=root
+  SURREALDB_ROOT_PASS=root
+  SURREALDB_NAMESPACE=development
+  SURREALDB_DATABASE=main
+`);
+  }
+
   const engine = new MigrationService(context);
 
   // Enable debug mode if requested
   Debug.setEnabled(!!options.debug);
-
+  
   try {
+
     // Initialize migration engine
     await engine.initialize({
       url: options.url || '',
@@ -248,12 +287,16 @@ export default async function runExecutor(
 
       // Show detailed info if requested
       if (options.detailed) {
-        // Get pending migrations for this module
+        // Get pending migrations for this module (includes dependencies)
         const pendingMigrations = await engine.findPendingMigrations([module.moduleId]);
         if (pendingMigrations.length > 0) {
           logger.info(`      Pending Files:`);
           for (const migration of pendingMigrations) {
-            logger.info(`        • ${migration.filename}`);
+            // Add dependency label if file is from a different module
+            const dependencyLabel = migration.moduleId !== module.moduleId 
+              ? ` (dependency: ${migration.moduleId})`
+              : '';
+            logger.info(`        • ${migration.filename}${dependencyLabel}`);
           }
         }
       }

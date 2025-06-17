@@ -78,7 +78,7 @@ web_modules/
 
 # Test projects
 test-project/
-
+test-plugin/
 # Yarn Integrity file
 .yarn-integrity
 

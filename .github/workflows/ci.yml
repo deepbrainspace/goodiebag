@@ -29,6 +29,11 @@ jobs:
       package-count: ${{ steps.detect.outputs.package-count }}
     
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
@@ -38,7 +43,7 @@ jobs:
 
   # Phase 2: Validation (Parallel per Package)
   lint:
-    name: 🔍 Lint
+    name: 🔍 Lint (${{ matrix.package }})
     needs: detect-affected
     if: needs.detect-affected.outputs.has-packages == 'true'
     strategy:
@@ -48,6 +53,11 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
@@ -57,7 +67,7 @@ jobs:
           nx run ${{ matrix.package }}:lint
 
   test:
-    name: 🧪 Test
+    name: 🧪 Test (${{ matrix.package }})
     needs: detect-affected
     if: needs.detect-affected.outputs.has-packages == 'true'
     strategy:
@@ -67,6 +77,11 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
@@ -84,7 +99,7 @@ jobs:
 
   # Phase 3: Build (Parallel per Package)
   build:
-    name: 🏗️ Build
+    name: 🏗️ Build (${{ matrix.package }})
     needs: [detect-affected, lint, test]
     if: needs.detect-affected.outputs.has-packages == 'true'
     strategy:
@@ -94,6 +109,11 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 

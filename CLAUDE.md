@@ -9,6 +9,18 @@ DeepBrain NX Plugins monorepo. Primary plugin: `@deepbrainspace/nx-surrealdb` fo
 - **Lint**: `nx lint nx-surrealdb`
 - **Check affected**: `nx show projects --affected --with-target=publish`
 
+## Package Manager Preference
+**IMPORTANT**: Always use NX commands first, then pnpm. NEVER use npm.
+- ✅ `nx build`, `nx test`, `nx lint`
+- ✅ `pnpm install`, `pnpm publish`
+- ❌ `npm install`, `npm publish` (NEVER use)
+
+## Critical Rule: NEVER Skip Tests or Lints
+**MANDATORY**: All tests and lints MUST pass before any publish or release.
+- ❌ NEVER skip tests or lints
+- ❌ NEVER publish with failing tests
+- ✅ Always fix the root cause of test/lint failures
+
 ## Release Process
 1. **CI**: Every PR runs lint/test/build
 2. **Prepare**: Comment `prepare_release` on PR 

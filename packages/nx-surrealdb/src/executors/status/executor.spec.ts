@@ -38,6 +38,14 @@ describe('Status Executor', () => {
     jest.clearAllMocks();
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
     
+    // Set test environment to skip dependency checks
+    process.env.NODE_ENV = 'test';
+    
+    // Mock environment variables to prevent env var warnings
+    process.env.SURREALDB_URL = 'ws://localhost:8000';
+    process.env.SURREALDB_ROOT_USER = 'root';
+    process.env.SURREALDB_ROOT_PASS = 'root';
+    
     const tree = createTreeWithEmptyWorkspace();
     context = {
       root: tree.root,
@@ -120,6 +128,12 @@ describe('Status Executor', () => {
   afterEach(() => {
     jest.resetAllMocks();
     consoleLogSpy.mockRestore();
+    
+    // Clean up environment variables
+    delete process.env.NODE_ENV;
+    delete process.env.SURREALDB_URL;
+    delete process.env.SURREALDB_ROOT_USER;
+    delete process.env.SURREALDB_ROOT_PASS;
   });
 
   describe('basic functionality', () => {

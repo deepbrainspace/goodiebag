@@ -3,9 +3,25 @@
   "sourceRoot": "packages/nx-surrealdb/src",
   "projectType": "library",
   "targets": {
+    "install": {
+      "executor": "nx:run-commands",
+      "outputs": [],
+      "cache": false,
+      "options": {
+        "commands": [
+          {
+            "command": "pnpm install --frozen-lockfile",
+            "forwardAllArgs": false
+          }
+        ],
+        "cwd": "packages/nx-surrealdb",
+        "parallel": false
+      }
+    },
     "build-ts": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
+      "dependsOn": ["install"],
       "cache": false,
       "options": {
         "outputPath": "{workspaceRoot}/packages/nx-surrealdb/dist",
@@ -13,27 +29,17 @@
         "tsConfig": "{workspaceRoot}/packages/nx-surrealdb/tsconfig.lib.json",
         "assets": [
           {
-            "input": "./src/generators/migration/files",
-            "glob": "**/*",
-            "output": "src/generators/migration/files"
-          },
-          {
-            "input": "packages/nx-surrealdb/src/generators/init/files",
-            "glob": "**/*",
-            "output": "src/generators/init/files"
-          },
-          {
             "input": "packages/nx-surrealdb",
             "glob": "{package.json,generators.json,executors.json,README.md,LICENSE.md,ARCHITECTURE.md}",
             "output": "./"
           },
           {
-            "input": "./src",
-            "glob": "**/*/schema.json",
+            "input": "packages/nx-surrealdb/src",
+            "glob": "**/schema.json",
             "output": "src"
           },
           {
-            "input": "./src/schema",
+            "input": "packages/nx-surrealdb/src/schema",
             "glob": "**/*",
             "output": "src/schema"
           }
@@ -49,7 +55,15 @@
       "options": {
         "commands": [
           {
-            "command": "cp README.md ARCHITECTURE.md executors.json generators.json package.json dist/",
+            "command": "cp README.md ARCHITECTURE.md executors.json generators.json package.json pnpm-lock.yaml dist/",
+            "forwardAllArgs": false
+          },
+          {
+            "command": "cp -r src/generators/init/files dist/src/generators/init/",
+            "forwardAllArgs": false
+          },
+          {
+            "command": "cp -r src/generators/migration/files dist/src/generators/migration/",
             "forwardAllArgs": false
           }
         ],
@@ -65,10 +79,11 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
+      "dependsOn": ["install"],
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "cache": false,
       "options": {
-        "jestConfig": "packages/nx-surrealdb/jest.config.ts"
+        "jestConfig": "packages/nx-surrealdb/jest.config.js"
       }
     },
     "publish": {

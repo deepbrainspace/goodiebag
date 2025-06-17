@@ -12,19 +12,15 @@
     "publish:all": "nx run-many --target=publish --all",
     "publish:affected": "nx affected --target=publish",
     "version:patch": "nx affected --target=version --configuration=patch",
-    "version:minor": "nx affected --target=version --configuration=minor", 
+    "version:minor": "nx affected --target=version --configuration=minor",
     "version:major": "nx affected --target=version --configuration=major",
     "release:patch": "pnpm version:patch && pnpm publish:affected",
     "release:minor": "pnpm version:minor && pnpm publish:affected",
     "release:major": "pnpm version:major && pnpm publish:affected"
   },
   "devDependencies": {
-    "@nx/devkit": "^21.2.0",
-    "@nx/js": "^21.2.0",
-    "@nx/plugin": "^21.2.0",
     "@nx/workspace": "^21.2.0",
     "nx": "^21.2.0",
-    "nx-cloud": "latest",
-    "typescript": "^5.8.3"
+    "nx-cloud": "latest"
   }
 }
