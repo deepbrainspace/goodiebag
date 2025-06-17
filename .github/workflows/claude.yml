@@ -39,7 +39,9 @@ jobs:
           
           timeout_minutes: "60"
           # Optional: add custom trigger phrase (default: @claude)
-          trigger_phrase: "@claude"
+          # NOTE: Setting trigger_phrase overrides the default @claude behavior entirely
+          # When trigger_phrase: "/claude" is enabled, @claude mentions stop working
+          # trigger_phrase: "/claude"
           # Optional: add assignee trigger for issues
           assignee_trigger: "claude"
           # Optional: add custom environment variables (YAML format)
