@@ -2,8 +2,7 @@ name: CI
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
-    # Only run when code changes, not just docs
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - 'packages/**'
       - 'apps/**'
@@ -14,110 +13,123 @@ on:
       - 'tsconfig*.json'
       - '.github/workflows/ci.yml'
 
-# Cancel in-progress runs when a new run is triggered
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # Single job that runs everything in parallel where possible
-  validate:
-    name: Validate PR
+  # Phase 1: Detection
+  detect-affected:
+    name: 🔍 Detect Affected Packages
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    outputs:
+      packages: ${{ steps.detect.outputs.packages }}
+      has-packages: ${{ steps.detect.outputs.has-packages }}
+      package-count: ${{ steps.detect.outputs.package-count }}
+    
+    steps:
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
+
+      - name: Detect affected packages
+        id: detect
+        uses: ./.github/actions/detect-affected
+
+  # Phase 2: Validation (Parallel per Package)
+  lint:
+    name: 🔍 Lint
+    needs: detect-affected
+    if: needs.detect-affected.outputs.has-packages == 'true'
+    strategy:
+      matrix:
+        package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
+      fail-fast: false
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          # Need full history for nx affected
-          fetch-depth: 0
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 9.0.0
+      - name: Run lint for ${{ matrix.package }}
+        run: |
+          echo "🔍 Linting ${{ matrix.package }}..."
+          nx run ${{ matrix.package }}:lint
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'pnpm'
+  test:
+    name: 🧪 Test
+    needs: detect-affected
+    if: needs.detect-affected.outputs.has-packages == 'true'
+    strategy:
+      matrix:
+        package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
+      fail-fast: false
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Run tests for ${{ matrix.package }}
+        run: |
+          echo "🧪 Testing ${{ matrix.package }}..."
+          nx run ${{ matrix.package }}:test --ci --code-coverage
 
-      # Derive base and head SHAs for nx affected
-      - name: Set SHAs for NX
-        uses: nrwl/nx-set-shas@v4
-        with:
-          main-branch-name: 'main'
-
-      # Cache NX results between runs
-      - name: Cache NX
-        uses: actions/cache@v4
-        with:
-          path: .nx/cache
-          key: nx-${{ runner.os }}-${{ github.sha }}
-          restore-keys: |
-            nx-${{ runner.os }}-
-
-      # Run affected targets in parallel
-      - name: Run NX affected lint
-        run: pnpm nx affected --target=lint --parallel=3
-
-      - name: Run NX affected test
-        run: pnpm nx affected --target=test --parallel=3 --ci --code-coverage
-
-      - name: Run NX affected build
-        run: pnpm nx affected --target=build --parallel=3
-
-      # Upload coverage reports
-      - name: Upload coverage reports
+      - name: Upload coverage
         uses: actions/upload-artifact@v4
-        if: always()
         with:
-          name: coverage-reports
+          name: coverage-${{ matrix.package }}
           path: coverage/
           retention-days: 7
 
-      # Comment on PR with affected projects (optional but helpful)
-      - name: Comment PR with affected projects
-        uses: actions/github-script@v7
-        if: always()
-        with:
-          script: |
-            const output = require('child_process')
-              .execSync('pnpm nx show projects --affected', { encoding: 'utf-8' })
-              .trim();
-            
-            if (output) {
-              const projects = output.split('\n').filter(Boolean);
-              const body = `### 📦 Affected Projects\n\n${projects.map(p => `- ${p}`).join('\n')}`;
-              
-              // Find existing comment
-              const { data: comments } = await github.rest.issues.listComments({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-              });
-              
-              const botComment = comments.find(comment => 
-                comment.user.type === 'Bot' && comment.body.includes('📦 Affected Projects')
-              );
-              
-              if (botComment) {
-                await github.rest.issues.updateComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  comment_id: botComment.id,
-                  body
-                });
-              } else {
-                await github.rest.issues.createComment({
-                  issue_number: context.issue.number,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  body
-                });
-              }
-            }
+  # Phase 3: Build (Parallel per Package)
+  build:
+    name: 🏗️ Build
+    needs: [detect-affected, lint, test]
+    if: needs.detect-affected.outputs.has-packages == 'true'
+    strategy:
+      matrix:
+        package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
+      fail-fast: false
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
+
+      - name: Build ${{ matrix.package }}
+        run: |
+          echo "🏗️ Building ${{ matrix.package }}..."
+          nx build ${{ matrix.package }}
+
+  # Summary
+  summary:
+    name: ✅ CI Summary
+    needs: [detect-affected, lint, test, build]
+    if: always()
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Post CI summary
+        run: |
+          if [[ "${{ needs.detect-affected.outputs.has-packages }}" == "true" ]]; then
+            echo "✅ CI completed for ${{ needs.detect-affected.outputs.package-count }} packages"
+            echo "📦 Packages: ${{ needs.detect-affected.outputs.packages }}"
+            echo ""
+            echo "💡 To prepare for release, comment 'prepare_release' on this PR"
+          else
+            echo "ℹ️ No affected packages found - documentation or config changes only"
+          fi
+
+  # No affected packages notification  
+  no-packages:
+    name: ℹ️ No Packages Affected
+    needs: detect-affected
+    if: needs.detect-affected.outputs.has-packages == 'false'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Report status
+        run: |
+          echo "ℹ️ No packages with publish targets were affected by this PR."
+          echo "The changes appear to be documentation, configuration, or non-publishable code."
