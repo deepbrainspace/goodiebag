@@ -61,6 +61,10 @@ runs:
       with:
         node-version: ${{ inputs.node-version }}
 
+    - name: Add node_modules/.bin to PATH
+      shell: bash
+      run: echo "${GITHUB_WORKSPACE}/node_modules/.bin" >> $GITHUB_PATH
+
     - name: Set SHAs for NX
       uses: nrwl/nx-set-shas@v4
       with:
