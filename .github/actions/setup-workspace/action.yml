@@ -24,20 +24,48 @@ runs:
         fetch-depth: ${{ inputs.fetch-depth }}
         token: ${{ inputs.token }}
 
+    - name: Cache workspace setup
+      id: cache-workspace
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.pnpm-store
+          node_modules
+          .nx/cache
+        key: workspace-${{ runner.os }}-node${{ inputs.node-version }}-pnpm${{ inputs.pnpm-version }}-${{ hashFiles('**/pnpm-lock.yaml', 'package.json', 'packages/*/package.json') }}
+        restore-keys: |
+          workspace-${{ runner.os }}-node${{ inputs.node-version }}-pnpm${{ inputs.pnpm-version }}-
+          workspace-${{ runner.os }}-node${{ inputs.node-version }}-
+
     - name: Setup pnpm
+      if: steps.cache-workspace.outputs.cache-hit != 'true'
       uses: pnpm/action-setup@v2
       with:
         version: ${{ inputs.pnpm-version }}
 
     - name: Setup Node.js
+      if: steps.cache-workspace.outputs.cache-hit != 'true'
       uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node-version }}
         cache: 'pnpm'
 
     - name: Install dependencies
+      if: steps.cache-workspace.outputs.cache-hit != 'true'
       shell: bash
       run: pnpm install --frozen-lockfile
+
+    - name: Setup pnpm (cache hit)
+      if: steps.cache-workspace.outputs.cache-hit == 'true'
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ inputs.pnpm-version }}
+
+    - name: Setup Node.js (cache hit)
+      if: steps.cache-workspace.outputs.cache-hit == 'true'
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
 
     - name: Set SHAs for NX
       uses: nrwl/nx-set-shas@v4
