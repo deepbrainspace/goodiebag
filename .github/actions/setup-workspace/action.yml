@@ -1,0 +1,33 @@
+name: 'Setup Workspace'
+description: 'Setup Node.js, pnpm, install dependencies, and configure NX'
+
+inputs:
+  node-version:
+    description: 'Node.js version to use'
+    default: '20'
+  pnpm-version:
+    description: 'pnpm version to use'
+    default: '9.0.0'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: ${{ inputs.pnpm-version }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: 'pnpm'
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
+
+    - name: Set SHAs for NX
+      uses: nrwl/nx-set-shas@v4
+      with:
+        main-branch-name: 'main'

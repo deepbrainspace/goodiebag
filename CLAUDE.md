@@ -103,6 +103,7 @@ The repository requires:
 - **GitHub Actions**: Primary CI/CD pipeline (`.github/workflows/`)
 - **NX Cloud**: Distributed caching and execution
 - **Publishing**: Automatic on merge to main (semantic versioning)
+- **Composite Actions**: Shared setup in `.github/actions/setup-workspace/`
 
 ## Pull Request Format
 
