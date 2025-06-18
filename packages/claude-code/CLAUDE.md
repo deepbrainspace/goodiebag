@@ -49,21 +49,21 @@ The root `target/` folder can contain 10,000+ files and 1+ GB of build artifacts
 
 ## NX Configuration
 
-The claude-code package is configured with proper `cwd` settings in `project.json`:
+The claude-code package is configured with explicit `--target-dir` flags in `project.json`:
 
 ```json
 {
   "build": {
     "executor": "nx:run-commands",
     "options": {
-      "command": "cargo build --release",
+      "command": "cargo build --target-dir ./target --release",
       "cwd": "packages/claude-code"  // Ensures cargo runs in package directory
     }
   }
 }
 ```
 
-This ensures all cargo commands execute in the correct package directory, creating `packages/claude-code/target/` instead of `./target/`.
+The `--target-dir ./target` flag is **critical** - without it, cargo will resolve the target directory to the workspace root even when run from the package directory. This ensures all cargo commands create artifacts in `packages/claude-code/target/` instead of the repository root `./target/`.
 
 ## Emergency Cleanup
 
