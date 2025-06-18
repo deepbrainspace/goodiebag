@@ -78,12 +78,19 @@
       }
     },
     "test": {
-      "executor": "@nx/jest:jest",
+      "executor": "nx:run-commands",
       "dependsOn": ["install"],
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "cache": false,
       "options": {
-        "jestConfig": "packages/nx-surrealdb/jest.config.js"
+        "commands": [
+          {
+            "command": "npx jest --config=jest.config.js",
+            "forwardAllArgs": false
+          }
+        ],
+        "cwd": "packages/nx-surrealdb",
+        "parallel": false
       }
     }
   }
