@@ -29,8 +29,6 @@ credentials:
     accessToken: "CLAUDE_ACCESS_TOKEN"
     refreshToken: "CLAUDE_REFRESH_TOKEN" 
     expiresAt: "CLAUDE_EXPIRES_AT"
-    subscriptionType: "CLAUDE_SUBSCRIPTION"
-    scopes: "CLAUDE_SCOPES"
     
     # Add custom mappings as needed:
     # custom_field: "CUSTOM_SECRET_NAME"

@@ -66,8 +66,9 @@
         "commands": [
           "echo '🔧 Installing claude-code binary...'",
           "echo 'Working directory: $(pwd)'",
-          "echo 'Target directory: $(ls -la target/ | head -3)'",
-          "cargo install --path . --target-dir ./target --verbose",
+          "mkdir -p ~/.cargo/bin",
+          "cp target/release/claude-code ~/.cargo/bin/claude-code",
+          "chmod +x ~/.cargo/bin/claude-code",
           "echo '🔍 Checking installation...'",
           "which claude-code || echo 'WARNING: claude-code not found in PATH'",
           "ls -la ~/.cargo/bin/claude-code || echo 'WARNING: Binary not found in ~/.cargo/bin'",
