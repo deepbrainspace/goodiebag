@@ -15,6 +15,14 @@ DeepBrain NX Plugins monorepo. Primary plugin: `@deepbrainspace/nx-surrealdb` fo
 - ✅ `pnpm install`
 - ❌ `npm install`, `npm publish` (NEVER use)
 
+## NX Command Preference
+**PREFER AFFECTED OPERATIONS**: Use `nx affected` for efficiency in CI/CD and development.
+- ✅ `nx affected --target=build` (only builds changed packages)
+- ✅ `nx affected --target=test` (only tests affected packages)
+- ✅ `nx affected --target=lint` (only lints changed code)
+- ⚠️ `nx run-many --target=build --all` (builds everything, slower)
+- ❌ Individual package commands (defeats monorepo benefits)
+
 ## Critical Rule: NEVER Skip Tests or Lints
 **MANDATORY**: All tests and lints MUST pass before any publish or release.
 - ❌ NEVER skip tests or lints
