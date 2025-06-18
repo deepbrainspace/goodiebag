@@ -52,6 +52,12 @@ DeepBrain NX Plugins monorepo. Primary plugin: `@deepbrainspace/nx-surrealdb` fo
 - Keep business logic in Service, data operations in Repository
 - Always rebuild after changes: `nx build nx-surrealdb`
 
+**Rust Workspace Rules**:
+- ⚠️ **NEVER run cargo commands from repository root** (creates root target/ folder)
+- ✅ Always use NX commands: `nx build claude-code`, `nx test claude-code`
+- ✅ If using cargo directly, always `cd packages/claude-code` first
+- Keep build artifacts in package directories only
+
 ## Conventional Commits
 **REQUIRED**: Use conventional commit format for automatic version determination:
 
