@@ -154,3 +154,6 @@ Cargo.lock  # For applications (keep for libraries)
 *.rlib
 *.rmeta
 *.pdb
+
+# Temporary directories
+tmp/
