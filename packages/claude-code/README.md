@@ -16,27 +16,44 @@ Claude Code management tool for automatic credential synchronization to GitHub, 
 
 ## Installation
 
-### From Source (Development)
+### Option 1: Cargo Install (Recommended for Users)
+
+```bash
+# Install directly from source
+cargo install --git https://github.com/deepbrainspace/goodiebag --root ~/.local --bin claude-code
+
+# Add to PATH if not already
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### Option 2: Pre-built Binary (Coming Soon)
+
+Download the latest release from [GitHub Releases](https://github.com/deepbrainspace/goodiebag/releases).
+
+### Option 3: From Source (Development)
 
 ```bash
 # Clone the repository
 git clone https://github.com/deepbrainspace/goodiebag
 cd goodiebag/packages/claude-code
 
-# Build and install
+# Build and install to ~/.cargo/bin
 cargo build --release
 cargo install --path .
 ```
 
-### Via NX (Recommended for Development)
+### Option 4: Via NX (Contributors)
 
 ```bash
-# Build with NX
+# From repository root
 nx build claude-code
 
-# Install locally
+# Install to ~/.cargo/bin
 nx run claude-code:install
 ```
+
+**Important**: The binary must remain in a stable location for the daemon service to work. If you move the binary after installing the service, run `claude-code service install` again.
 
 ## Prerequisites
 
@@ -91,10 +108,10 @@ claude-code timer
 - `claude-code sync logs [--lines N]` - View daemon logs
 
 ### Service Management
-- `claude-code service install` - Install and start systemd daemon
+- `claude-code service install` - Install and start systemd user daemon
 - `claude-code service uninstall [--keep-config]` - Uninstall daemon
 - `claude-code service start/stop/restart` - Control daemon
-- `claude-code service enable/disable` - Control auto-start
+- `claude-code service enable/disable` - Control auto-start on login
 
 ### Configuration
 - `claude-code configure` - Interactive configuration wizard *(coming soon)*
@@ -122,6 +139,39 @@ github:
 notifications:
   session_warnings: [30, 15, 5]  # minutes before expiry
   sync_failures: true
+```
+
+## Daemon Installation Details
+
+The `claude-code service install` command:
+
+1. **Creates Systemd Service**: Installs `~/.config/systemd/user/claude-code-sync.service`
+2. **References Current Binary**: Uses the exact path of the currently running binary (no copying)
+3. **User Service**: Runs as a user service (no root privileges required)
+4. **Auto-Start**: Enables automatic startup on user login
+5. **Security Sandboxing**: Runs with restricted file system access
+
+**Service Location**: `~/.config/systemd/user/claude-code-sync.service`
+**Service Command**: `{binary_path} daemon`
+**Service Type**: User service (systemctl --user)
+
+### Manual Service Management
+
+```bash
+# View service status
+systemctl --user status claude-code-sync
+
+# Control service directly
+systemctl --user start/stop/restart claude-code-sync
+
+# View logs
+journalctl --user -u claude-code-sync -f
+
+# Remove service manually
+systemctl --user stop claude-code-sync
+systemctl --user disable claude-code-sync
+rm ~/.config/systemd/user/claude-code-sync.service
+systemctl --user daemon-reload
 ```
 
 ## How It Works
