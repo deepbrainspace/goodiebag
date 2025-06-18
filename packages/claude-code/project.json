@@ -1,0 +1,133 @@
+{
+  "name": "claude-code",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/claude-code/src",
+  "projectType": "application",
+  "tags": ["rust", "cli", "daemon"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo clippy -- -D warnings",
+        "cwd": "packages/claude-code"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["lint"],
+      "options": {
+        "command": "cargo test --all-features",
+        "cwd": "packages/claude-code"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["test"],
+      "outputs": ["{workspaceRoot}/target/release/claude-code"],
+      "options": {
+        "command": "cargo build --release",
+        "cwd": "packages/claude-code"
+      }
+    },
+    "build-dev": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["test"],
+      "outputs": ["{workspaceRoot}/target/debug/claude-code"],
+      "options": {
+        "command": "cargo build",
+        "cwd": "packages/claude-code"
+      }
+    },
+    "fmt": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo fmt --check",
+        "cwd": "packages/claude-code"
+      }
+    },
+    "fmt-fix": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo fmt",
+        "cwd": "packages/claude-code"
+      }
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo run --",
+        "cwd": "packages/claude-code"
+      }
+    },
+    "install": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "cargo install --path .",
+        "cwd": "packages/claude-code"
+      }
+    },
+    "package": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "outputs": ["{workspaceRoot}/target/package"],
+      "options": {
+        "command": "cargo package",
+        "cwd": "packages/claude-code"
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["package"],
+      "options": {
+        "command": "cargo publish",
+        "cwd": "packages/claude-code"
+      }
+    },
+    "publish-dry-run": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["package"],
+      "options": {
+        "command": "cargo publish --dry-run",
+        "cwd": "packages/claude-code"
+      }
+    },
+    "version": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo metadata --format-version 1 --no-deps | jq -r '.packages[] | select(.name == \"claude-code\") | .version'",
+        "cwd": "packages/claude-code"
+      }
+    },
+    "check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo check",
+        "cwd": "packages/claude-code"
+      }
+    },
+    "clean": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo clean",
+        "cwd": "packages/claude-code"
+      }
+    },
+    "quality": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["fmt", "lint", "test"],
+      "options": {
+        "command": "echo '✅ All quality checks passed'",
+        "cwd": "packages/claude-code"
+      }
+    },
+    "ci": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["quality", "build"],
+      "options": {
+        "command": "echo '🚀 CI pipeline completed successfully'",
+        "cwd": "packages/claude-code"
+      }
+    }
+  }
+}

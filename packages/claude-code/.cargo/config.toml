@@ -1,0 +1,22 @@
+[build]
+target-dir = "../../target"
+
+[alias]
+# Convenience aliases for NX integration
+nx-build = "build --release"
+nx-test = "test --all-features"
+nx-lint = "clippy -- -D warnings"
+nx-fmt = "fmt --check"
+nx-package = "package"
+nx-publish = "publish"
+nx-publish-dry = "publish --dry-run"
+
+[registry]
+# Use crates.io by default
+default = "crates-io"
+
+[registries.crates-io]
+index = "https://github.com/rust-lang/crates.io-index"
+
+[net]
+retry = 3
