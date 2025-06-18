@@ -8,52 +8,70 @@
           "build",
           "lint",
           "test",
-          "e2e"
+          "e2e",
+          "check",
+          "fmt",
+          "package"
         ]
       }
     }
   },
   "namedInputs": {
-    "default": [
-      "{projectRoot}/**/*",
-      "sharedGlobals"
-    ],
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
       "default",
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
       "!{projectRoot}/tsconfig.spec.json",
       "!{projectRoot}/jest.config.[jt]s",
       "!{projectRoot}/.eslintrc.json",
-      "!{projectRoot}/eslint.config.js"
+      "!{projectRoot}/eslint.config.js",
+      "!{projectRoot}/src/test-setup.[jt]s",
+      "!{projectRoot}/test-setup.[jt]s"
     ],
     "sharedGlobals": []
   },
   "targetDefaults": {
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "production",
-        "^production"
-      ],
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"],
       "cache": true
     },
     "test": {
-      "inputs": [
-        "default",
-        "^production"
-      ],
+      "inputs": ["default", "^production"],
       "cache": true
     },
     "lint": {
-      "inputs": [
-        "default"
-      ],
+      "inputs": ["default"],
       "cache": true
     },
     "nx-release-publish": {
       "dependsOn": ["build", "test", "lint"]
+    },
+    "check": {
+      "inputs": ["default"],
+      "cache": true
+    },
+    "fmt": {
+      "inputs": ["default"],
+      "cache": true
+    },
+    "package": {
+      "dependsOn": ["build", "test", "lint"],
+      "inputs": ["production", "^production"],
+      "cache": true
+    },
+    "publish": {
+      "dependsOn": ["package"],
+      "cache": false
+    },
+    "publish-dry-run": {
+      "dependsOn": ["package"],
+      "cache": true
+    },
+    "@nx/esbuild:esbuild": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
     }
   },
   "generators": {
@@ -82,11 +100,41 @@
           }
         },
         "releaseTagPattern": "{projectName}-v{version}"
+      },
+      "rust-packages": {
+        "projects": ["claude-code"],
+        "version": {
+          "conventionalCommits": true,
+          "generatorOptions": {
+            "updateDependents": false,
+            "fallbackCurrentVersionResolver": "disk"
+          }
+        },
+        "changelog": {
+          "projectChangelogs": {
+            "createRelease": "github",
+            "file": true
+          }
+        },
+        "releaseTagPattern": "{projectName}-v{version}",
+        "projectsRelationship": "independent"
       }
     },
     "git": {
       "commit": true,
       "tag": true
     }
-  }
+  },
+  "plugins": [
+    {
+      "plugin": "@nx/jest/plugin",
+      "options": {
+        "targetName": "jest:test"
+      }
+    }
+  ],
+  "workspaceLayout": {
+    "projectNameAndRootFormat": "as-provided"
+  },
+  "defaultProject": "nx-surrealdb"
 }

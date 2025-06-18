@@ -3,6 +3,16 @@
     "nx-mcp": {
       "type": "http",
       "url": "http://localhost:9202/mcp"
+    },
+    "daisy-ui": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "sitemcp",
+        "https://daisyui.com",
+        "-m",
+        "/components/**"
+      ]
     }
   }
 }

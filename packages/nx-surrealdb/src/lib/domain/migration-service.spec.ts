@@ -1,5 +1,6 @@
 import * as fs from 'fs/promises';
 import { MigrationService, MigrationServiceOptions } from './migration-service';
+// Test modification for CI parallel build
 import { SurrealDBClient } from '../infrastructure/client';
 import { MigrationRepository } from './migration-repository';
 import { DependencyResolver } from './dependency-resolver';

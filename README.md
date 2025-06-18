@@ -76,6 +76,10 @@ npm install @deepbrainspace/nx-surrealdb --save-dev
 - **Node.js**: 18+ or 20+
 - **pnpm**: 9.0.0+
 - **NX CLI**: `npm install -g nx`
+- **Rust**: 1.85+ (for claude-code package)
+
+### Global Dependencies
+- **Prettier**: Added for consistent code formatting across all project types (JSON, Rust, TypeScript)
 
 ### Repository Setup
 ```bash
