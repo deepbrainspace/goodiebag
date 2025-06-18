@@ -10,12 +10,17 @@ pub struct CredentialsManager {
 
 impl CredentialsManager {
     pub fn new() -> Result<Self> {
+        // Default path for backward compatibility
         let credentials_path = home_dir()
             .ok_or("Could not determine home directory")?
             .join(".claude")
             .join(".credentials.json");
 
         Ok(Self { credentials_path })
+    }
+
+    pub fn with_path(path: PathBuf) -> Self {
+        Self { credentials_path: path }
     }
 
     pub async fn read_credentials(&self) -> Result<ClaudeCredentials> {

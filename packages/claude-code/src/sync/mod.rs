@@ -6,6 +6,7 @@ use crate::error::Result;
 use crate::providers::registry::ProviderRegistry;
 use crate::traits::{Credentials, SecretManager, SecretMapping, SyncResult};
 use std::collections::HashMap;
+use std::path::PathBuf;
 use tracing::{error, info, warn};
 
 /// High-level synchronization service
@@ -20,6 +21,21 @@ impl SyncService {
         Ok(Self {
             credentials_manager: CredentialsManager::new()?,
             config_manager: ConfigurationManager::with_yaml_provider()?,
+            provider_registry: ProviderRegistry::new(),
+        })
+    }
+
+    pub async fn new_with_config() -> Result<Self> {
+        let config_manager = ConfigurationManager::with_yaml_provider()?;
+        let config = config_manager.load().await?;
+        
+        // Expand tilde in path
+        let expanded_path = shellexpand::tilde(&config.credentials.file_path);
+        let credentials_path = PathBuf::from(expanded_path.as_ref());
+        
+        Ok(Self {
+            credentials_manager: CredentialsManager::with_path(credentials_path),
+            config_manager,
             provider_registry: ProviderRegistry::new(),
         })
     }
@@ -47,17 +63,53 @@ impl SyncService {
     /// Convert Claude credentials to our generic format
     async fn get_credentials(&self) -> Result<Credentials> {
         let claude_creds = self.credentials_manager.read_credentials().await?;
+        let config = self.config_manager.load().await?;
 
-        let mut metadata = HashMap::new();
-        metadata.insert(
-            "subscription_type".to_string(),
-            claude_creds.claude_ai_oauth.subscription_type.clone(),
-        );
+        // Convert credential structure to generic map
+        let cred_value = serde_json::to_value(&claude_creds)?;
+        let oauth_obj = cred_value
+            .get(&config.credentials.json_path)
+            .and_then(|v| v.as_object())
+            .ok_or_else(|| crate::error::ClaudeCodeError::InvalidCredentials(
+                format!("Could not find '{}' in credentials file", config.credentials.json_path)
+            ))?;
+
+        // Build credential data dynamically based on configured mappings
+        let mut credential_data = HashMap::new();
+        for field_name in config.credentials.field_mappings.keys() {
+            if let Some(value) = oauth_obj.get(field_name) {
+                // Convert JSON value to string
+                let string_value = match value {
+                    serde_json::Value::String(s) => s.clone(),
+                    serde_json::Value::Number(n) => n.to_string(),
+                    serde_json::Value::Bool(b) => b.to_string(),
+                    _ => value.to_string(),
+                };
+                credential_data.insert(field_name.clone(), string_value);
+            }
+        }
+
+        // For backward compatibility, try to extract common fields if they exist
+        let access_token = credential_data.get("access_token")
+            .or_else(|| credential_data.get("accessToken"))
+            .cloned()
+            .unwrap_or_default();
+
+        let refresh_token = credential_data.get("refresh_token")
+            .or_else(|| credential_data.get("refreshToken"))
+            .cloned();
+
+        let expires_at = credential_data.get("expires_at")
+            .or_else(|| credential_data.get("expiresAt"))
+            .and_then(|s| s.parse::<i64>().ok());
+
+        // Store all discovered fields in metadata for generic access
+        let metadata = credential_data;
 
         Ok(Credentials {
-            access_token: claude_creds.claude_ai_oauth.access_token,
-            refresh_token: Some(claude_creds.claude_ai_oauth.refresh_token),
-            expires_at: Some(claude_creds.claude_ai_oauth.expires_at),
+            access_token,
+            refresh_token,
+            expires_at,
             metadata,
         })
     }
@@ -67,10 +119,11 @@ impl SyncService {
         let config = self.config_manager.load().await?;
 
         let mut mapping = SecretMapping::new("claude");
-        mapping
-            .add_mapping("access_token", &config.secrets.claude.access_token)
-            .add_mapping("refresh_token", &config.secrets.claude.refresh_token)
-            .add_mapping("expires_at", &config.secrets.claude.expires_at);
+        
+        // Use the field mappings from credentials configuration
+        for (field, secret_name) in &config.credentials.field_mappings {
+            mapping.add_mapping(field, secret_name);
+        }
 
         Ok(mapping)
     }

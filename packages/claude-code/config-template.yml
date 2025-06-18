@@ -1,0 +1,36 @@
+# Claude Code Configuration Template
+# Copy this to ~/.goodiebag/claude-code/config.yml and customize
+
+daemon:
+  log_level: "info"
+  sync_delay_after_expiry: 60  # seconds to wait after token expires before syncing
+
+github:
+  organizations: []  # Will be populated when you add organizations
+  repositories: []   # Will be populated when you add repositories
+
+notifications:
+  session_warnings: [30, 15, 5]  # Warn when X minutes remaining
+  sync_failures: true
+
+# Credential source configuration
+credentials:
+  # Path to credential file (supports ~ for home directory)
+  file_path: "~/.claude/.credentials.json"
+  
+  # JSON path to the credential object within the file
+  # For Claude Code: "claudeAiOauth"
+  # For other services, adjust as needed
+  json_path: "claudeAiOauth"
+  
+  # Field mappings: credential_field -> github_secret_name
+  # Configure which fields from the credential object to sync
+  field_mappings:
+    accessToken: "CLAUDE_ACCESS_TOKEN"
+    refreshToken: "CLAUDE_REFRESH_TOKEN" 
+    expiresAt: "CLAUDE_EXPIRES_AT"
+    subscriptionType: "CLAUDE_SUBSCRIPTION"
+    scopes: "CLAUDE_SCOPES"
+    
+    # Add custom mappings as needed:
+    # custom_field: "CUSTOM_SECRET_NAME"

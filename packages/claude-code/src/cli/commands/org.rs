@@ -6,12 +6,11 @@ static SUCCESS: Emoji<'_, '_> = Emoji("✅ ", "");
 static WARNING: Emoji<'_, '_> = Emoji("⚠️ ", "");
 static INFO: Emoji<'_, '_> = Emoji("ℹ️ ", "");
 
-pub async fn handle_add_org(name: String, secret_name: String) -> Result<()> {
+pub async fn handle_add_org(name: String) -> Result<()> {
     println!(
-        "{}Adding organization {} with secret {}",
+        "{}Adding organization {} for Claude secret sync",
         INFO,
-        style(&name).bold(),
-        style(&secret_name).bold()
+        style(&name).bold()
     );
 
     // Verify GitHub access
@@ -36,7 +35,7 @@ pub async fn handle_add_org(name: String, secret_name: String) -> Result<()> {
     // Add to config
     let config_manager = ConfigurationManager::new()?;
     config_manager
-        .add_organization(name.clone(), secret_name.clone())
+        .add_organization(name.clone())
         .await?;
 
     println!(
@@ -44,9 +43,12 @@ pub async fn handle_add_org(name: String, secret_name: String) -> Result<()> {
         SUCCESS,
         style(&name).bold()
     );
+    // Show which secrets will be synced from config
+    let config = config_manager.load_config().await?;
+    let secret_names: Vec<String> = config.credentials.field_mappings.values().cloned().collect();
     println!(
         "{}",
-        style(format!("Secret will be synced as: {}", secret_name)).dim()
+        style(format!("Will sync: {}", secret_names.join(", "))).dim()
     );
     println!(
         "{}",
@@ -89,7 +91,8 @@ pub async fn handle_list_orgs() -> Result<()> {
 
     for org in &config.github.organizations {
         println!("  {}", style(&org.name).cyan());
-        println!("    Secret: {}", style(&org.secret_name).dim());
+        let secret_names: Vec<String> = config.credentials.field_mappings.values().cloned().collect();
+        println!("    Secrets: {}", style(secret_names.join(", ")).dim());
     }
 
     println!();

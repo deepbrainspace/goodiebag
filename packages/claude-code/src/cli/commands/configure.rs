@@ -66,26 +66,7 @@ pub async fn handle_configure() -> Result<()> {
     // Initialize config with defaults
     let mut config = config_manager.load_config().await.unwrap_or_default();
 
-    // Configure secret names
-    println!("{}", style("⚙️  Secret Configuration").bold().cyan());
-    println!(
-        "{}",
-        style("Configure the names of GitHub secrets to sync:").dim()
-    );
-    println!();
-
-    config.secrets.claude.access_token = prompt_with_default(
-        "Access Token Secret Name",
-        &config.secrets.claude.access_token,
-    )?;
-    config.secrets.claude.refresh_token = prompt_with_default(
-        "Refresh Token Secret Name",
-        &config.secrets.claude.refresh_token,
-    )?;
-    config.secrets.claude.expires_at =
-        prompt_with_default("Expires At Secret Name", &config.secrets.claude.expires_at)?;
-
-    println!();
+    // No longer configuring individual secret names here - handled by template system
 
     // Configure organizations
     println!("{}", style("🏢 Organization Configuration").bold().cyan());
@@ -107,7 +88,7 @@ pub async fn handle_configure() -> Result<()> {
 
                 if available_orgs.contains(&org_name) {
                     config_manager
-                        .add_organization(org_name.clone(), "CLAUDE_CODE_TOKEN".to_string())
+                        .add_organization(org_name.clone())
                         .await?;
                     println!(
                         "{}",
@@ -124,7 +105,7 @@ pub async fn handle_configure() -> Result<()> {
                     );
                     if prompt_yes_no("Add it anyway?")? {
                         config_manager
-                            .add_organization(org_name.clone(), "CLAUDE_CODE_TOKEN".to_string())
+                            .add_organization(org_name.clone())
                             .await?;
                         println!(
                             "{}",
@@ -150,7 +131,7 @@ pub async fn handle_configure() -> Result<()> {
 
             if repo.contains('/') {
                 config_manager
-                    .add_repository(repo.clone(), "CLAUDE_CODE_TOKEN".to_string())
+                    .add_repository(repo.clone())
                     .await?;
                 println!(
                     "{}",
@@ -164,6 +145,47 @@ pub async fn handle_configure() -> Result<()> {
                 );
             }
         }
+    }
+
+    println!();
+
+    // Secrets Configuration
+    println!("{}", style("🔐 Secrets Configuration").bold().cyan());
+    println!();
+    println!("{}", style("Secret mappings define which credential fields sync to which GitHub secrets.").dim());
+    println!("{}", style("You can configure these now or edit config.yml manually later.").dim());
+    println!();
+    
+    if prompt_yes_no("Configure secret mappings now?")? {
+        let mut mappings = std::collections::HashMap::new();
+        
+        println!("{}", style("Add credential field mappings:").bold());
+        println!("{}", style("Common fields: accessToken, refreshToken, expiresAt, subscriptionType, scopes").dim());
+        println!();
+        
+        loop {
+            let field = prompt("Credential field name (or 'done' to finish)")?;
+            if field.to_lowercase() == "done" {
+                break;
+            }
+            let secret = prompt(&format!("GitHub secret name for '{}'", field))?;
+            mappings.insert(field.clone(), secret.clone());
+            println!("{}", style(format!("✅ Added mapping: {} → {}", field, secret)).green());
+        }
+        
+        config.credentials.field_mappings = mappings;
+        
+        if !config.credentials.field_mappings.is_empty() {
+            println!();
+            println!("{}", style("✅ Secret mappings configured:").green());
+            for (field, secret) in &config.credentials.field_mappings {
+                println!("  {} → {}", style(field).cyan(), style(secret).yellow());
+            }
+        }
+    } else {
+        println!("{}", style("⚠️  No secret mappings configured.").yellow());
+        println!("{}", style("   Edit ~/.goodiebag/claude-code/config.yml to add mappings manually.").dim());
+        println!("{}", style("   See config-template.yml for examples.").dim());
     }
 
     println!();
@@ -205,6 +227,7 @@ pub async fn handle_configure() -> Result<()> {
     Ok(())
 }
 
+
 fn prompt(message: &str) -> Result<String> {
     print!("{}: ", style(message).bold());
     io::stdout().flush().unwrap();
@@ -217,22 +240,6 @@ fn prompt(message: &str) -> Result<String> {
     Ok(input.trim().to_string())
 }
 
-fn prompt_with_default(message: &str, default: &str) -> Result<String> {
-    print!("{} [{}]: ", style(message).bold(), style(default).dim());
-    io::stdout().flush().unwrap();
-
-    let mut input = String::new();
-    io::stdin()
-        .read_line(&mut input)
-        .map_err(|e| crate::error::ClaudeCodeError::Generic(e.to_string()))?;
-
-    let input = input.trim();
-    if input.is_empty() {
-        Ok(default.to_string())
-    } else {
-        Ok(input.to_string())
-    }
-}
 
 fn prompt_yes_no(message: &str) -> Result<bool> {
     loop {

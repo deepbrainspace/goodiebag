@@ -34,7 +34,7 @@ impl GitHubManager {
     /// Check if GitHub CLI is authenticated
     pub async fn check_authentication(&self) -> Result<bool> {
         match Command::new("gh")
-            .args(&["auth", "status"])
+            .args(["auth", "status"])
             .stdout(Stdio::null())
             .stderr(Stdio::null())
             .status()
@@ -48,7 +48,7 @@ impl GitHubManager {
     /// List available organizations
     pub async fn list_organizations(&self) -> Result<Vec<String>> {
         let output = Command::new("gh")
-            .args(&["api", "user/orgs", "--jq", ".[].login"])
+            .args(["api", "user/orgs", "--jq", ".[].login"])
             .output()
             .await
             .map_err(|e| ClaudeCodeError::Process(format!("Failed to list organizations: {}", e)))?;
@@ -270,7 +270,7 @@ impl SecretProvider for GitHubProvider {
         }
 
         let auth_output = Command::new("gh")
-            .args(&["auth", "status"])
+            .args(["auth", "status"])
             .stdout(Stdio::null())
             .stderr(Stdio::null())
             .status()

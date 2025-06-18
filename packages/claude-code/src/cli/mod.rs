@@ -48,9 +48,6 @@ pub enum OrgCommands {
     Add {
         /// Organization name
         name: String,
-        /// Secret name (default: CLAUDE_CODE_TOKEN)
-        #[arg(short, long, default_value = "CLAUDE_CODE_TOKEN")]
-        secret_name: String,
     },
 
     /// Remove a GitHub organization
@@ -69,9 +66,6 @@ pub enum RepoCommands {
     Add {
         /// Repository in format owner/repo
         repo: String,
-        /// Secret name (default: CLAUDE_CODE_TOKEN)
-        #[arg(short, long, default_value = "CLAUDE_CODE_TOKEN")]
-        secret_name: String,
     },
 
     /// Remove a GitHub repository

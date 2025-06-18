@@ -4,17 +4,16 @@ use console::{Emoji, style};
 static SUCCESS: Emoji<'_, '_> = Emoji("✅ ", "");
 static INFO: Emoji<'_, '_> = Emoji("ℹ️ ", "");
 
-pub async fn handle_add_repo(repo: String, secret_name: String) -> Result<()> {
+pub async fn handle_add_repo(repo: String) -> Result<()> {
     println!(
-        "{}Adding repository {} with secret {}",
+        "{}Adding repository {} for Claude secret sync",
         INFO,
-        style(&repo).bold(),
-        style(&secret_name).bold()
+        style(&repo).bold()
     );
 
     let config_manager = ConfigurationManager::new()?;
     config_manager
-        .add_repository(repo.clone(), secret_name.clone())
+        .add_repository(repo.clone())
         .await?;
 
     println!(
@@ -22,9 +21,12 @@ pub async fn handle_add_repo(repo: String, secret_name: String) -> Result<()> {
         SUCCESS,
         style(&repo).bold()
     );
+    // Show which secrets will be synced from config
+    let config = config_manager.load_config().await?;
+    let secret_names: Vec<String> = config.credentials.field_mappings.values().cloned().collect();
     println!(
         "{}",
-        style(format!("Secret will be synced as: {}", secret_name)).dim()
+        style(format!("Will sync: {}", secret_names.join(", "))).dim()
     );
     println!(
         "{}",
@@ -67,7 +69,8 @@ pub async fn handle_list_repos() -> Result<()> {
 
     for repo in &config.github.repositories {
         println!("  {}", style(&repo.repo).cyan());
-        println!("    Secret: {}", style(&repo.secret_name).dim());
+        let secret_names: Vec<String> = config.credentials.field_mappings.values().cloned().collect();
+        println!("    Secrets: {}", style(secret_names.join(", ")).dim());
     }
 
     println!();

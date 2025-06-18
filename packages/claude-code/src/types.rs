@@ -24,10 +24,10 @@ pub struct Config {
     pub daemon: DaemonConfig,
     pub github: GitHubConfig,
     pub notifications: NotificationConfig,
-    pub secrets: SecretsConfig,
+    pub credentials: CredentialsConfig,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct DaemonConfig {
     pub log_level: String,
     pub sync_delay_after_expiry: u64, // seconds
@@ -42,13 +42,11 @@ pub struct GitHubConfig {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GitHubOrganization {
     pub name: String,
-    pub secret_name: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GitHubRepository {
     pub repo: String,
-    pub secret_name: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -58,15 +56,16 @@ pub struct NotificationConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SecretsConfig {
-    pub claude: ClaudeSecretsMapping,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ClaudeSecretsMapping {
-    pub access_token: String,
-    pub refresh_token: String,
-    pub expires_at: String,
+pub struct CredentialsConfig {
+    /// Path to credential file (supports ~ for home directory)
+    pub file_path: String,
+    
+    /// JSON path to the credential object within the file
+    /// For Claude Code: "claudeAiOauth"
+    pub json_path: String,
+    
+    /// Field mappings: credential_field -> github_secret_name
+    pub field_mappings: std::collections::HashMap<String, String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -109,7 +108,6 @@ pub struct SessionInfo {
 pub struct GitHubTarget {
     pub target_type: TargetType,
     pub name: String,
-    pub secret_name: String,
 }
 
 impl Default for Config {
@@ -127,12 +125,10 @@ impl Default for Config {
                 session_warnings: vec![30, 15, 5],
                 sync_failures: true,
             },
-            secrets: SecretsConfig {
-                claude: ClaudeSecretsMapping {
-                    access_token: "CLAUDE_ACCESS_TOKEN".to_string(),
-                    refresh_token: "CLAUDE_REFRESH_TOKEN".to_string(),
-                    expires_at: "CLAUDE_EXPIRES_AT".to_string(),
-                },
+            credentials: CredentialsConfig {
+                file_path: "~/.claude/.credentials.json".to_string(),
+                json_path: "claudeAiOauth".to_string(),
+                field_mappings: std::collections::HashMap::new(),
             },
         }
     }

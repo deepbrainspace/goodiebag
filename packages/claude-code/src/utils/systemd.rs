@@ -132,7 +132,7 @@ WantedBy=default.target"#,
 
     pub async fn is_running(&self) -> Result<bool> {
         let output = Command::new("systemctl")
-            .args(&["--user", "is-active", SERVICE_NAME])
+            .args(["--user", "is-active", SERVICE_NAME])
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .output()
@@ -144,7 +144,7 @@ WantedBy=default.target"#,
 
     pub async fn status(&self) -> Result<String> {
         let output = Command::new("systemctl")
-            .args(&["--user", "status", SERVICE_NAME])
+            .args(["--user", "status", SERVICE_NAME])
             .output()
             .await?;
 
@@ -158,7 +158,7 @@ WantedBy=default.target"#,
 
     pub async fn logs(&self, lines: usize) -> Result<String> {
         let output = Command::new("journalctl")
-            .args(&[
+            .args([
                 "--user",
                 "-u",
                 SERVICE_NAME,

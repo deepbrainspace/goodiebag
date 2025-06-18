@@ -1,5 +1,6 @@
 use crate::{
     config::{manager::ConfigurationManager, credentials::CredentialsManager},
+    traits::config::ConfigManager,
     error::*,
     sync::SyncService,
     utils::notifications,
@@ -22,6 +23,22 @@ impl Daemon {
             sync_service: SyncService::new()?,
             config_manager: ConfigurationManager::new()?,
             credentials_manager: CredentialsManager::new()?,
+            shutdown_tx: None,
+        })
+    }
+
+    pub async fn new_with_config() -> Result<Self> {
+        let config_manager = ConfigurationManager::new()?;
+        let config = config_manager.load().await?;
+        
+        // Expand tilde in path
+        let expanded_path = shellexpand::tilde(&config.credentials.file_path);
+        let credentials_path = std::path::PathBuf::from(expanded_path.as_ref());
+        
+        Ok(Self {
+            sync_service: SyncService::new_with_config().await?,
+            config_manager,
+            credentials_manager: CredentialsManager::with_path(credentials_path),
             shutdown_tx: None,
         })
     }

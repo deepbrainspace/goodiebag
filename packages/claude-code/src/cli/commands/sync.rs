@@ -10,7 +10,7 @@ static LOGS: Emoji<'_, '_> = Emoji("📜 ", "");
 pub async fn handle_sync_now() -> Result<()> {
     println!("{}Starting manual sync...", SYNC);
 
-    let mut sync_service = SyncService::new()?;
+    let mut sync_service = SyncService::new_with_config().await?;
 
     match sync_service.force_sync().await {
         Ok(result) => {
