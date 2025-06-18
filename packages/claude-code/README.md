@@ -11,7 +11,7 @@ Claude Code management tool for automatic credential synchronization to GitHub, 
 - **⏰ Smart Scheduling**: Monitors token expiry and syncs 1 minute after new token is generated
 - **🎯 Multi-Target Support**: Sync to multiple GitHub organizations and repositories simultaneously
 - **📊 Session Monitoring**: Real-time session timer and status tracking with desktop notifications
-- **🔧 Systemd Integration**: Runs as a background daemon with automatic startup and monitoring
+- **🔧 Systemd User Service Integration**: Runs as a background daemon with automatic startup and monitoring
 - **🚀 High Performance**: Written in Rust for minimal resource usage and maximum reliability
 
 ## Installation

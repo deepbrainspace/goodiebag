@@ -63,8 +63,23 @@
       "executor": "nx:run-commands",
       "dependsOn": ["build"],
       "options": {
-        "command": "cargo install --path .",
-        "cwd": "packages/claude-code"
+        "commands": [
+          "echo '🔧 Installing claude-code binary...'",
+          "echo 'Working directory: $(pwd)'",
+          "echo 'Target directory: $(ls -la target/ | head -3)'",
+          "cargo install --path . --target-dir ./target --verbose",
+          "echo '🔍 Checking installation...'",
+          "which claude-code || echo 'WARNING: claude-code not found in PATH'",
+          "ls -la ~/.cargo/bin/claude-code || echo 'WARNING: Binary not found in ~/.cargo/bin'",
+          "echo '✅ claude-code installed to ~/.cargo/bin/claude-code'",
+          "echo '📝 Next steps:'",
+          "echo '  1. Add organizations: claude-code org add <org-name>'", 
+          "echo '  2. Add repositories: claude-code repo add <owner/repo>'",
+          "echo '  3. Install daemon service: claude-code service install'",
+          "echo '  4. Check status: claude-code status'"
+        ],
+        "cwd": "packages/claude-code",
+        "parallel": false
       }
     },
     "package": {
