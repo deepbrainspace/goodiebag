@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "repository": {
-    "url": "https://github.com/deepbrainspace/goodiebag",
-    "type": "git"
+    "type": "git",
+    "url": "git+https://github.com/deepbrainspace/goodiebag.git"
   },
   "license": "MIT",
   "private": false,
