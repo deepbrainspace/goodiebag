@@ -35,7 +35,7 @@ jobs:
           
           timeout_minutes: "60"
           # Enable bash and other tools for Claude
-          allowed_tools: "Bash(nx:*)"
+          allowed_tools: "Bash,Python,Node,NPM,Nx,Git,Curl,Wget,Bash,Python,Node,NPM,Nx,Git,Curl,Wget"
           # Optional: add custom trigger phrase (default: @claude)
           # NOTE: Setting trigger_phrase overrides the default @claude behavior entirely
           # When trigger_phrase: "/claude" is enabled, @claude mentions stop working
