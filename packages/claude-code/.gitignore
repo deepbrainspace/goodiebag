@@ -1,5 +1,17 @@
+# Rust build artifacts
 target/
-Cargo.lock
+**/*.rs.bk
+Cargo.lock  # For applications (keep for libraries)
+*.rlib
+*.rmeta
+*.pdb
+
+# Editor files
 *.swp
 *.swo
+.vscode/
+.idea/
+
+# OS files
 .DS_Store
+Thumbs.db
