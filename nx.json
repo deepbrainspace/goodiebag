@@ -87,11 +87,14 @@
     "changelog": {
       "automaticFromRef": true
     },
+   "version": {
+      "conventionalCommits": true,
+      "fallbackCurrentVersionResolver": "disk"
+    },
     "groups": {
       "nx-plugins": {
         "projects": ["nx-*"],
         "version": {
-          "conventionalCommits": true
         },
         "changelog": {
           "projectChangelogs": {
@@ -120,9 +123,17 @@
         "projectsRelationship": "independent"
       }
     },
-    "git": {
-      "commit": true,
-      "tag": true
+    "version": {
+      "git": {
+        "commit": true,
+        "tag": true
+      }
+    },
+    "changelog": {
+      "git": {
+        "commit": true,
+        "tag": true
+      }
     }
   },
   "plugins": [
@@ -131,7 +142,8 @@
       "options": {
         "targetName": "jest:test"
       }
-    }
+    },
+    "@deepbrainspace/nx-rust"
   ],
   "workspaceLayout": {
     "projectNameAndRootFormat": "as-provided"

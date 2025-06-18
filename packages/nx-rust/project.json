@@ -1,0 +1,58 @@
+{
+  "name": "nx-rust",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/nx-rust/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/packages/nx-rust"],
+      "options": {
+        "jestConfig": "packages/nx-rust/jest.config.ts"
+      }
+    },
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/nx-rust",
+        "tsConfig": "packages/nx-rust/tsconfig.lib.json",
+        "packageJson": "packages/nx-rust/package.json",
+        "main": "packages/nx-rust/src/index.ts",
+        "assets": [
+          "packages/nx-rust/*.md",
+          {
+            "input": "./packages/nx-rust/src",
+            "glob": "**/!(*.ts)",
+            "output": "./src"
+          },
+          {
+            "input": "./packages/nx-rust/src",
+            "glob": "**/*.d.ts",
+            "output": "./src"
+          },
+          {
+            "input": "./packages/nx-rust",
+            "glob": "generators.json",
+            "output": "."
+          },
+          {
+            "input": "./packages/nx-rust",
+            "glob": "executors.json",
+            "output": "."
+          },
+          {
+            "input": "./packages/nx-rust",
+            "glob": "migrations.json",
+            "output": "."
+          }
+        ]
+      }
+    }
+  }
+}

@@ -52,7 +52,7 @@ This repository demonstrates next-generation monorepo management with:
 - **Inter-Package Intelligence** - Smart dependency updates across the monorepo
 - **Usage Analytics** - Understanding how developers use the goodie-bag tools
 
-### @deepbrainspace/nx-surrealdb
+### @deepbrainspace/goodiebag
 
 A comprehensive SurrealDB toolkit for NX monorepos featuring migration management, dependency resolution, and extensible architecture.
 

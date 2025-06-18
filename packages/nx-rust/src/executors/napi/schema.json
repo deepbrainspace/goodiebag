@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "version": 2,
+  "title": "Napi executor",
+  "description": "",
+  "type": "object",
+  "properties": {
+    "dist": {
+      "type": "string"
+    },
+    "jsFile": {
+      "type": "string"
+    },
+    "dts": {
+      "type": "string",
+      "default": "index.d.ts"
+    },
+    "release": {
+      "type": "boolean",
+      "default": false
+    },
+    "target": {
+      "type": "string"
+    },
+    "zig": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": ["dist", "jsFile"]
+}

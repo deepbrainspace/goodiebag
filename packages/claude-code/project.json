@@ -6,36 +6,38 @@
   "tags": ["rust", "cli", "daemon"],
   "targets": {
     "lint": {
-      "executor": "nx:run-commands",
+      "executor": "@deepbrainspace/nx-rust:lint",
       "options": {
-        "command": "cargo clippy --target-dir ./target -- -D warnings",
-        "cwd": "packages/claude-code"
+        "toolchain": "stable",
+        "target-dir": "{projectRoot}/target"
       }
     },
     "test": {
-      "executor": "nx:run-commands",
+      "executor": "@deepbrainspace/nx-rust:test",
       "dependsOn": ["lint"],
       "options": {
-        "command": "cargo test --target-dir ./target --all-features",
-        "cwd": "packages/claude-code"
+        "toolchain": "stable",
+        "target-dir": "{projectRoot}/target"
       }
     },
     "build": {
-      "executor": "nx:run-commands",
+      "executor": "@deepbrainspace/nx-rust:build",
       "dependsOn": ["test"],
       "outputs": ["{projectRoot}/target/release/claude-code"],
       "options": {
-        "command": "cargo build --target-dir ./target --release",
-        "cwd": "packages/claude-code"
+        "toolchain": "stable",
+        "release": true,
+        "target-dir": "{projectRoot}/target"
       }
     },
     "build-dev": {
-      "executor": "nx:run-commands",
+      "executor": "@deepbrainspace/nx-rust:build",
       "dependsOn": ["test"],
       "outputs": ["{projectRoot}/target/debug/claude-code"],
       "options": {
-        "command": "cargo build --target-dir ./target",
-        "cwd": "packages/claude-code"
+        "toolchain": "stable",
+        "release": false,
+        "target-dir": "{projectRoot}/target"
       }
     },
     "fmt": {
@@ -67,7 +69,7 @@
           "echo '🔧 Installing claude-code binary...'",
           "echo 'Working directory: $(pwd)'",
           "mkdir -p ~/.cargo/bin",
-          "cp target/release/claude-code ~/.cargo/bin/claude-code",
+          "cp {projectRoot}/target/release/claude-code ~/.cargo/bin/claude-code",
           "chmod +x ~/.cargo/bin/claude-code",
           "echo '🔍 Checking installation...'",
           "which claude-code || echo 'WARNING: claude-code not found in PATH'",
@@ -88,24 +90,21 @@
       "dependsOn": ["build"],
       "outputs": ["{projectRoot}/target/package"],
       "options": {
-        "command": "cargo package --target-dir ./target",
+        "command": "cargo package --target-dir {projectRoot}/target",
         "cwd": "packages/claude-code"
       }
     },
-    "publish": {
-      "executor": "nx:run-commands",
-      "dependsOn": ["package"],
+    "nx-release-publish": {
+      "executor": "@monodon/rust:release-publish",
+      "dependsOn": ["build", "test", "lint"],
       "options": {
-        "command": "cargo publish --target-dir ./target",
-        "cwd": "packages/claude-code"
+        "toolchain": "stable"
       }
     },
-    "publish-dry-run": {
-      "executor": "nx:run-commands",
-      "dependsOn": ["package"],
+    "nx-release-version": {
+      "executor": "@monodon/rust:release-version",
       "options": {
-        "command": "cargo publish --target-dir ./target --dry-run",
-        "cwd": "packages/claude-code"
+        "toolchain": "stable"
       }
     },
     "version": {
@@ -116,16 +115,15 @@
       }
     },
     "check": {
-      "executor": "nx:run-commands",
+      "executor": "@monodon/rust:check",
       "options": {
-        "command": "cargo check --target-dir ./target",
-        "cwd": "packages/claude-code"
+        "toolchain": "stable"
       }
     },
     "clean": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cargo clean --target-dir ./target",
+        "command": "cargo clean --target-dir {projectRoot}/target",
         "cwd": "packages/claude-code"
       }
     },

@@ -1,0 +1,27 @@
+{
+  "name": "@deepbrainspace/nx-rust",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "repository": {
+    "url": "https://github.com/deepbrainspace/goodiebag",
+    "type": "git"
+  },
+  "license": "MIT",
+  "private": false,
+  "generators": "./generators.json",
+  "executors": "./executors.json",
+  "dependencies": {
+    "@nx/devkit": ">= 19 < 21",
+    "@ltd/j-toml": "1.38.0",
+    "chalk": "^4.1.2",
+    "npm-run-path": "^4.0.1",
+    "semver": "7.5.4",
+    "tslib": "^2.0.0"
+  },
+  "peerDependencies": {
+    "@napi-rs/cli": "^3.0.0-alpha.55"
+  },
+  "nx-migrations": {
+    "migrations": "./migrations.json"
+  }
+}
