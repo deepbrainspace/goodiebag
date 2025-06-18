@@ -106,6 +106,17 @@ impl SecretManager for ProviderRegistry {
         credentials: &Credentials,
         mapping: &SecretMapping,
     ) -> Result<SyncResult> {
+        // Empty targets for backward compatibility
+        let targets = Vec::new();
+        self.sync_credentials_to_targets(credentials, mapping, &targets).await
+    }
+
+    async fn sync_credentials_to_targets(
+        &self,
+        credentials: &Credentials,
+        mapping: &SecretMapping,
+        targets: &[Target],
+    ) -> Result<SyncResult> {
         let secrets = mapping.to_secrets(credentials);
         let mut total_result = SyncResult {
             succeeded: 0,
@@ -113,12 +124,8 @@ impl SecretManager for ProviderRegistry {
             errors: Vec::new(),
         };
 
-        // For now, we need targets from somewhere - this would come from config
-        // This is a temporary implementation
-        let targets = Vec::new(); // TODO: Get targets from configuration
-
         for (provider_name, provider) in &self.providers {
-            match provider.sync_secrets(&secrets, &targets).await {
+            match provider.sync_secrets(&secrets, targets).await {
                 Ok(result) => {
                     total_result.succeeded += result.succeeded;
                     total_result.failed += result.failed;

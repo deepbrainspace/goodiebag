@@ -182,15 +182,25 @@ impl SecretProvider for GitHubProvider {
         let mut failed = 0;
         let mut errors = Vec::new();
 
+        debug!("GitHub provider: processing {} targets, {} secrets", targets.len(), secrets.len());
+        
         for target in targets {
+            debug!("Checking target: provider='{}', self.provider_name()='{}'", target.provider, self.provider_name());
             if target.provider != self.provider_name() {
+                debug!("Skipping target {} (provider mismatch)", target.name);
                 continue; // Skip targets not for this provider
             }
 
+            debug!("Processing target: {} {}", target.target_type, target.name);
             for secret in secrets {
+                debug!("Updating secret {} for target {}", secret.name, target.name);
                 match self.update_secret(target, secret).await {
-                    Ok(()) => succeeded += 1,
+                    Ok(()) => {
+                        debug!("Successfully updated secret {} for {}", secret.name, target.name);
+                        succeeded += 1;
+                    }
                     Err(e) => {
+                        error!("Failed to update secret {} for {}: {}", secret.name, target.name, e);
                         failed += 1;
                         errors.push(format!("{}:{} - {}", target.target_type, target.name, e));
                     }

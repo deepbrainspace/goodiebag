@@ -40,6 +40,14 @@ pub trait SecretManager: Send + Sync {
         mapping: &SecretMapping,
     ) -> Result<SyncResult>;
 
+    /// Sync credentials to specific targets
+    async fn sync_credentials_to_targets(
+        &self,
+        credentials: &Credentials,
+        mapping: &SecretMapping,
+        targets: &[Target],
+    ) -> Result<SyncResult>;
+
     /// Validate all configured targets
     async fn validate_targets(&self) -> Result<HashMap<String, bool>>;
 
@@ -77,35 +85,50 @@ impl SecretMapping {
     pub fn to_secrets(&self, credentials: &Credentials) -> Vec<Secret> {
         let mut secrets = Vec::new();
 
-        if let Some(name) = self.get_secret_name("access_token") {
+        // Debug the mappings
+        tracing::debug!("SecretMapping has {} mappings: {:?}", self.mappings.len(), self.mappings);
+
+        // Try both camelCase and snake_case field names for flexibility
+        let access_token_name = self.get_secret_name("accessToken")
+            .or_else(|| self.get_secret_name("access_token"));
+        if let Some(name) = access_token_name {
+            tracing::debug!("Found mapping for access token: {}", name);
             secrets.push(Secret {
                 name: name.clone(),
                 value: credentials.access_token.clone(),
                 description: Some("Claude AI access token".to_string()),
             });
+        } else {
+            tracing::debug!("No mapping found for access token");
         }
 
-        if let (Some(token), Some(name)) = (
-            &credentials.refresh_token,
-            self.get_secret_name("refresh_token"),
-        ) {
+        let refresh_token_name = self.get_secret_name("refreshToken")
+            .or_else(|| self.get_secret_name("refresh_token"));
+        if let (Some(token), Some(name)) = (&credentials.refresh_token, refresh_token_name) {
+            tracing::debug!("Found mapping for refresh token: {}", name);
             secrets.push(Secret {
                 name: name.clone(),
                 value: token.clone(),
                 description: Some("Claude AI refresh token".to_string()),
             });
+        } else {
+            tracing::debug!("No mapping found for refresh token or token is None");
         }
 
-        if let (Some(expires), Some(name)) =
-            (credentials.expires_at, self.get_secret_name("expires_at"))
-        {
+        let expires_at_name = self.get_secret_name("expiresAt")
+            .or_else(|| self.get_secret_name("expires_at"));
+        if let (Some(expires), Some(name)) = (credentials.expires_at, expires_at_name) {
+            tracing::debug!("Found mapping for expires at: {}", name);
             secrets.push(Secret {
                 name: name.clone(),
                 value: expires.to_string(),
                 description: Some("Claude AI token expiry timestamp".to_string()),
             });
+        } else {
+            tracing::debug!("No mapping found for expires at or expires_at is None");
         }
 
+        tracing::debug!("Generated {} secrets from credentials", secrets.len());
         secrets
     }
 }

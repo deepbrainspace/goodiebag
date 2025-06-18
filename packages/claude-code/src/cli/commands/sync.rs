@@ -8,7 +8,25 @@ static INFO: Emoji<'_, '_> = Emoji("📊 ", "");
 static LOGS: Emoji<'_, '_> = Emoji("📜 ", "");
 
 pub async fn handle_sync_now() -> Result<()> {
-    println!("{}Starting manual sync...", SYNC);
+    println!("{}Starting sync...", SYNC);
+
+    let mut sync_service = SyncService::new_with_config().await?;
+
+    match sync_service.check_and_sync_if_needed().await {
+        Ok(()) => {
+            println!("{}Sync operation completed", SUCCESS);
+        }
+        Err(e) => {
+            eprintln!("{}Sync failed: {}", FAILURE, e);
+            std::process::exit(1);
+        }
+    }
+
+    Ok(())
+}
+
+pub async fn handle_sync_force() -> Result<()> {
+    println!("{}Starting forced sync...", SYNC);
 
     let mut sync_service = SyncService::new_with_config().await?;
 

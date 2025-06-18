@@ -88,7 +88,7 @@ jobs:
       - name: Run tests for ${{ matrix.package }}
         run: |
           echo "🧪 Testing ${{ matrix.package }}..."
-          nx run ${{ matrix.package }}:test --ci --code-coverage
+          nx run ${{ matrix.package }}:test
 
       - name: Upload coverage
         uses: actions/upload-artifact@v4
@@ -120,7 +120,7 @@ jobs:
       - name: Build ${{ matrix.package }}
         run: |
           echo "🏗️ Building ${{ matrix.package }}..."
-          nx build ${{ matrix.package }}
+          nx run ${{ matrix.package }}:build
 
   # Summary
   summary:

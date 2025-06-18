@@ -30,9 +30,11 @@ pub enum Commands {
     #[command(subcommand)]
     Repo(RepoCommands),
 
-    /// Sync operations
-    #[command(subcommand)]
-    Sync(SyncCommands),
+    /// Sync credentials to all configured targets (smart - only if changed)
+    Sync {
+        #[command(subcommand)]
+        command: Option<SyncCommands>,
+    },
 
     /// Service management
     #[command(subcommand)]
@@ -80,8 +82,8 @@ pub enum RepoCommands {
 
 #[derive(Subcommand)]
 pub enum SyncCommands {
-    /// Sync credentials to all configured targets immediately
-    Now,
+    /// Force sync credentials to all targets (ignores change detection) 
+    Force,
 
     /// Show detailed sync status for all targets
     Status,

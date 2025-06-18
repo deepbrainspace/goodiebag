@@ -42,10 +42,11 @@ async fn main() -> Result<()> {
             RepoCommands::Remove { repo } => commands::repo::handle_remove_repo(repo).await,
             RepoCommands::List => commands::repo::handle_list_repos().await,
         },
-        Commands::Sync(sync_cmd) => match sync_cmd {
-            SyncCommands::Now => commands::sync::handle_sync_now().await,
-            SyncCommands::Status => commands::sync::handle_sync_status().await,
-            SyncCommands::Logs { lines } => commands::sync::handle_sync_logs(lines).await,
+        Commands::Sync { command } => match command {
+            Some(SyncCommands::Force) => commands::sync::handle_sync_force().await,
+            Some(SyncCommands::Status) => commands::sync::handle_sync_status().await,
+            Some(SyncCommands::Logs { lines }) => commands::sync::handle_sync_logs(lines).await,
+            None => commands::sync::handle_sync_now().await, // Default smart sync
         },
         Commands::Service(service_cmd) => match service_cmd {
             ServiceCommands::Install => commands::service::handle_install().await,
