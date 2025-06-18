@@ -350,15 +350,6 @@ mod tests {
                 session_warnings: vec![30, 15, 5],
                 sync_failures: true,
             },
-            secrets: SecretsConfig {
-                mappings: {
-                    let mut mappings = std::collections::HashMap::new();
-                    mappings.insert("access_token".to_string(), "CLAUDE_ACCESS_TOKEN".to_string());
-                    mappings.insert("refresh_token".to_string(), "CLAUDE_REFRESH_TOKEN".to_string());
-                    mappings.insert("expires_at".to_string(), "CLAUDE_EXPIRES_AT".to_string());
-                    mappings
-                },
-            },
             credentials: CredentialsConfig {
                 file_path: "~/.config/claude/test_credentials.json".to_string(),
                 json_path: "claudeAiOauth".to_string(),
