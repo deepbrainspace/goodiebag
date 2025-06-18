@@ -19,22 +19,16 @@
     "build": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
+      "cache": false,
       "options": {
-        "outputPath": "dist/packages/nx-rust",
-        "tsConfig": "packages/nx-rust/tsconfig.lib.json",
-        "packageJson": "packages/nx-rust/package.json",
-        "main": "packages/nx-rust/src/index.ts",
+        "outputPath": "{workspaceRoot}/packages/nx-rust/dist",
+        "main": "{workspaceRoot}/packages/nx-rust/src/index.ts",
+        "tsConfig": "{workspaceRoot}/packages/nx-rust/tsconfig.lib.json",
         "assets": [
-          "packages/nx-rust/*.md",
           {
-            "input": "./packages/nx-rust/src",
-            "glob": "**/!(*.ts)",
-            "output": "./src"
-          },
-          {
-            "input": "./packages/nx-rust/src",
-            "glob": "**/*.d.ts",
-            "output": "./src"
+            "input": "./packages/nx-rust",
+            "glob": "package.json",
+            "output": "."
           },
           {
             "input": "./packages/nx-rust",
@@ -50,6 +44,26 @@
             "input": "./packages/nx-rust",
             "glob": "migrations.json",
             "output": "."
+          },
+          {
+            "input": "./packages/nx-rust",
+            "glob": "*.md",
+            "output": "."
+          },
+          {
+            "input": "./packages/nx-rust/src",
+            "glob": "**/schema.json",
+            "output": "src"
+          },
+          {
+            "input": "./packages/nx-rust/src",
+            "glob": "**/files/**",
+            "output": "src"
+          },
+          {
+            "input": "./packages/nx-rust/src",
+            "glob": "**/*.d.ts",
+            "output": "src"
           }
         ]
       }
