@@ -2,7 +2,21 @@
   "name": "nx-surrealdb",
   "sourceRoot": "packages/nx-surrealdb/src",
   "projectType": "library",
+  "tags": [
+    "type:nx-plugin",
+    "lang:typescript",
+    "domain:database",
+    "scope:publishable",
+    "runtime:node"
+  ],
   "targets": {
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "prettier --write src/**/*.{ts,js,json}",
+        "cwd": "{projectRoot}"
+      }
+    },
     "install": {
       "executor": "nx:run-commands",
       "outputs": [],
@@ -73,17 +87,28 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint",
+      "dependsOn": ["format"],
       "options": {
-        "lintFilePatterns": ["packages/nx-surrealdb/src/**/*.ts", "packages/nx-surrealdb/src/**/*.js"]
+        "lintFilePatterns": [
+          "packages/nx-surrealdb/src/**/*.ts",
+          "packages/nx-surrealdb/src/**/*.js"
+        ]
       }
     },
     "test": {
-      "executor": "@nx/jest:jest",
+      "executor": "nx:run-commands",
       "dependsOn": ["install"],
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "cache": false,
       "options": {
-        "jestConfig": "packages/nx-surrealdb/jest.config.js"
+        "commands": [
+          {
+            "command": "npx jest --config=jest.config.js",
+            "forwardAllArgs": false
+          }
+        ],
+        "cwd": "packages/nx-surrealdb",
+        "parallel": false
       }
     }
   }

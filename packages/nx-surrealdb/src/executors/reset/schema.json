@@ -22,7 +22,7 @@
       "description": "SurrealDB namespace"
     },
     "database": {
-      "type": "string", 
+      "type": "string",
       "description": "SurrealDB database"
     },
     "envFile": {

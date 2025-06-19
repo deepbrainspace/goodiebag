@@ -8,52 +8,70 @@
           "build",
           "lint",
           "test",
-          "e2e"
+          "e2e",
+          "check",
+          "package"
         ]
       }
     }
   },
   "namedInputs": {
-    "default": [
-      "{projectRoot}/**/*",
-      "sharedGlobals"
-    ],
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
       "default",
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
       "!{projectRoot}/tsconfig.spec.json",
       "!{projectRoot}/jest.config.[jt]s",
       "!{projectRoot}/.eslintrc.json",
-      "!{projectRoot}/eslint.config.js"
+      "!{projectRoot}/eslint.config.js",
+      "!{projectRoot}/src/test-setup.[jt]s",
+      "!{projectRoot}/test-setup.[jt]s"
     ],
     "sharedGlobals": []
   },
   "targetDefaults": {
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "production",
-        "^production"
-      ],
+      "dependsOn": ["^build", "test"],
+      "inputs": ["production", "^production"],
       "cache": true
     },
     "test": {
-      "inputs": [
-        "default",
-        "^production"
-      ],
+      "dependsOn": ["lint"],
+      "inputs": ["default", "^production"],
       "cache": true
     },
     "lint": {
-      "inputs": [
-        "default"
-      ],
+      "inputs": ["default"],
       "cache": true
     },
     "nx-release-publish": {
-      "dependsOn": ["build", "test", "lint"]
+      "dependsOn": ["build"]
+    },
+    "check": {
+      "inputs": ["default"],
+      "cache": true
+    },
+    "package": {
+      "dependsOn": ["build"],
+      "inputs": ["production", "^production"],
+      "cache": true
+    },
+    "clean": {
+      "inputs": ["default"],
+      "cache": false
+    },
+    "publish": {
+      "dependsOn": ["package"],
+      "cache": false
+    },
+    "publish-dry-run": {
+      "dependsOn": ["package"],
+      "cache": true
+    },
+    "@nx/esbuild:esbuild": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
     }
   },
   "generators": {
@@ -66,15 +84,24 @@
   "parallel": 3,
   "release": {
     "projectsRelationship": "independent",
+    "version": {
+      "conventionalCommits": true,
+      "fallbackCurrentVersionResolver": "disk",
+      "git": {
+        "commit": true,
+        "tag": true
+      }
+    },
     "changelog": {
-      "automaticFromRef": true
+      "automaticFromRef": true,
+      "git": {
+        "commit": true,
+        "tag": true
+      }
     },
     "groups": {
       "nx-plugins": {
         "projects": ["nx-*"],
-        "version": {
-          "conventionalCommits": true
-        },
         "changelog": {
           "projectChangelogs": {
             "createRelease": "github",
@@ -82,11 +109,31 @@
           }
         },
         "releaseTagPattern": "{projectName}-v{version}"
+      },
+      "rust-packages": {
+        "projects": ["claude-code-toolkit"],
+        "version": {
+          "generatorOptions": {
+            "fallbackCurrentVersionResolver": "disk"
+          }
+        },
+        "changelog": {
+          "projectChangelogs": {
+            "createRelease": "github",
+            "file": true
+          }
+        },
+        "releaseTagPattern": "{projectName}-v{version}",
+        "projectsRelationship": "independent"
       }
-    },
-    "git": {
-      "commit": true,
-      "tag": true
     }
-  }
+  },
+  "plugins": [
+    {
+      "plugin": "@nx/jest/plugin",
+      "options": {
+        "targetName": "jest:test"
+      }
+    }
+  ]
 }

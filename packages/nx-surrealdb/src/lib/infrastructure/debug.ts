@@ -101,19 +101,21 @@ export class Debug {
 
     const start = Date.now();
     console.log(`🔍 DEBUG TIMER: Starting ${label}`);
-    
+
     const result = fn();
-    
+
     if (result instanceof Promise) {
-      return result.then(value => {
-        const duration = Date.now() - start;
-        console.log(`🔍 DEBUG TIMER: ${label} completed in ${duration}ms`);
-        return value;
-      }).catch(error => {
-        const duration = Date.now() - start;
-        console.log(`🔍 DEBUG TIMER: ${label} failed after ${duration}ms`);
-        throw error;
-      });
+      return result
+        .then(value => {
+          const duration = Date.now() - start;
+          console.log(`🔍 DEBUG TIMER: ${label} completed in ${duration}ms`);
+          return value;
+        })
+        .catch(error => {
+          const duration = Date.now() - start;
+          console.log(`🔍 DEBUG TIMER: ${label} failed after ${duration}ms`);
+          throw error;
+        });
     } else {
       const duration = Date.now() - start;
       console.log(`🔍 DEBUG TIMER: ${label} completed in ${duration}ms`);
@@ -126,13 +128,17 @@ export class Debug {
    */
   static scope(moduleName: string) {
     return {
-      log: (message: string, ...args: unknown[]) => Debug.log(`[${moduleName}] ${message}`, ...args),
+      log: (message: string, ...args: unknown[]) =>
+        Debug.log(`[${moduleName}] ${message}`, ...args),
       error: (message: string, error?: unknown) => Debug.error(`[${moduleName}] ${message}`, error),
-      warn: (message: string, ...args: unknown[]) => Debug.warn(`[${moduleName}] ${message}`, ...args),
-      info: (message: string, ...args: unknown[]) => Debug.info(`[${moduleName}] ${message}`, ...args),
+      warn: (message: string, ...args: unknown[]) =>
+        Debug.warn(`[${moduleName}] ${message}`, ...args),
+      info: (message: string, ...args: unknown[]) =>
+        Debug.info(`[${moduleName}] ${message}`, ...args),
       data: (label: string, data: unknown) => Debug.data(`${moduleName}:${label}`, data),
       table: (label: string, data: unknown[]) => Debug.table(`${moduleName}:${label}`, data),
-      time: <T>(label: string, fn: () => T | Promise<T>) => Debug.time(`${moduleName}:${label}`, fn)
+      time: <T>(label: string, fn: () => T | Promise<T>) =>
+        Debug.time(`${moduleName}:${label}`, fn),
     };
   }
 }

@@ -14,11 +14,11 @@ describe('MigrationRepository', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     mockClient = {
       query: jest.fn().mockResolvedValue([[]]), // Default to empty array result
       create: jest.fn().mockResolvedValue(undefined),
-      username: 'testuser'
+      username: 'testuser',
     } as {
       use: jest.MockedFunction<(namespace: string, database: string) => Promise<void>>;
       query: jest.MockedFunction<(query: string) => Promise<unknown[]>>;
@@ -26,7 +26,7 @@ describe('MigrationRepository', () => {
       create: jest.MockedFunction<() => Promise<void>>;
       username: string;
     };
-    
+
     // Set up default filesystem mock to prevent schema file reading issues
     const defaultSchemaContent = `
       DEFINE TABLE IF NOT EXISTS system_migrations;
@@ -40,9 +40,9 @@ describe('MigrationRepository', () => {
       DEFINE FIELD IF NOT EXISTS status ON system_migrations TYPE string;
       DEFINE FIELD IF NOT EXISTS applied_at ON system_migrations TYPE datetime;
     `;
-    
+
     mockFs.readFile.mockResolvedValue(defaultSchemaContent);
-    
+
     MockSurrealDBClient.mockImplementation(() => mockClient);
     repository = new MigrationRepository(mockClient);
   });
@@ -63,9 +63,9 @@ describe('MigrationRepository', () => {
 
     it('should initialize with default schema file', async () => {
       mockFs.readFile.mockResolvedValue(mockSchemaContent);
-      
+
       await repository.initialize();
-      
+
       expect(mockFs.readFile).toHaveBeenCalledWith(
         expect.stringContaining('schema/system_migrations.surql'),
         'utf8'
@@ -77,9 +77,9 @@ describe('MigrationRepository', () => {
       const customPath = '/custom/schema.surql';
       repository = new MigrationRepository(mockClient, customPath);
       mockFs.readFile.mockResolvedValue(mockSchemaContent);
-      
+
       await repository.initialize();
-      
+
       expect(mockFs.readFile).toHaveBeenCalledWith(customPath, 'utf8');
     });
 
@@ -89,7 +89,7 @@ describe('MigrationRepository', () => {
         DEFINE FIELD IF NOT EXISTS number ON system_migrations TYPE string;
       `;
       mockFs.readFile.mockResolvedValue(incompleteSchema as never);
-      
+
       await expect(repository.initialize()).rejects.toThrow('missing required field: name');
     });
 
@@ -97,79 +97,95 @@ describe('MigrationRepository', () => {
       const error = new Error('File not found') as Error & { code: string };
       error.code = 'ENOENT';
       mockFs.readFile.mockRejectedValue(error);
-      
+
       await expect(repository.initialize()).rejects.toThrow('Schema file not found');
     });
 
     it('should handle database query errors', async () => {
       mockFs.readFile.mockResolvedValue(mockSchemaContent);
       mockClient.query.mockRejectedValue(new Error('DB error'));
-      
-      await expect(repository.initialize()).rejects.toThrow('Failed to initialize system_migrations table: DB error');
+
+      await expect(repository.initialize()).rejects.toThrow(
+        'Failed to initialize system_migrations table: DB error'
+      );
     });
   });
 
   describe('canApplyMigration', () => {
     it('should allow applying up migration when never run', async () => {
       mockClient.query.mockResolvedValue([[]]);
-      
+
       const result = await repository.canApplyMigration('0001', 'create_users', 'up');
-      
+
       expect(result.canApply).toBe(true);
     });
 
     it('should prevent applying up migration when already up', async () => {
-      mockClient.query.mockResolvedValue([[{
-        status: 'success',
-        direction: 'up',
-        applied_at: new Date()
-      }]]);
-      
+      mockClient.query.mockResolvedValue([
+        [
+          {
+            status: 'success',
+            direction: 'up',
+            applied_at: new Date(),
+          },
+        ],
+      ]);
+
       const result = await repository.canApplyMigration('0001', 'create_users', 'up');
-      
+
       expect(result.canApply).toBe(false);
-      expect(result.reason).toContain('already in \'up\' state');
+      expect(result.reason).toContain("already in 'up' state");
     });
 
     it('should allow applying down migration when in up state', async () => {
-      mockClient.query.mockResolvedValue([[{
-        status: 'success',
-        direction: 'up',
-        applied_at: new Date()
-      }]]);
-      
+      mockClient.query.mockResolvedValue([
+        [
+          {
+            status: 'success',
+            direction: 'up',
+            applied_at: new Date(),
+          },
+        ],
+      ]);
+
       const result = await repository.canApplyMigration('0001', 'create_users', 'down');
-      
+
       expect(result.canApply).toBe(true);
     });
 
     it('should prevent applying down migration when never run', async () => {
       mockClient.query.mockResolvedValue([[]]);
-      
+
       const result = await repository.canApplyMigration('0001', 'create_users', 'down');
-      
+
       expect(result.canApply).toBe(false);
       expect(result.reason).toContain('has never been run');
     });
 
     it('should allow re-applying up migration after failure', async () => {
-      mockClient.query.mockResolvedValue([[{
-        status: 'fail',
-        direction: 'up',
-        applied_at: new Date()
-      }]]);
-      
+      mockClient.query.mockResolvedValue([
+        [
+          {
+            status: 'fail',
+            direction: 'up',
+            applied_at: new Date(),
+          },
+        ],
+      ]);
+
       const result = await repository.canApplyMigration('0001', 'create_users', 'up');
-      
+
       expect(result.canApply).toBe(true);
     });
 
     it('should validate input parameters', async () => {
-      await expect(repository.canApplyMigration('', 'test', 'up'))
-        .rejects.toThrow('Number and name are required');
-      
-      await expect(repository.canApplyMigration('0001', 'test', 'invalid' as 'up' | 'down'))
-        .rejects.toThrow('Requested direction must be \'up\' or \'down\'');
+      await expect(repository.canApplyMigration('', 'test', 'up')).rejects.toThrow(
+        'Number and name are required'
+      );
+
+      await expect(
+        repository.canApplyMigration('0001', 'test', 'invalid' as 'up' | 'down')
+      ).rejects.toThrow("Requested direction must be 'up' or 'down'");
     });
   });
 
@@ -185,7 +201,7 @@ describe('MigrationRepository', () => {
       status: 'success' as const,
       namespace: 'test',
       database: 'test',
-      execution_time_ms: 100
+      execution_time_ms: 100,
     };
 
     beforeEach(() => {
@@ -206,7 +222,7 @@ describe('MigrationRepository', () => {
 
     it('should add migration successfully', async () => {
       await repository.addMigration(validMigration);
-      
+
       expect(mockClient.create).toHaveBeenCalledWith('system_migrations', {
         number: '0001',
         name: 'create_users',
@@ -217,36 +233,40 @@ describe('MigrationRepository', () => {
         checksum: 'abc123',
         status: 'success',
         applied_by: 'testuser',
-        execution_time_ms: 100
+        execution_time_ms: 100,
       });
     });
 
     it('should validate required fields', async () => {
       const invalidMigration = { ...validMigration, number: '' };
-      
-      await expect(repository.addMigration(invalidMigration))
-        .rejects.toThrow('Missing required migration fields');
+
+      await expect(repository.addMigration(invalidMigration)).rejects.toThrow(
+        'Missing required migration fields'
+      );
     });
 
     it('should validate direction values', async () => {
       const invalidMigration = { ...validMigration, direction: 'invalid' as 'up' | 'down' };
-      
-      await expect(repository.addMigration(invalidMigration))
-        .rejects.toThrow('Direction must be \'up\' or \'down\'');
+
+      await expect(repository.addMigration(invalidMigration)).rejects.toThrow(
+        "Direction must be 'up' or 'down'"
+      );
     });
 
     it('should validate status values', async () => {
       const invalidMigration = { ...validMigration, status: 'invalid' as 'applied' | 'pending' };
-      
-      await expect(repository.addMigration(invalidMigration))
-        .rejects.toThrow('Status must be \'success\' or \'fail\'');
+
+      await expect(repository.addMigration(invalidMigration)).rejects.toThrow(
+        "Status must be 'success' or 'fail'"
+      );
     });
 
     it('should validate path format', async () => {
       const invalidMigration = { ...validMigration, path: 'invalid path!' };
-      
-      await expect(repository.addMigration(invalidMigration))
-        .rejects.toThrow('Invalid path format');
+
+      await expect(repository.addMigration(invalidMigration)).rejects.toThrow(
+        'Invalid path format'
+      );
     });
 
     it('should use default values when not provided', async () => {
@@ -255,15 +275,16 @@ describe('MigrationRepository', () => {
         name: 'create_users',
         filename: '0001_create_users_up.surql',
         path: 'database/010_auth',
-        content: 'DEFINE TABLE users;'
+        content: 'DEFINE TABLE users;',
       };
-      
+
       await repository.addMigration(minimalMigration);
-      
-      expect(mockClient.create).toHaveBeenCalledWith('system_migrations', 
+
+      expect(mockClient.create).toHaveBeenCalledWith(
+        'system_migrations',
         expect.objectContaining({
           direction: 'up',
-          status: 'success'
+          status: 'success',
         })
       );
     });
@@ -281,14 +302,14 @@ describe('MigrationRepository', () => {
           path: 'database/010_auth',
           content: 'DEFINE TABLE users;',
           status: 'success',
-          applied_at: new Date()
-        }
+          applied_at: new Date(),
+        },
       ];
-      
+
       mockClient.query.mockResolvedValue([mockMigrations]);
-      
+
       const result = await repository.getMigrationsByDirectionAndPath('up', 'database/010_auth');
-      
+
       expect(result).toHaveLength(1);
       expect(result[0].number).toBe('0001');
       expect(mockClient.query).toHaveBeenCalledWith(
@@ -299,69 +320,77 @@ describe('MigrationRepository', () => {
 
     it('should handle empty results', async () => {
       mockClient.query.mockResolvedValue([[]]);
-      
+
       const result = await repository.getMigrationsByDirectionAndPath('up', 'database/010_auth');
-      
+
       expect(result).toEqual([]);
     });
 
     it('should validate direction parameter', async () => {
-      await expect(repository.getMigrationsByDirectionAndPath('invalid', 'path'))
-        .rejects.toThrow('Direction must be \'up\' or \'down\'');
+      await expect(repository.getMigrationsByDirectionAndPath('invalid', 'path')).rejects.toThrow(
+        "Direction must be 'up' or 'down'"
+      );
     });
 
     it('should validate path parameter', async () => {
-      await expect(repository.getMigrationsByDirectionAndPath('up', ''))
-        .rejects.toThrow('Invalid or missing path');
-      
-      await expect(repository.getMigrationsByDirectionAndPath('up', 'invalid path!'))
-        .rejects.toThrow('Invalid or missing path');
+      await expect(repository.getMigrationsByDirectionAndPath('up', '')).rejects.toThrow(
+        'Invalid or missing path'
+      );
+
+      await expect(
+        repository.getMigrationsByDirectionAndPath('up', 'invalid path!')
+      ).rejects.toThrow('Invalid or missing path');
     });
 
     it('should handle database errors', async () => {
       mockClient.query.mockRejectedValue(new Error('DB error'));
-      
-      await expect(repository.getMigrationsByDirectionAndPath('up', 'database/010_auth'))
-        .rejects.toThrow('Failed to fetch migrations: DB error');
+
+      await expect(
+        repository.getMigrationsByDirectionAndPath('up', 'database/010_auth')
+      ).rejects.toThrow('Failed to fetch migrations: DB error');
     });
   });
 
   describe('updateMigrationStatus', () => {
     it('should update migration status successfully', async () => {
       mockClient.query.mockResolvedValue([{ result: [{ id: 'system_migrations:123' }] }]);
-      
+
       await repository.updateMigrationStatus('system_migrations:123', 'success');
-      
+
       expect(mockClient.query).toHaveBeenCalledWith(
         expect.stringContaining('UPDATE $id SET'),
         expect.objectContaining({
           id: 'system_migrations:123',
           status: 'success',
-          applied_at: expect.any(String)
+          applied_at: expect.any(String),
         })
       );
     });
 
     it('should validate record ID format', async () => {
-      await expect(repository.updateMigrationStatus('invalid', 'success'))
-        .rejects.toThrow('Invalid record ID format');
-      
-      await expect(repository.updateMigrationStatus('other_table:123', 'success'))
-        .rejects.toThrow('Invalid record ID format');
+      await expect(repository.updateMigrationStatus('invalid', 'success')).rejects.toThrow(
+        'Invalid record ID format'
+      );
+
+      await expect(repository.updateMigrationStatus('other_table:123', 'success')).rejects.toThrow(
+        'Invalid record ID format'
+      );
     });
 
     it('should handle non-existent records', async () => {
       mockClient.query.mockResolvedValue([{ result: [] }]);
-      
-      await expect(repository.updateMigrationStatus('system_migrations:123', 'success'))
-        .rejects.toThrow('No record found with ID system_migrations:123');
+
+      await expect(
+        repository.updateMigrationStatus('system_migrations:123', 'success')
+      ).rejects.toThrow('No record found with ID system_migrations:123');
     });
 
     it('should handle database errors', async () => {
       mockClient.query.mockRejectedValue(new Error('DB error'));
-      
-      await expect(repository.updateMigrationStatus('system_migrations:123', 'success'))
-        .rejects.toThrow('Failed to update migration status: DB error');
+
+      await expect(
+        repository.updateMigrationStatus('system_migrations:123', 'success')
+      ).rejects.toThrow('Failed to update migration status: DB error');
     });
   });
 
@@ -372,13 +401,13 @@ describe('MigrationRepository', () => {
         status: 'success',
         applied_at: new Date(),
         direction: 'up',
-        filename: '0001_create_users_up.surql'
+        filename: '0001_create_users_up.surql',
       };
-      
+
       mockClient.query.mockResolvedValue([[mockMigration]]);
-      
+
       const result = await repository.getLatestMigrationStatus('0001', 'create_users');
-      
+
       expect(result).toEqual(mockMigration);
       expect(mockClient.query).toHaveBeenCalledWith(
         expect.stringContaining('ORDER BY applied_at DESC'),
@@ -388,18 +417,20 @@ describe('MigrationRepository', () => {
 
     it('should return null when no migrations found', async () => {
       mockClient.query.mockResolvedValue([[]]);
-      
+
       const result = await repository.getLatestMigrationStatus('0001', 'create_users');
-      
+
       expect(result).toBeNull();
     });
 
     it('should validate input parameters', async () => {
-      await expect(repository.getLatestMigrationStatus('', 'test'))
-        .rejects.toThrow('Number and name are required');
-      
-      await expect(repository.getLatestMigrationStatus('0001', ''))
-        .rejects.toThrow('Number and name are required');
+      await expect(repository.getLatestMigrationStatus('', 'test')).rejects.toThrow(
+        'Number and name are required'
+      );
+
+      await expect(repository.getLatestMigrationStatus('0001', '')).rejects.toThrow(
+        'Number and name are required'
+      );
     });
   });
 });

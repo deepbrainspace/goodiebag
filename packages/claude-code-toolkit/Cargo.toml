@@ -1,0 +1,92 @@
+[package]
+name = "claude-code-toolkit"
+version = "0.1.0"
+edition = "2024"
+description = "Claude Code management tool for credential sync, session monitoring, and GitHub integration"
+license = "MIT"
+repository = "https://github.com/deepbrainspace/goodiebag"
+homepage = "https://github.com/deepbrainspace/goodiebag/tree/main/packages/claude-code"
+documentation = "https://docs.rs/claude-code"
+readme = "README.md"
+keywords = ["claude", "ai", "github", "sync", "daemon"]
+categories = ["command-line-utilities", "development-tools"]
+authors = ["Nayeem Syed <nayeem@deepbrainspace.com>"]
+rust-version = "1.85"
+exclude = [
+    "target/",
+    ".git/",
+    ".github/",
+    "*.log",
+    "Cargo.lock"
+]
+
+[lib]
+name = "claude_code_toolkit"
+path = "src/lib.rs"
+
+[[bin]]
+name = "claude-code-toolkit"
+path = "src/main.rs"
+
+[dependencies]
+# CLI framework
+clap = { version = "4.5", features = ["derive", "env"] }
+
+# Async runtime
+tokio = { version = "1.41", features = ["full"] }
+async-trait = "0.1"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+shellexpand = "3.1"
+
+# File system watching
+notify = "6.1"
+
+# HTTP client for GitHub API
+reqwest = { version = "0.12", features = ["json"] }
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-appender = "0.2"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# File operations
+dirs = "5.0"
+fs_extra = "1.3"
+
+# Process execution (tokio includes process support)
+
+# Terminal colors and formatting
+console = "0.15"
+indicatif = "0.17"
+
+# Configuration
+config = "0.14"
+
+# Systemd integration
+libsystemd = { version = "0.7", optional = true }
+
+# Desktop notifications
+notify-rust = { version = "4.11", optional = true }
+
+# Cron scheduling
+cron = "0.12"
+
+[features]
+default = ["notifications", "systemd"]
+notifications = ["notify-rust"]
+systemd = ["libsystemd"]
+
+[dev-dependencies]
+tempfile = "3.8"
+mockall = "0.12"

@@ -4,66 +4,82 @@
 [![CD](https://github.com/deepbrainspace/goodiebag/actions/workflows/cd.yml/badge.svg?branch=main)](https://github.com/deepbrainspace/goodiebag/actions/workflows/cd.yml)
 [![Release](https://github.com/deepbrainspace/goodiebag/actions/workflows/release.yml/badge.svg)](https://github.com/deepbrainspace/goodiebag/actions/workflows/release.yml)
 
-A streamlined monorepo of developer utilities, NX plugins, MCP servers, and tools - featuring intelligent CI/CD, comprehensive testing, and production-ready automation.
+A streamlined monorepo of developer utilities, NX plugins, MCP servers, and
+tools - featuring intelligent CI/CD, comprehensive testing, and production-ready
+automation.
 
 ## Repository Philosophy
 
-**Why "Goodie-Bag"?** Every developer has that collection of small, useful tools they've built over time. Instead of maintaining dozens of separate repositories, this monorepo consolidates everything into one optimized, scalable workspace.
+**Why "Goodie-Bag"?** Every developer has that collection of small, useful tools
+they've built over time. Instead of maintaining dozens of separate repositories,
+this monorepo consolidates everything into one optimized, scalable workspace.
 
 ## Smart Monorepo Architecture
 
 This repository demonstrates next-generation monorepo management with:
 
-- **🧠 Intelligent CI/CD**: Only builds, tests, and publishes packages that actually changed
-- **⚡ Parallel Execution**: ~50% faster builds through strategic parallelization
-- **📦 Independent Versioning**: Each package maintains its own version and release cycle
+- **🧠 Intelligent CI/CD**: Only builds, tests, and publishes packages that
+  actually changed
+- **⚡ Parallel Execution**: ~50% faster builds through strategic
+  parallelization
+- **📦 Independent Versioning**: Each package maintains its own version and
+  release cycle
 - **🎯 Affected-Only Operations**: NX automatically detects what needs attention
-- **🔄 Dual Distribution**: npm registry + GitHub releases with tarball artifacts
-- **✅ Zero-Tolerance Quality**: ESLint warnings block CI, comprehensive test coverage required
+- **🔄 Dual Distribution**: npm registry + GitHub releases with tarball
+  artifacts
+- **✅ Zero-Tolerance Quality**: ESLint warnings block CI, comprehensive test
+  coverage required
 
 ## The Goodie-Bag Collection
 
-| Package/App | Type | Version | Description |
-|-------------|------|---------|-------------|
+| Package/App                                               | Type      | Version                                                           | Description                                    |
+| --------------------------------------------------------- | --------- | ----------------------------------------------------------------- | ---------------------------------------------- |
 | [`@deepbrainspace/nx-surrealdb`](./packages/nx-surrealdb) | NX Plugin | ![npm](https://img.shields.io/npm/v/@deepbrainspace/nx-surrealdb) | SurrealDB migrations with modular architecture |
 
 ### Coming Soon to the Goodie-Bag 🎒
 
 **📦 Packages (Publishable to npm):**
+
 - `@deepbrainspace/mcp-server-*` - Model Context Protocol servers
 - `@deepbrainspace/cli-*` - Command-line utilities and tools
 - `@deepbrainspace/nx-*` - Additional NX plugins for various databases/services
 - `@deepbrainspace/shared-*` - Reusable utility libraries
 
 **🚀 Apps (Deployable Applications):**
+
 - `goodiebag-dev` - Main website showcasing all tools
 - `membership` - Developer membership and community portal
 - `docs` - Comprehensive documentation site
 - `admin-dashboard` - Management interface for tools and users
 
 **🔧 Libs (Internal Shared Libraries):**
+
 - `ui-components` - Reusable React/Vue components
 - `brand-assets` - Logos, icons, design system
 - `shared-utils` - Common utilities across packages/apps
 - `shared-types` - TypeScript definitions for the ecosystem
 
 **🤖 Planned Innovation:**
+
 - **AI Release Agent** - Autonomous version management through diff analysis
 - **Inter-Package Intelligence** - Smart dependency updates across the monorepo
 - **Usage Analytics** - Understanding how developers use the goodie-bag tools
 
-### @deepbrainspace/nx-surrealdb
+### @deepbrainspace/goodiebag
 
-A comprehensive SurrealDB toolkit for NX monorepos featuring migration management, dependency resolution, and extensible architecture.
+A comprehensive SurrealDB toolkit for NX monorepos featuring migration
+management, dependency resolution, and extensible architecture.
 
 **Key Features:**
+
 - 🚀 Migration management with dependency resolution
-- 🔄 Modular schema organization with topological sorting  
+- 🔄 Modular schema organization with topological sorting
 - 🛡️ Safe rollbacks with dependency conflict detection
 - 📊 Rich visualization with ASCII dependency trees
 - 🎯 Smart targeting (index, name, number patterns)
 
 **Quick Install:**
+
 ```bash
 npm install @deepbrainspace/nx-surrealdb --save-dev
 ```
@@ -73,11 +89,19 @@ npm install @deepbrainspace/nx-surrealdb --save-dev
 ## Development
 
 ### Prerequisites
+
 - **Node.js**: 18+ or 20+
 - **pnpm**: 9.0.0+
 - **NX CLI**: `npm install -g nx`
+- **Rust**: 1.85+ (for claude-code package)
+
+### Global Dependencies
+
+- **Prettier**: Added for consistent code formatting across all project types
+  (JSON, Rust, TypeScript)
 
 ### Repository Setup
+
 ```bash
 # Clone and install
 git clone https://github.com/deepbrainspace/goodiebag.git
@@ -98,15 +122,15 @@ pnpm lint
 
 ### Intelligent Monorepo Design
 
-**🎯 The Problem We Solved:**
-Traditional monorepos suffer from "build everything" inefficiency. When you change one package, why rebuild 50 others?
+**🎯 The Problem We Solved:** Traditional monorepos suffer from "build
+everything" inefficiency. When you change one package, why rebuild 50 others?
 
 **⚡ Our Solution - Affected-Only Operations:**
 
 ```bash
 # Traditional approach (inefficient)
 npm run build    # Builds ALL packages
-npm run test     # Tests ALL packages  
+npm run test     # Tests ALL packages
 npm run publish  # Publishes ALL packages
 
 # Goodie-Bag approach (intelligent)
@@ -116,6 +140,7 @@ nx affected --target=test    # Only tests affected packages
 ```
 
 **🔄 Change Detection Magic:**
+
 - **Git-based Analysis**: NX analyzes file changes between commits
 - **Dependency Graph**: Understands package relationships and downstream impacts
 - **Selective Execution**: Only runs operations on packages that need them
@@ -130,7 +155,7 @@ goodiebag/
 │   ├── mcp-server-*/     # Model Context Protocol servers
 │   ├── cli-*/            # Command-line utilities
 │   └── shared-*/         # Reusable libraries
-├── apps/                 # 🚀 Deployable applications  
+├── apps/                 # 🚀 Deployable applications
 │   ├── goodiebag-dev/    # Main showcase website
 │   ├── membership/       # Developer community portal
 │   ├── docs/             # Documentation site
@@ -143,6 +168,7 @@ goodiebag/
 ```
 
 **🏗️ Quality Standards:**
+
 - **Zero ESLint Warnings**: Blocks CI pipeline
 - **Repository Pattern**: Clean data access layers
 - **Independent Testing**: 278+ tests and growing
@@ -150,9 +176,11 @@ goodiebag/
 
 ## CI/CD Pipeline
 
-Our GitHub Actions pipeline demonstrates production-grade monorepo CI/CD with intelligent package detection:
+Our GitHub Actions pipeline demonstrates production-grade monorepo CI/CD with
+intelligent package detection:
 
-> 📖 **[View Complete Release Process Documentation →](./docs/RELEASE-PROCESS.md)**
+> 📖
+> **[View Complete Release Process Documentation →](./docs/RELEASE-PROCESS.md)**
 
 ```
    dependencies
@@ -162,10 +190,13 @@ Our GitHub Actions pipeline demonstrates production-grade monorepo CI/CD with in
 ```
 
 **🧠 Intelligent Package Detection:**
+
 - **Affected Analysis**: Only processes packages/apps that changed
-- **Independent Lifecycles**: Each package gets its own version and release cycle
-- **Parallel Processing**: Multiple packages can publish/deploy simultaneously  
-- **Smart Tagging**: Individual releases: `nx-surrealdb-v1.0.0`, `goodiebag-dev-v2.1.0`
+- **Independent Lifecycles**: Each package gets its own version and release
+  cycle
+- **Parallel Processing**: Multiple packages can publish/deploy simultaneously
+- **Smart Tagging**: Individual releases: `nx-surrealdb-v1.0.0`,
+  `goodiebag-dev-v2.1.0`
 - **Future AI**: Automated semantic version detection through diff analysis
 
 ### Intelligent Pipeline Stages
@@ -182,11 +213,13 @@ Our GitHub Actions pipeline demonstrates production-grade monorepo CI/CD with in
 ### Release Triggers
 
 - **Production Release**: Push package-specific tag
+
   ```bash
   git tag nx-surrealdb-v1.2.0 && git push origin nx-surrealdb-v1.2.0
   git tag mcp-server-claude-v2.1.0 && git push origin mcp-server-claude-v2.1.0
   git tag goodiebag-dev-v1.0.0 && git push origin goodiebag-dev-v1.0.0
   ```
+
   - Only publishes the specific package mentioned in the tag
   - Sets exact version from tag
   - Creates GitHub release with package-specific tag
@@ -199,13 +232,16 @@ Our GitHub Actions pipeline demonstrates production-grade monorepo CI/CD with in
 ### Performance & Efficiency Benefits
 
 - **~50% faster CI** through parallel execution and affected-only builds
-- **Massive Resource Savings**: Only process what actually changed (packages + apps)
+- **Massive Resource Savings**: Only process what actually changed (packages +
+  apps)
 - **Independent Lifecycles**: Update website without affecting NX plugins
 - **Rapid Iteration**: Change MCP server without rebuilding documentation site
 - **Infinite Scalability**: Add 100+ packages/apps without slowing down CI
 - **Smart Failure Isolation**: One package/app failure doesn't block others
-- **Multi-Channel Distribution**: npm packages + app deployments + GitHub releases
-- **Future AI Efficiency**: Autonomous releases eliminate manual version management overhead
+- **Multi-Channel Distribution**: npm packages + app deployments + GitHub
+  releases
+- **Future AI Efficiency**: Autonomous releases eliminate manual version
+  management overhead
 
 ### Manual Release Process
 
@@ -215,7 +251,7 @@ For testing artifacts before CI/CD or emergency releases:
 # 1. Build specific package
 nx build package-name
 
-# 2. Navigate to package directory  
+# 2. Navigate to package directory
 cd packages/package-name
 
 # 3. Create and test tarball locally
@@ -247,7 +283,7 @@ gh release create package-name-v1.0.0 *.tgz \
 # Release NX plugin
 git tag nx-surrealdb-v1.2.0 && git push origin nx-surrealdb-v1.2.0
 
-# Release MCP server  
+# Release MCP server
 git tag mcp-server-claude-v2.1.0 && git push origin mcp-server-claude-v2.1.0
 
 # Release website
@@ -256,7 +292,8 @@ git tag goodiebag-dev-v1.0.0 && git push origin goodiebag-dev-v1.0.0
 
 ### Environment Variables
 
-Required for CI/CD and manual publishing. Copy `.env.example` to `.env` and fill in your values:
+Required for CI/CD and manual publishing. Copy `.env.example` to `.env` and fill
+in your values:
 
 ```bash
 # Copy template and edit
@@ -269,9 +306,12 @@ GITHUB_TOKEN=ghp_xxxxxxxxxxxx    # GitHub releases
 NX_CLOUD_ACCESS_TOKEN=xxxxxxx    # Optional: distributed caching
 ```
 
-**🔐 Security Note**: The `.env` file is encrypted with [git-crypt](https://github.com/AGWA/git-crypt) when committed to the repository. Use `.env.example` as a template for local development.
+**🔐 Security Note**: The `.env` file is encrypted with
+[git-crypt](https://github.com/AGWA/git-crypt) when committed to the repository.
+Use `.env.example` as a template for local development.
 
-Both npm packages and GitHub release artifacts are created, providing multiple distribution channels and backup options.
+Both npm packages and GitHub release artifacts are created, providing multiple
+distribution channels and backup options.
 
 ## Contributing
 
@@ -297,6 +337,7 @@ Both npm packages and GitHub release artifacts are created, providing multiple d
 ### Versioning
 
 This project follows [Semantic Versioning](https://semver.org/):
+
 - **Major** (v1.0.0): Breaking changes
 - **Minor** (v0.1.0): New features, backwards compatible
 - **Patch** (v0.0.1): Bug fixes, backwards compatible
@@ -304,39 +345,53 @@ This project follows [Semantic Versioning](https://semver.org/):
 ## Architecture & Package Documentation
 
 ### Repository Architecture
+
 - **Monorepo Strategy**: Flat package structure for simplicity
 - **NX Workspace**: Intelligent build orchestration and dependency management
-- **Affected Operations**: Git-based change detection with dependency graph analysis
-- **Independent Lifecycles**: Each package maintains its own version, tests, and releases
+- **Affected Operations**: Git-based change detection with dependency graph
+  analysis
+- **Independent Lifecycles**: Each package maintains its own version, tests, and
+  releases
 
 ### Individual Package Docs
-- [nx-surrealdb Architecture](./packages/nx-surrealdb/ARCHITECTURE.md) - NX plugin technical design
-- [nx-surrealdb CLAUDE.md](./packages/nx-surrealdb/CLAUDE.md) - Development patterns and guide
-- [Security Guide](./docs/SECURITY.md) - Environment variables and git-crypt setup
+
+- [nx-surrealdb Architecture](./packages/nx-surrealdb/ARCHITECTURE.md) - NX
+  plugin technical design
+- [nx-surrealdb CLAUDE.md](./packages/nx-surrealdb/CLAUDE.md) - Development
+  patterns and guide
+- [Security Guide](./docs/SECURITY.md) - Environment variables and git-crypt
+  setup
 
 ### Adding New Packages
-Ready to add your next utility to the goodie-bag? The monorepo automatically handles:
+
+Ready to add your next utility to the goodie-bag? The monorepo automatically
+handles:
+
 1. **Create** `packages/your-package/` or `apps/your-app/` directory
-2. **Add** appropriate targets to `project.json` (`publish` for packages, `deploy` for apps)
+2. **Add** appropriate targets to `project.json` (`publish` for packages,
+   `deploy` for apps)
 3. **Commit** changes
 4. **Done!** CI/CD automatically detects and manages the new package/app
 
 ### Future: AI-Driven Intelligent Releases 🤖
 
-**The Vision:** Eliminate manual version management entirely through AI-powered semantic analysis!
+**The Vision:** Eliminate manual version management entirely through AI-powered
+semantic analysis!
 
-#### **Phase 1: Claude Code Release MCP** 
+#### **Phase 1: Claude Code Release MCP**
+
 Interactive release management through Claude Code:
 
 ```bash
 # Conversational release interface
 > @release list affected packages
-> @release analyze changes for nx-surrealdb  
+> @release analyze changes for nx-surrealdb
 > @release preview nx-surrealdb --auto-version
 > @release create nx-surrealdb-v1.2.0
 ```
 
 #### **Phase 2: Autonomous AI Release Agent** 🧠
+
 Zero-human-intervention releases with AI-powered diff analysis:
 
 ```bash
@@ -344,7 +399,7 @@ Zero-human-intervention releases with AI-powered diff analysis:
 1. 🔍 Analyzes git diff for each affected package
 2. 🧠 Determines semantic version type:
    - BREAKING CHANGE → Major (v2.0.0)
-   - feat: new feature → Minor (v1.1.0) 
+   - feat: new feature → Minor (v1.1.0)
    - fix: bug fix → Patch (v1.0.1)
 3. 🏷️ Creates package-specific tags: nx-surrealdb-v1.2.0
 4. 🚀 Triggers automated CI/CD release
@@ -352,29 +407,33 @@ Zero-human-intervention releases with AI-powered diff analysis:
 ```
 
 **AI Analysis Capabilities:**
+
 - **API Breaking Changes**: Detect method signature changes, removed exports
-- **Feature Detection**: Identify new public APIs, added functionality  
+- **Feature Detection**: Identify new public APIs, added functionality
 - **Bug Fix Recognition**: Parse fix commits and issue references
 - **Dependency Impact**: Analyze package.json changes for version bumps
 - **Documentation Changes**: Distinguish docs-only changes (no version bump)
 
 **Smart Patterns:**
+
 ```bash
 # AI detects patterns like:
 export function newFeature() → Minor bump
-export function existingApi(newParam: string) → Major bump  
+export function existingApi(newParam: string) → Major bump
 // fix: resolve memory leak → Patch bump
 docs: update README → No version bump
 ```
 
 **Workflow:**
+
 1. **PR Merges** → AI agent activates
 2. **Diff Analysis** → Determines affected packages + version types
 3. **Auto-Tagging** → Creates `package-name-vX.Y.Z` tags
 4. **Zero Human Input** → Releases happen automatically
 5. **Human Override** → Optional manual review for edge cases
 
-This would transform goodie-bag into a **self-managing release ecosystem** where developers focus on code, and AI handles all version management!
+This would transform goodie-bag into a **self-managing release ecosystem** where
+developers focus on code, and AI handles all version management!
 
 ## License
 

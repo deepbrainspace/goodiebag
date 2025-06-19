@@ -10,8 +10,8 @@ jest.mock('@nx/devkit', () => ({
   logger: {
     info: jest.fn(),
     error: jest.fn(),
-    warn: jest.fn()
-  }
+    warn: jest.fn(),
+  },
 }));
 
 const MockMigrationService = MigrationService as jest.MockedClass<typeof MigrationService>;
@@ -19,19 +19,19 @@ const MockMigrationService = MigrationService as jest.MockedClass<typeof Migrati
 describe('Migrate Executor', () => {
   let mockEngine: jest.Mocked<MigrationService>;
   let context: ExecutorContext;
-  
+
   const defaultOptions: MigrateExecutorSchema = {
     url: 'ws://localhost:8000',
     user: 'root',
     pass: 'root',
     namespace: 'test',
     database: 'test',
-    initPath: 'database'
+    initPath: 'database',
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     const tree = createTreeWithEmptyWorkspace();
     context = {
       root: tree.root,
@@ -40,13 +40,13 @@ describe('Migrate Executor', () => {
       projectName: 'test-project',
       projectsConfigurations: {
         version: 2,
-        projects: {}
+        projects: {},
       },
       nxJsonConfiguration: {},
       projectGraph: {
         nodes: {},
-        dependencies: {}
-      }
+        dependencies: {},
+      },
     };
 
     // Setup mock engine
@@ -58,31 +58,33 @@ describe('Migrate Executor', () => {
         filesProcessed: 0,
         filesSkipped: 0,
         executionTimeMs: 100,
-        results: []
+        results: [],
       }),
       validateRollback: jest.fn().mockResolvedValue({
         canRollback: true,
         blockedBy: [],
         warnings: [],
-        migrationChecks: []
+        migrationChecks: [],
       }),
       getMigrationStatus: jest.fn().mockResolvedValue({
         modules: [],
         totalApplied: 0,
-        totalPending: 0
+        totalPending: 0,
       }),
-      resolveTargetModules: jest.fn().mockImplementation((modules: string[]) => modules.map(m => `010_${m}`)),
+      resolveTargetModules: jest
+        .fn()
+        .mockImplementation((modules: string[]) => modules.map(m => `010_${m}`)),
       resolveRollbackFilenames: jest.fn().mockResolvedValue({
         resolved: [],
-        warnings: []
+        warnings: [],
       }),
       getConfig: jest.fn().mockReturnValue({
         databases: {},
-        lockManager: { type: 'file', lockDir: '.locks' }
+        lockManager: { type: 'file', lockDir: '.locks' },
       }),
       resolveTargetFilenames: jest.fn().mockResolvedValue([]),
       getFileStatus: jest.fn().mockResolvedValue([]),
-      close: jest.fn().mockResolvedValue(undefined)
+      close: jest.fn().mockResolvedValue(undefined),
     };
 
     MockMigrationService.mockImplementation(() => mockEngine);
@@ -109,10 +111,10 @@ describe('Migrate Executor', () => {
               filePath: '/path/to/000_admin/0001_setup_up.surql',
               moduleId: '000_admin',
               content: '-- setup content',
-              checksum: 'abc123'
+              checksum: 'abc123',
             },
             success: true,
-            executionTimeMs: 75
+            executionTimeMs: 75,
           },
           {
             file: {
@@ -123,12 +125,12 @@ describe('Migrate Executor', () => {
               filePath: '/path/to/010_auth/0001_users_up.surql',
               moduleId: '010_auth',
               content: '-- users content',
-              checksum: 'def456'
+              checksum: 'def456',
             },
             success: true,
-            executionTimeMs: 75
-          }
-        ]
+            executionTimeMs: 75,
+          },
+        ],
       });
 
       const result = await executor(defaultOptions, context);
@@ -147,7 +149,7 @@ describe('Migrate Executor', () => {
         force: false,
         configPath: undefined,
         debug: undefined,
-        dryRun: false
+        dryRun: false,
       });
       expect(mockEngine.executeMigrations).toHaveBeenCalledWith(undefined, 'migrate', undefined);
       expect(mockEngine.close).toHaveBeenCalled();
@@ -170,20 +172,22 @@ describe('Migrate Executor', () => {
               filePath: '/path/to/000_admin/0001_setup_up.surql',
               moduleId: '000_admin',
               content: '-- setup content',
-              checksum: 'abc123'
+              checksum: 'abc123',
             },
             success: false,
             executionTimeMs: 50,
-            error: 'SQL syntax error'
-          }
-        ]
+            error: 'SQL syntax error',
+          },
+        ],
       });
 
       const result = await executor(defaultOptions, context);
 
       expect(result.success).toBe(false);
       expect(logger.error).toHaveBeenCalledWith('❌ Migration failed!');
-      expect(logger.error).toHaveBeenCalledWith('   ❌ 000_admin/0001_setup_up.surql: SQL syntax error');
+      expect(logger.error).toHaveBeenCalledWith(
+        '   ❌ 000_admin/0001_setup_up.surql: SQL syntax error'
+      );
     });
 
     it('should handle engine initialization errors', async () => {
@@ -201,7 +205,7 @@ describe('Migrate Executor', () => {
   describe('module targeting', () => {
     it('should target specific module by name', async () => {
       const options = { ...defaultOptions, module: 'auth' };
-      
+
       await executor(options, context);
 
       expect(mockEngine.executeMigrations).toHaveBeenCalledWith(['auth'], 'migrate', undefined);
@@ -209,7 +213,7 @@ describe('Migrate Executor', () => {
 
     it('should target specific module by number', async () => {
       const options = { ...defaultOptions, module: 10 };
-      
+
       await executor(options, context);
 
       expect(mockEngine.executeMigrations).toHaveBeenCalledWith(['10'], 'migrate', undefined);
@@ -233,7 +237,7 @@ describe('Migrate Executor', () => {
           filePath: '/path/to/000_admin/0001_setup_up.surql',
           moduleId: '000_admin',
           content: '-- setup content',
-          checksum: 'abc123'
+          checksum: 'abc123',
         },
         {
           number: '0001',
@@ -243,8 +247,8 @@ describe('Migrate Executor', () => {
           filePath: '/path/to/010_auth/0001_users_up.surql',
           moduleId: '010_auth',
           content: '-- users content',
-          checksum: 'def456'
-        }
+          checksum: 'def456',
+        },
       ]);
 
       const options = { ...defaultOptions, dryRun: true };
@@ -252,7 +256,9 @@ describe('Migrate Executor', () => {
 
       expect(result.success).toBe(true);
       expect(mockEngine.executeMigrations).toHaveBeenCalledWith(undefined, 'migrate', undefined);
-      expect(logger.info).toHaveBeenCalledWith('Dry run mode - showing pending migrations without applying them');
+      expect(logger.info).toHaveBeenCalledWith(
+        'Dry run mode - showing pending migrations without applying them'
+      );
     });
 
     it('should handle dry run with no pending migrations', async () => {
@@ -267,7 +273,7 @@ describe('Migrate Executor', () => {
 
     it('should respect module targeting in dry run', async () => {
       const options = { ...defaultOptions, dryRun: true, module: 'auth' };
-      
+
       await executor(options, context);
 
       expect(mockEngine.executeMigrations).toHaveBeenCalledWith(['auth'], 'migrate', undefined);
@@ -287,7 +293,7 @@ describe('Migrate Executor', () => {
         initPath: 'custom/migrations',
         schemaPath: 'custom/schema.sql',
         force: true,
-        configPath: 'custom/config.json'
+        configPath: 'custom/config.json',
       };
 
       await executor(options, context);
@@ -305,7 +311,7 @@ describe('Migrate Executor', () => {
         force: true,
         configPath: 'custom/config.json',
         debug: undefined,
-        dryRun: false
+        dryRun: false,
       });
     });
 
@@ -327,7 +333,7 @@ describe('Migrate Executor', () => {
         force: false,
         configPath: undefined,
         debug: undefined,
-        dryRun: false
+        dryRun: false,
       });
     });
   });
@@ -349,20 +355,22 @@ describe('Migrate Executor', () => {
               filePath: '/path/to/000_admin/0001_setup_up.surql',
               moduleId: '000_admin',
               content: '-- setup content',
-              checksum: 'abc123'
+              checksum: 'abc123',
             },
             success: false,
             executionTimeMs: 50,
             skipped: true,
-            skipReason: 'Already applied'
-          }
-        ]
+            skipReason: 'Already applied',
+          },
+        ],
       });
 
       await executor(defaultOptions, context);
 
       expect(logger.info).toHaveBeenCalledWith('   Files skipped: 1');
-      expect(logger.info).toHaveBeenCalledWith('   ⏭️ 000_admin/0001_setup_up.surql (Already applied)');
+      expect(logger.info).toHaveBeenCalledWith(
+        '   ⏭️ 000_admin/0001_setup_up.surql (Already applied)'
+      );
     });
 
     it('should log detailed execution statistics', async () => {
@@ -371,7 +379,7 @@ describe('Migrate Executor', () => {
         filesProcessed: 3,
         filesSkipped: 1,
         executionTimeMs: 250,
-        results: []
+        results: [],
       });
 
       await executor(defaultOptions, context);

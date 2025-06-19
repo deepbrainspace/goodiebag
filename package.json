@@ -1,9 +1,14 @@
 {
-  "name": "@deepbrainspace/nx-plugins",
+  "name": "goodiebag",
   "version": "1.0.0",
-  "description": "Collection of NX plugins for DeepBrain projects",
+  "description": "GoodieBag of tools and libraries for DeepBrain projects",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "libs/*"
+  ],
   "packageManager": "pnpm@9.0.0",
   "scripts": {
     "build": "nx run-many --target=build --all",
@@ -13,8 +18,28 @@
     "release:dry-run": "nx release --dry-run"
   },
   "devDependencies": {
+    "@goodiebag/nx-rust": "file:packages/nx-rust/dist",
+    "@nx/esbuild": "21.2.0",
+    "@nx/jest": "21.2.0",
+    "@nx/js": "21.2.0",
+    "@nx/node": "^21.2.0",
     "@nx/workspace": "^21.2.0",
+    "@swc-node/register": "~1.9.1",
+    "@swc/core": "~1.5.7",
+    "@swc/helpers": "~0.5.11",
+    "@types/jest": "^29.5.12",
+    "@types/node": "~18.16.9",
+    "esbuild": "^0.19.2",
+    "jest": "^29.7.0",
+    "jest-environment-node": "^29.7.0",
     "nx": "^21.2.0",
-    "nx-cloud": "latest"
+    "nx-cloud": "latest",
+    "picocolors": "^1.1.1",
+    "prettier": "^2.8.8",
+    "prettier-plugin-rust": "^0.1.9",
+    "ts-jest": "^29.1.0",
+    "ts-node": "10.9.1",
+    "tslib": "^2.3.0",
+    "typescript": "~5.8.2"
   }
 }

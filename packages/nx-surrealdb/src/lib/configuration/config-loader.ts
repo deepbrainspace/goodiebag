@@ -4,7 +4,7 @@ import * as path from 'path';
 export interface ModuleConfig {
   name: string;
   description?: string;
-  dependencies: string[];  // Changed from 'depends' to match types.ts
+  dependencies: string[]; // Changed from 'depends' to match types.ts
   locked?: boolean;
   lockReason?: string;
 }
@@ -30,13 +30,13 @@ export class ConfigLoader {
   private static readonly MODULE_PATTERN = /^(\d{1,4})_(.+)$/;
 
   static async loadConfig(basePath: string, configPath?: string): Promise<MigrationsConfig | null> {
-    const configFile = configPath || await this.findConfigFile(basePath);
+    const configFile = configPath || (await this.findConfigFile(basePath));
     if (!configFile) {
       return null;
     }
 
     const fullPath = path.isAbsolute(configFile) ? configFile : path.join(basePath, configFile);
-    
+
     try {
       const content = await fs.readFile(fullPath, 'utf-8');
       const config = this.parseConfig(content, fullPath);
@@ -62,7 +62,7 @@ export class ConfigLoader {
 
   private static parseConfig(content: string, filePath: string): MigrationsConfig {
     const ext = path.extname(filePath).toLowerCase();
-    
+
     if (ext === '.json') {
       return JSON.parse(content);
     } else if (ext === '.yaml' || ext === '.yml') {
@@ -70,7 +70,9 @@ export class ConfigLoader {
       // For now, support simple key-value YAML that can be converted to JSON
       return this.parseSimpleYaml(content);
     } else {
-      throw new Error(`Unsupported config file format: ${ext}. Supported formats: .json, .yaml, .yml`);
+      throw new Error(
+        `Unsupported config file format: ${ext}. Supported formats: .json, .yaml, .yml`
+      );
     }
   }
 
@@ -79,15 +81,16 @@ export class ConfigLoader {
     // In production, we'd use a proper YAML library like js-yaml
     try {
       // Remove comments and normalize
-      content.split('\n')
+      content
+        .split('\n')
         .map(line => line.trim())
         .filter(line => line && !line.startsWith('#'));
-      
+
       // For now, just try to parse as JSON if it looks JSON-like
       if (content.trim().startsWith('{')) {
         return JSON.parse(content);
       }
-      
+
       // Otherwise, throw an error suggesting JSON format
       throw new Error('YAML parsing not fully implemented. Please use JSON format.');
     } catch (error) {
@@ -102,27 +105,38 @@ export class ConfigLoader {
       throw new Error('Configuration must be an object');
     }
 
-    if (!(config as { modules?: unknown }).modules || typeof (config as { modules?: unknown }).modules !== 'object') {
+    if (
+      !(config as { modules?: unknown }).modules ||
+      typeof (config as { modules?: unknown }).modules !== 'object'
+    ) {
       errors.push({
         field: 'modules',
         message: 'modules field is required and must be an object',
-        value: (config as { modules?: unknown }).modules
+        value: (config as { modules?: unknown }).modules,
       });
     } else {
       // Validate each module
-      for (const [moduleId, moduleConfig] of Object.entries((config as { modules: Record<string, unknown> }).modules)) {
+      for (const [moduleId, moduleConfig] of Object.entries(
+        (config as { modules: Record<string, unknown> }).modules
+      )) {
         this.validateModule(moduleId, moduleConfig, errors);
       }
 
       // Validate dependencies exist
-      this.validateDependencies((config as { modules: Record<string, ModuleConfig> }).modules, errors);
+      this.validateDependencies(
+        (config as { modules: Record<string, ModuleConfig> }).modules,
+        errors
+      );
     }
 
-    if ((config as { settings?: unknown }).settings && typeof (config as { settings?: unknown }).settings !== 'object') {
+    if (
+      (config as { settings?: unknown }).settings &&
+      typeof (config as { settings?: unknown }).settings !== 'object'
+    ) {
       errors.push({
         field: 'settings',
         message: 'settings must be an object',
-        value: (config as { settings?: unknown }).settings
+        value: (config as { settings?: unknown }).settings,
       });
     }
 
@@ -132,7 +146,11 @@ export class ConfigLoader {
     }
   }
 
-  private static validateModule(moduleId: string, moduleConfig: unknown, errors: ConfigValidationError[]): void {
+  private static validateModule(
+    moduleId: string,
+    moduleConfig: unknown,
+    errors: ConfigValidationError[]
+  ): void {
     const fieldPrefix = `modules.${moduleId}`;
 
     // Validate module ID format
@@ -140,7 +158,7 @@ export class ConfigLoader {
       errors.push({
         field: fieldPrefix,
         message: 'Module ID must follow pattern: XXX_name (e.g., 010_auth)',
-        value: moduleId
+        value: moduleId,
       });
     }
 
@@ -148,16 +166,19 @@ export class ConfigLoader {
       errors.push({
         field: fieldPrefix,
         message: 'Module configuration must be an object',
-        value: moduleConfig
+        value: moduleConfig,
       });
       return;
     }
 
-    if (!(moduleConfig as Record<string, unknown>).name || typeof (moduleConfig as Record<string, unknown>).name !== 'string') {
+    if (
+      !(moduleConfig as Record<string, unknown>).name ||
+      typeof (moduleConfig as Record<string, unknown>).name !== 'string'
+    ) {
       errors.push({
         field: `${fieldPrefix}.name`,
         message: 'Module name is required and must be a string',
-        value: (moduleConfig as Record<string, unknown>).name
+        value: (moduleConfig as Record<string, unknown>).name,
       });
     }
 
@@ -165,34 +186,39 @@ export class ConfigLoader {
       errors.push({
         field: `${fieldPrefix}.dependencies`,
         message: 'Module dependencies must be an array',
-        value: (moduleConfig as Record<string, unknown>).dependencies
+        value: (moduleConfig as Record<string, unknown>).dependencies,
       });
     } else {
       // Validate each dependency is a string
-      ((moduleConfig as Record<string, unknown>).dependencies as unknown[]).forEach((dep: unknown, index: number) => {
-        if (typeof dep !== 'string') {
-          errors.push({
-            field: `${fieldPrefix}.dependencies[${index}]`,
-            message: 'Dependency must be a string',
-            value: dep
-          });
+      ((moduleConfig as Record<string, unknown>).dependencies as unknown[]).forEach(
+        (dep: unknown, index: number) => {
+          if (typeof dep !== 'string') {
+            errors.push({
+              field: `${fieldPrefix}.dependencies[${index}]`,
+              message: 'Dependency must be a string',
+              value: dep,
+            });
+          }
         }
-      });
+      );
     }
   }
 
-  private static validateDependencies(modules: Record<string, ModuleConfig>, errors: ConfigValidationError[]): void {
+  private static validateDependencies(
+    modules: Record<string, ModuleConfig>,
+    errors: ConfigValidationError[]
+  ): void {
     const moduleIds = Object.keys(modules);
-    
+
     for (const [moduleId, moduleConfig] of Object.entries(modules)) {
       if (!Array.isArray(moduleConfig.dependencies)) continue;
-      
+
       for (const dependency of moduleConfig.dependencies) {
         if (!moduleIds.includes(dependency)) {
           errors.push({
             field: `modules.${moduleId}.dependencies`,
             message: `Dependency '${dependency}' does not exist in modules`,
-            value: dependency
+            value: dependency,
           });
         }
       }
@@ -202,7 +228,10 @@ export class ConfigLoader {
     this.detectCircularDependencies(modules, errors);
   }
 
-  private static detectCircularDependencies(modules: Record<string, ModuleConfig>, errors: ConfigValidationError[]): void {
+  private static detectCircularDependencies(
+    modules: Record<string, ModuleConfig>,
+    errors: ConfigValidationError[]
+  ): void {
     const visited = new Set<string>();
     const recursionStack = new Set<string>();
 
@@ -212,7 +241,7 @@ export class ConfigLoader {
         errors.push({
           field: 'modules',
           message: `Circular dependency detected: ${cycle.join(' → ')}`,
-          value: cycle
+          value: cycle,
         });
         return true;
       }
@@ -249,22 +278,22 @@ export class ConfigLoader {
       modules: {},
       settings: {
         configFormat: 'json',
-        useTransactions: true
-      }
+        useTransactions: true,
+      },
     };
 
     // Sort modules to establish basic dependency order
     const sortedModules = modules.sort();
-    
+
     for (let i = 0; i < sortedModules.length; i++) {
       const moduleId = sortedModules[i];
       const match = moduleId.match(this.MODULE_PATTERN);
       const name = match ? match[2] : moduleId;
-      
+
       config.modules[moduleId] = {
         name: name.charAt(0).toUpperCase() + name.slice(1).replace(/_/g, ' '),
         description: `${name} module`,
-        dependencies: i > 0 ? [sortedModules[i - 1]] : []
+        dependencies: i > 0 ? [sortedModules[i - 1]] : [],
       };
     }
 

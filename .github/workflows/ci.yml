@@ -1,4 +1,4 @@
-name: CI
+name: ⚙️ CI
 
 on:
   pull_request:
@@ -27,13 +27,13 @@ jobs:
       packages: ${{ steps.detect.outputs.packages }}
       has-packages: ${{ steps.detect.outputs.has-packages }}
       package-count: ${{ steps.detect.outputs.package-count }}
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
@@ -51,20 +51,20 @@ jobs:
         package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
       fail-fast: false
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
       - name: Run lint for ${{ matrix.package }}
         run: |
           echo "🔍 Linting ${{ matrix.package }}..."
-          nx run ${{ matrix.package }}:lint
+          nx lint ${{ matrix.package }}
 
   test:
     name: 🧪 Test (${{ matrix.package }})
@@ -75,20 +75,20 @@ jobs:
         package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
       fail-fast: false
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
       - name: Run tests for ${{ matrix.package }}
         run: |
           echo "🧪 Testing ${{ matrix.package }}..."
-          nx run ${{ matrix.package }}:test --ci --code-coverage
+          nx test ${{ matrix.package }}
 
       - name: Upload coverage
         uses: actions/upload-artifact@v4
@@ -107,13 +107,13 @@ jobs:
         package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
       fail-fast: false
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
@@ -128,7 +128,7 @@ jobs:
     needs: [detect-affected, lint, test, build]
     if: always()
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Post CI summary
         run: |
@@ -141,13 +141,13 @@ jobs:
             echo "ℹ️ No affected packages found - documentation or config changes only"
           fi
 
-  # No affected packages notification  
+  # No affected packages notification
   no-packages:
     name: ℹ️ No Packages Affected
     needs: detect-affected
     if: needs.detect-affected.outputs.has-packages == 'false'
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Report status
         run: |

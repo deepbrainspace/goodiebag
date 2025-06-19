@@ -47,7 +47,7 @@ export default async function runExecutor(
       url: connectionOptions.url,
       username: connectionOptions.username,
       namespace: connectionOptions.namespace,
-      database: connectionOptions.database
+      database: connectionOptions.database,
     });
 
     // Create database client
@@ -70,13 +70,25 @@ export default async function runExecutor(
       // Show sample records for verification
       if (!options.dryRun && !options.confirm) {
         console.log('📋 Sample migration records:');
-        const samples = await client.query('SELECT number, name, direction, path, applied_at FROM system_migrations ORDER BY applied_at DESC LIMIT 5');
+        const samples = await client.query(
+          'SELECT number, name, direction, path, applied_at FROM system_migrations ORDER BY applied_at DESC LIMIT 5'
+        );
         const sampleRecords = samples?.[0]?.result || [];
-        
+
         if (sampleRecords.length > 0) {
-          sampleRecords.forEach((record: { number: string; name: string; direction: string; path: string; applied_at: string }) => {
-            console.log(`   • ${record.number}_${record.name}_${record.direction} (${record.path}) - ${record.applied_at}`);
-          });
+          sampleRecords.forEach(
+            (record: {
+              number: string;
+              name: string;
+              direction: string;
+              path: string;
+              applied_at: string;
+            }) => {
+              console.log(
+                `   • ${record.number}_${record.name}_${record.direction} (${record.path}) - ${record.applied_at}`
+              );
+            }
+          );
           console.log('');
         }
       }
@@ -126,13 +138,11 @@ export default async function runExecutor(
         console.log(`⚠️  Warning: ${remainingCount} records remain after reset`);
         return { success: false };
       }
-
     } finally {
       await client.close();
     }
 
     return { success: true };
-
   } catch (error) {
     console.error('💥 Reset failed:', error.message);
     return { success: false };

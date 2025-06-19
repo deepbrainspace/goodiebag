@@ -12,8 +12,8 @@ jest.mock('@nx/devkit', () => ({
   logger: {
     info: jest.fn(),
     error: jest.fn(),
-    warn: jest.fn()
-  }
+    warn: jest.fn(),
+  },
 }));
 
 const MockMigrationService = MigrationService as jest.MockedClass<typeof MigrationService>;
@@ -24,28 +24,28 @@ describe('Status Executor', () => {
   let mockLockManager: jest.Mocked<ModuleLockManager>;
   let context: ExecutorContext;
   let consoleLogSpy: jest.SpyInstance;
-  
+
   const defaultOptions: StatusExecutorSchema = {
     url: 'ws://localhost:8000',
     user: 'root',
     pass: 'root',
     namespace: 'test',
     database: 'test',
-    initPath: 'database'
+    initPath: 'database',
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
-    
+
     // Set test environment to skip dependency checks
     process.env.NODE_ENV = 'test';
-    
+
     // Mock environment variables to prevent env var warnings
     process.env.SURREALDB_URL = 'ws://localhost:8000';
     process.env.SURREALDB_ROOT_USER = 'root';
     process.env.SURREALDB_ROOT_PASS = 'root';
-    
+
     const tree = createTreeWithEmptyWorkspace();
     context = {
       root: tree.root,
@@ -54,13 +54,13 @@ describe('Status Executor', () => {
       projectName: 'test-project',
       projectsConfigurations: {
         version: 2,
-        projects: {}
+        projects: {},
       },
       nxJsonConfiguration: {},
       projectGraph: {
         nodes: {},
-        dependencies: {}
-      }
+        dependencies: {},
+      },
     };
 
     // Setup mock engine
@@ -72,31 +72,33 @@ describe('Status Executor', () => {
         filesProcessed: 0,
         filesSkipped: 0,
         executionTimeMs: 100,
-        results: []
+        results: [],
       }),
       validateRollback: jest.fn().mockResolvedValue({
         canRollback: true,
         blockedBy: [],
         warnings: [],
-        migrationChecks: []
+        migrationChecks: [],
       }),
       getMigrationStatus: jest.fn().mockResolvedValue({
         modules: [],
         totalApplied: 0,
-        totalPending: 0
+        totalPending: 0,
       }),
-      resolveTargetModules: jest.fn().mockImplementation((modules: string[]) => modules.map(m => `010_${m}`)),
+      resolveTargetModules: jest
+        .fn()
+        .mockImplementation((modules: string[]) => modules.map(m => `010_${m}`)),
       resolveRollbackFilenames: jest.fn().mockResolvedValue({
         resolved: [],
-        warnings: []
+        warnings: [],
       }),
       getConfig: jest.fn().mockReturnValue({
         databases: {},
-        lockManager: { type: 'file', lockDir: '.locks' }
+        lockManager: { type: 'file', lockDir: '.locks' },
       }),
       resolveTargetFilenames: jest.fn().mockResolvedValue([]),
       getFileStatus: jest.fn().mockResolvedValue([]),
-      close: jest.fn().mockResolvedValue(undefined)
+      close: jest.fn().mockResolvedValue(undefined),
     };
 
     MockMigrationService.mockImplementation(() => mockEngine);
@@ -106,20 +108,20 @@ describe('Status Executor', () => {
       validateModuleLock: jest.fn().mockReturnValue({
         isLocked: false,
         reason: undefined,
-        lockIcon: ''
+        lockIcon: '',
       }),
       isModuleLocked: jest.fn().mockReturnValue(false),
       getModuleLockReason: jest.fn().mockReturnValue(undefined),
       validateRollbackLock: jest.fn().mockReturnValue({
         blockedModules: [],
-        lockReasons: {}
+        lockReasons: {},
       }),
       getLockedModules: jest.fn().mockReturnValue([]),
       validateMigrationLock: jest.fn().mockReturnValue({
         canMigrate: true,
         blockedModules: [],
-        lockReasons: {}
-      })
+        lockReasons: {},
+      }),
     };
 
     MockModuleLockManager.createLockManager = jest.fn().mockReturnValue(mockLockManager);
@@ -128,7 +130,7 @@ describe('Status Executor', () => {
   afterEach(() => {
     jest.resetAllMocks();
     consoleLogSpy.mockRestore();
-    
+
     // Clean up environment variables
     delete process.env.NODE_ENV;
     delete process.env.SURREALDB_URL;
@@ -146,7 +148,7 @@ describe('Status Executor', () => {
             pendingMigrations: 0,
             lastApplied: new Date('2024-01-01T10:00:00Z'),
             dependencies: [],
-            dependents: ['010_auth']
+            dependents: ['010_auth'],
           },
           {
             moduleId: '010_auth',
@@ -154,11 +156,11 @@ describe('Status Executor', () => {
             pendingMigrations: 1,
             lastApplied: new Date('2024-01-01T11:00:00Z'),
             dependencies: ['000_admin'],
-            dependents: []
-          }
+            dependents: [],
+          },
         ],
         totalApplied: 3,
-        totalPending: 1
+        totalPending: 1,
       });
 
       const result = await executor(defaultOptions, context);
@@ -175,7 +177,7 @@ describe('Status Executor', () => {
         initPath: 'database',
         schemaPath: undefined,
         force: false,
-        configPath: undefined
+        configPath: undefined,
       });
       expect(mockEngine.getMigrationStatus).toHaveBeenCalledWith(undefined);
       expect(mockEngine.close).toHaveBeenCalled();
@@ -186,7 +188,7 @@ describe('Status Executor', () => {
       mockEngine.getMigrationStatus.mockResolvedValue({
         modules: [],
         totalApplied: 0,
-        totalPending: 0
+        totalPending: 0,
       });
 
       const result = await executor(defaultOptions, context);
@@ -210,7 +212,7 @@ describe('Status Executor', () => {
   describe('module targeting', () => {
     it('should target specific module by name', async () => {
       const options = { ...defaultOptions, module: 'auth' };
-      
+
       await executor(options, context);
 
       expect(mockEngine.getMigrationStatus).toHaveBeenCalledWith(['auth']);
@@ -218,7 +220,7 @@ describe('Status Executor', () => {
 
     it('should target specific module by number', async () => {
       const options = { ...defaultOptions, module: 10 };
-      
+
       await executor(options, context);
 
       expect(mockEngine.getMigrationStatus).toHaveBeenCalledWith(['10']);
@@ -240,7 +242,7 @@ describe('Status Executor', () => {
           pendingMigrations: 0,
           lastApplied: new Date('2024-01-01T10:00:00Z'),
           dependencies: [],
-          dependents: ['010_auth']
+          dependents: ['010_auth'],
         },
         {
           moduleId: '010_auth',
@@ -248,11 +250,11 @@ describe('Status Executor', () => {
           pendingMigrations: 1,
           lastApplied: new Date('2024-01-01T11:00:00Z'),
           dependencies: ['000_admin'],
-          dependents: []
-        }
+          dependents: [],
+        },
       ],
       totalApplied: 3,
-      totalPending: 1
+      totalPending: 1,
     };
 
     it('should output JSON format when requested', async () => {
@@ -262,12 +264,8 @@ describe('Status Executor', () => {
       const result = await executor(options, context);
 
       expect(result.success).toBe(true);
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        expect.stringContaining('"totalApplied": 3')
-      );
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        expect.stringContaining('"totalPending": 1')
-      );
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('"totalApplied": 3'));
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('"totalPending": 1'));
       expect(consoleLogSpy).toHaveBeenCalledWith(
         expect.stringContaining('"moduleId": "000_admin"')
       );
@@ -295,11 +293,11 @@ describe('Status Executor', () => {
           pendingMigrations: 2,
           lastApplied: new Date('2024-01-01T11:00:00Z'),
           dependencies: ['000_admin'],
-          dependents: []
-        }
+          dependents: [],
+        },
       ],
       totalApplied: 1,
-      totalPending: 2
+      totalPending: 2,
     };
 
     it('should show detailed migration information when requested', async () => {
@@ -313,7 +311,7 @@ describe('Status Executor', () => {
           filePath: '/path/to/010_auth/0002_roles_up.surql',
           moduleId: '010_auth',
           content: '-- create roles',
-          checksum: 'def456'
+          checksum: 'def456',
         },
         {
           number: '0003',
@@ -323,8 +321,8 @@ describe('Status Executor', () => {
           filePath: '/path/to/010_auth/0003_permissions_up.surql',
           moduleId: '010_auth',
           content: '-- create permissions',
-          checksum: 'ghi789'
-        }
+          checksum: 'ghi789',
+        },
       ]);
 
       const options = { ...defaultOptions, detailed: true };
@@ -356,39 +354,39 @@ describe('Status Executor', () => {
             appliedMigrations: 1,
             pendingMigrations: 0,
             dependencies: [],
-            dependents: ['010_auth', '020_schema']
+            dependents: ['010_auth', '020_schema'],
           },
           {
             moduleId: '010_auth',
             appliedMigrations: 1,
             pendingMigrations: 0,
             dependencies: ['000_admin'],
-            dependents: ['030_communications']
+            dependents: ['030_communications'],
           },
           {
             moduleId: '020_schema',
             appliedMigrations: 1,
             pendingMigrations: 0,
             dependencies: ['000_admin'],
-            dependents: []
+            dependents: [],
           },
           {
             moduleId: '030_communications',
             appliedMigrations: 1,
             pendingMigrations: 0,
             dependencies: ['010_auth'],
-            dependents: []
-          }
+            dependents: [],
+          },
         ],
         totalApplied: 4,
-        totalPending: 0
+        totalPending: 0,
       });
 
       const result = await executor({ ...defaultOptions, detailed: true }, context);
 
       expect(result.success).toBe(true);
       expect(logger.info).toHaveBeenCalledWith('\n🌐 Dependency Graph:');
-      
+
       // Check that all modules appear in some form in the dependency graph
       const allCalls = (logger.info as jest.Mock).mock.calls.map(call => call[0]);
       expect(allCalls.some(call => call.includes('000_admin'))).toBe(true);
@@ -405,25 +403,25 @@ describe('Status Executor', () => {
             appliedMigrations: 1,
             pendingMigrations: 0,
             dependencies: [],
-            dependents: []
+            dependents: [],
           },
           {
             moduleId: '010_auth',
             appliedMigrations: 1,
             pendingMigrations: 0,
             dependencies: ['999_missing'],
-            dependents: []
-          }
+            dependents: [],
+          },
         ],
         totalApplied: 2,
-        totalPending: 0
+        totalPending: 0,
       });
 
       const result = await executor({ ...defaultOptions, detailed: true }, context);
 
       expect(result.success).toBe(true);
       expect(logger.info).toHaveBeenCalledWith('\n🌐 Dependency Graph:');
-      
+
       // Check that modules appear in dependency graph
       const allCalls = (logger.info as jest.Mock).mock.calls.map(call => call[0]);
       expect(allCalls.some(call => call.includes('000_admin'))).toBe(true);
@@ -441,11 +439,11 @@ describe('Status Executor', () => {
             pendingMigrations: 0,
             lastApplied: new Date('2024-01-01T10:00:00Z'),
             dependencies: [],
-            dependents: []
-          }
+            dependents: [],
+          },
         ],
         totalApplied: 2,
-        totalPending: 0
+        totalPending: 0,
       });
 
       const result = await executor({ ...defaultOptions, detailed: true }, context);
@@ -466,11 +464,11 @@ describe('Status Executor', () => {
             pendingMigrations: 2,
             lastApplied: new Date('2024-01-01T11:00:00Z'),
             dependencies: ['000_admin'],
-            dependents: []
-          }
+            dependents: [],
+          },
         ],
         totalApplied: 1,
-        totalPending: 2
+        totalPending: 2,
       });
 
       const result = await executor({ ...defaultOptions, detailed: true }, context);
@@ -495,7 +493,7 @@ describe('Status Executor', () => {
         envFile: '.env.custom',
         initPath: 'custom/migrations',
         schemaPath: 'custom/schema.sql',
-        configPath: 'custom/config.json'
+        configPath: 'custom/config.json',
       };
 
       await executor(options, context);
@@ -511,7 +509,7 @@ describe('Status Executor', () => {
         initPath: 'custom/migrations',
         schemaPath: 'custom/schema.sql',
         force: false,
-        configPath: 'custom/config.json'
+        configPath: 'custom/config.json',
       });
     });
 
@@ -531,7 +529,7 @@ describe('Status Executor', () => {
         initPath: 'database',
         schemaPath: undefined,
         force: false,
-        configPath: undefined
+        configPath: undefined,
       });
     });
   });

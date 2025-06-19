@@ -30,11 +30,14 @@ export class ModuleLockManager {
     return {
       isLocked,
       reason,
-      lockIcon: isLocked ? '🔒' : ''
+      lockIcon: isLocked ? '🔒' : '',
     };
   }
 
-  validateRollbackLock(moduleIds: string[]): { blockedModules: string[]; lockReasons: Record<string, string> } {
+  validateRollbackLock(moduleIds: string[]): {
+    blockedModules: string[];
+    lockReasons: Record<string, string>;
+  } {
     const blockedModules: string[] = [];
     const lockReasons: Record<string, string> = {};
 
@@ -51,13 +54,17 @@ export class ModuleLockManager {
 
   getLockedModules(): string[] {
     if (!this.config) return [];
-    
+
     return Object.entries(this.config.modules)
       .filter(([_, config]) => config.locked === true)
       .map(([moduleId, _]) => moduleId);
   }
 
-  validateMigrationLock(moduleIds: string[]): { canMigrate: boolean; blockedModules: string[]; lockReasons: Record<string, string> } {
+  validateMigrationLock(moduleIds: string[]): {
+    canMigrate: boolean;
+    blockedModules: string[];
+    lockReasons: Record<string, string>;
+  } {
     const blockedModules: string[] = [];
     const lockReasons: Record<string, string> = {};
 
@@ -69,10 +76,10 @@ export class ModuleLockManager {
       }
     }
 
-    return { 
-      canMigrate: blockedModules.length === 0, 
-      blockedModules, 
-      lockReasons 
+    return {
+      canMigrate: blockedModules.length === 0,
+      blockedModules,
+      lockReasons,
     };
   }
 

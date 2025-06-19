@@ -17,7 +17,7 @@
       "type": "string",
       "description": "Path to the exported module package (directory, tar.gz, or zip file)",
       "$default": {
-        "$source": "argv", 
+        "$source": "argv",
         "index": 1
       }
     },

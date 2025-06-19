@@ -1,0 +1,92 @@
+{
+  "name": "nx-rust",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/nx-rust/src",
+  "projectType": "library",
+  "tags": [
+    "type:nx-plugin",
+    "lang:typescript",
+    "domain:build-system",
+    "scope:publishable",
+    "runtime:node"
+  ],
+  "targets": {
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "prettier --write src/**/*.{ts,js,json}",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "dependsOn": ["format"],
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "{projectRoot}/src/**/*.ts",
+          "{projectRoot}/src/**/*.js"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{projectRoot}"],
+      "options": {
+        "jestConfig": "{projectRoot}/jest.config.ts"
+      }
+    },
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "cache": false,
+      "options": {
+        "outputPath": "{projectRoot}/dist",
+        "main": "{projectRoot}/src/index.ts",
+        "tsConfig": "{projectRoot}/tsconfig.lib.json",
+        "assets": [
+          {
+            "input": "./packages/nx-rust",
+            "glob": "package.json",
+            "output": "."
+          },
+          {
+            "input": "./packages/nx-rust",
+            "glob": "generators.json",
+            "output": "."
+          },
+          {
+            "input": "./packages/nx-rust",
+            "glob": "executors.json",
+            "output": "."
+          },
+          {
+            "input": "./packages/nx-rust",
+            "glob": "migrations.json",
+            "output": "."
+          },
+          {
+            "input": "./packages/nx-rust",
+            "glob": "*.md",
+            "output": "."
+          },
+          {
+            "input": "./packages/nx-rust/src",
+            "glob": "**/schema.json",
+            "output": "src"
+          },
+          {
+            "input": "./packages/nx-rust/src",
+            "glob": "**/files/**",
+            "output": "src"
+          },
+          {
+            "input": "./packages/nx-rust/src",
+            "glob": "**/*.d.ts",
+            "output": "src"
+          }
+        ]
+      }
+    }
+  }
+}

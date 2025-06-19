@@ -15,11 +15,13 @@ jest.mock('../domain/dependency-resolver');
 
 // Mock MigrationFileProcessor
 jest.mock('./migration-file-processor');
-const MockMigrationFileProcessor = MigrationFileProcessor as jest.MockedClass<typeof MigrationFileProcessor>;
+const MockMigrationFileProcessor = MigrationFileProcessor as jest.MockedClass<
+  typeof MigrationFileProcessor
+>;
 
 const mockDependencyResolver = {
   getAllModules: jest.fn(),
-  validateRollback: jest.fn()
+  validateRollback: jest.fn(),
 };
 
 describe('PatternResolver', () => {
@@ -28,31 +30,35 @@ describe('PatternResolver', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Setup path.join mock
     mockPath.join.mockImplementation((...args: string[]) => args.join('/'));
-    
+
     // Setup MigrationFileProcessor mocks
-    MockMigrationFileProcessor.parseMigrationFile = jest.fn().mockImplementation((filename: string) => {
-      const match = filename.match(/^(\d{4})_(.+?)_(up|down)\.surql$/);
-      if (!match) return null;
-      const [, number, name, direction] = match;
-      return {
-        number,
-        name,
-        direction: direction as 'up' | 'down',
-        filename,
-        filePath: filename,
-        moduleId: '',
-        content: '',
-        checksum: ''
-      };
-    });
-    
-    MockMigrationFileProcessor.filterMigrationFiles = jest.fn().mockImplementation((files: string[], _pattern?: string, direction: 'up' | 'down' = 'up') => {
-      return files.filter(f => f.endsWith(`_${direction}.surql`));
-    });
-    
+    MockMigrationFileProcessor.parseMigrationFile = jest
+      .fn()
+      .mockImplementation((filename: string) => {
+        const match = filename.match(/^(\d{4})_(.+?)_(up|down)\.surql$/);
+        if (!match) return null;
+        const [, number, name, direction] = match;
+        return {
+          number,
+          name,
+          direction: direction as 'up' | 'down',
+          filename,
+          filePath: filename,
+          moduleId: '',
+          content: '',
+          checksum: '',
+        };
+      });
+
+    MockMigrationFileProcessor.filterMigrationFiles = jest
+      .fn()
+      .mockImplementation((files: string[], _pattern?: string, direction: 'up' | 'down' = 'up') => {
+        return files.filter(f => f.endsWith(`_${direction}.surql`));
+      });
+
     resolver = new PatternResolver(mockDependencyResolver, basePath);
   });
 
@@ -62,13 +68,13 @@ describe('PatternResolver', () => {
         '000_initial',
         '010_auth',
         '020_users',
-        '030_products'
+        '030_products',
       ]);
     });
 
     it('should resolve numeric patterns to module IDs', () => {
       const result = resolver.resolveModules(['10', '20']);
-      
+
       expect(result.resolved).toHaveLength(2);
       expect(result.resolved[0].moduleId).toBe('010_auth');
       expect(result.resolved[1].moduleId).toBe('020_users');
@@ -77,7 +83,7 @@ describe('PatternResolver', () => {
 
     it('should resolve name patterns to module IDs', () => {
       const result = resolver.resolveModules(['auth', 'users']);
-      
+
       expect(result.resolved).toHaveLength(2);
       expect(result.resolved[0].moduleId).toBe('010_auth');
       expect(result.resolved[1].moduleId).toBe('020_users');
@@ -86,7 +92,7 @@ describe('PatternResolver', () => {
 
     it('should resolve full module ID patterns', () => {
       const result = resolver.resolveModules(['010_auth', '020_users']);
-      
+
       expect(result.resolved).toHaveLength(2);
       expect(result.resolved[0].moduleId).toBe('010_auth');
       expect(result.resolved[1].moduleId).toBe('020_users');
@@ -95,7 +101,7 @@ describe('PatternResolver', () => {
 
     it('should handle mixed pattern types', () => {
       const result = resolver.resolveModules(['10', 'users', '000_initial']);
-      
+
       expect(result.resolved).toHaveLength(3);
       expect(result.resolved[0].moduleId).toBe('010_auth');
       expect(result.resolved[1].moduleId).toBe('020_users');
@@ -105,7 +111,7 @@ describe('PatternResolver', () => {
 
     it('should return notFound for invalid patterns', () => {
       const result = resolver.resolveModules(['999', 'nonexistent']);
-      
+
       expect(result.resolved).toHaveLength(0);
       expect(result.notFound).toHaveLength(2);
       expect(result.notFound).toContain('999');
@@ -116,7 +122,7 @@ describe('PatternResolver', () => {
   describe('resolveFilenames', () => {
     beforeEach(() => {
       mockDependencyResolver.getAllModules.mockReturnValue(['010_auth']);
-      
+
       // Mock file system calls
       mockFs.readdir.mockImplementation((dirPath: string) => {
         if (dirPath.includes('010_auth')) {
@@ -124,7 +130,7 @@ describe('PatternResolver', () => {
             '0001_create_users_table_up.surql',
             '0001_create_users_table_down.surql',
             '0002_add_authentication_up.surql',
-            '0002_add_authentication_down.surql'
+            '0002_add_authentication_down.surql',
           ] as string[]);
         }
         return Promise.resolve([] as string[]);
@@ -133,7 +139,7 @@ describe('PatternResolver', () => {
 
     it('should resolve numeric filename patterns', async () => {
       const result = await resolver.resolveFilenames(['1', '2'], ['010_auth'], 'up');
-      
+
       expect(result.resolved).toHaveLength(2);
       expect(result.resolved[0].filename).toBe('0001_create_users_table_up.surql');
       expect(result.resolved[1].filename).toBe('0002_add_authentication_up.surql');
@@ -141,8 +147,12 @@ describe('PatternResolver', () => {
     });
 
     it('should resolve name patterns to filenames', async () => {
-      const result = await resolver.resolveFilenames(['users', 'authentication'], ['010_auth'], 'up');
-      
+      const result = await resolver.resolveFilenames(
+        ['users', 'authentication'],
+        ['010_auth'],
+        'up'
+      );
+
       expect(result.resolved).toHaveLength(2);
       expect(result.resolved[0].filename).toBe('0001_create_users_table_up.surql');
       expect(result.resolved[1].filename).toBe('0002_add_authentication_up.surql');
@@ -150,8 +160,12 @@ describe('PatternResolver', () => {
     });
 
     it('should resolve full filename patterns', async () => {
-      const result = await resolver.resolveFilenames(['0001_create_users_table_up.surql'], ['010_auth'], 'up');
-      
+      const result = await resolver.resolveFilenames(
+        ['0001_create_users_table_up.surql'],
+        ['010_auth'],
+        'up'
+      );
+
       expect(result.resolved).toHaveLength(1);
       expect(result.resolved[0].filename).toBe('0001_create_users_table_up.surql');
       expect(result.notFound).toHaveLength(0);
@@ -159,7 +173,7 @@ describe('PatternResolver', () => {
 
     it('should filter by direction', async () => {
       const result = await resolver.resolveFilenames(['1'], ['010_auth'], 'down');
-      
+
       expect(result.resolved).toHaveLength(1);
       expect(result.resolved[0].filename).toBe('0001_create_users_table_down.surql');
       expect(result.resolved[0].direction).toBe('down');
@@ -167,7 +181,7 @@ describe('PatternResolver', () => {
 
     it('should return notFound for invalid filename patterns', async () => {
       const result = await resolver.resolveFilenames(['999', 'nonexistent'], ['010_auth'], 'up');
-      
+
       expect(result.resolved).toHaveLength(0);
       expect(result.notFound).toHaveLength(2);
       expect(result.notFound).toContain('999');
@@ -181,14 +195,14 @@ describe('PatternResolver', () => {
       mockDependencyResolver.validateRollback.mockReturnValue({
         canRollback: true,
         blockedBy: [],
-        reason: null
+        reason: null,
       });
-      
+
       mockFs.readdir.mockImplementation((dirPath: string) => {
         if (dirPath.includes('010_auth')) {
           return Promise.resolve([
             '0001_create_users_table_down.surql',
-            '0002_add_authentication_down.surql'
+            '0002_add_authentication_down.surql',
           ] as string[]);
         }
         return Promise.resolve([] as string[]);
@@ -197,7 +211,7 @@ describe('PatternResolver', () => {
 
     it('should resolve rollback filenames with dependency validation', async () => {
       const result = await resolver.resolveRollbackFilenames(['1'], ['010_auth']);
-      
+
       expect(result.resolved).toHaveLength(1);
       expect(result.resolved[0].filename).toBe('0001_create_users_table_down.surql');
       expect(result.resolved[0].direction).toBe('down');
@@ -208,11 +222,11 @@ describe('PatternResolver', () => {
       mockDependencyResolver.validateRollback.mockReturnValue({
         canRollback: false,
         blockedBy: ['020_users'],
-        reason: 'Dependency conflict'
+        reason: 'Dependency conflict',
       });
 
       const result = await resolver.resolveRollbackFilenames(['1'], ['010_auth']);
-      
+
       expect(result.resolved).toHaveLength(1);
       expect(result.dependencyWarnings).toHaveLength(1);
       expect(result.dependencyWarnings[0]).toContain('dependency conflicts');

@@ -1,7 +1,4 @@
-import {
-  Tree,
-  logger,
-} from '@nx/devkit';
+import { Tree, logger } from '@nx/devkit';
 import * as path from 'path';
 import * as fs from 'fs';
 import { execSync } from 'child_process';
@@ -22,34 +19,36 @@ export interface ExportModuleGeneratorSchema {
 
 export default async function (tree: Tree, options: ExportModuleGeneratorSchema) {
   const normalizedOptions = normalizeOptions(tree, options);
-  
+
   logger.info(`🚀 Exporting module: ${normalizedOptions.module}`);
-  
+
   // Find the module directory
   const moduleDir = await findModuleDirectory(tree, normalizedOptions);
   if (!moduleDir) {
-    throw new Error(`Module '${normalizedOptions.module}' not found in ${normalizedOptions.initPath}`);
+    throw new Error(
+      `Module '${normalizedOptions.module}' not found in ${normalizedOptions.initPath}`
+    );
   }
-  
+
   logger.info(`📁 Found module directory: ${moduleDir.name}`);
-  
+
   // Load configuration to get module metadata
   const config = await loadModuleConfig(normalizedOptions, moduleDir.name);
-  
+
   // Create export package structure
   await createExportPackage(tree, normalizedOptions, moduleDir, config as ModuleConfig | null);
-  
+
   // Generate package files
   await generatePackageFiles(tree, normalizedOptions, moduleDir, config as ModuleConfig | null);
-  
+
   // Create the package archive if requested
   if (normalizedOptions.packageFormat !== 'directory') {
     await createPackageArchive(normalizedOptions, moduleDir);
   }
-  
+
   logger.info(`✅ Module '${moduleDir.name}' exported successfully!`);
   logger.info(`📦 Package location: ${normalizedOptions.outputPath}/${moduleDir.name}`);
-  
+
   return () => {
     logger.info(`
 🎉 Export completed!
@@ -82,32 +81,29 @@ async function findModuleDirectory(tree: Tree, options: ReturnType<typeof normal
   if (!tree.exists(options.initPath)) {
     throw new Error(`Migrations directory not found: ${options.initPath}`);
   }
-  
+
   const moduleName = TreeUtils.findMatchingSubdirectory(tree, options.initPath, options.module);
   if (!moduleName) {
     return null;
   }
-  
+
   return {
     name: moduleName,
-    path: path.join(options.initPath, moduleName)
+    path: path.join(options.initPath, moduleName),
   };
 }
 
 // Use shared TreeUtils for finding subdirectories
 
-async function loadModuleConfig(
-  options: ReturnType<typeof normalizeOptions>,
-  moduleName: string
-) {
+async function loadModuleConfig(options: ReturnType<typeof normalizeOptions>, moduleName: string) {
   try {
     const configPath = options.configPath || path.join(options.initPath, 'config.json');
-    
+
     if (fs.existsSync(configPath)) {
       const config = await ConfigLoader.loadConfig(options.initPath, configPath);
       return config.modules[moduleName] || null;
     }
-    
+
     return null;
   } catch (error) {
     logger.warn(`⚠️ Could not load module configuration: ${error.message}`);
@@ -122,14 +118,15 @@ async function createExportPackage(
   _config: ModuleConfig | null
 ) {
   const exportPath = path.join(options.outputPath, moduleDir.name);
-  
+
   // Create export directory structure
   TreeUtils.ensureDirectory(tree, exportPath);
-  
+
   // Copy migration files from Tree
   TreeUtils.ensureDirectory(tree, path.join(exportPath, 'migrations'));
-  TreeUtils.copyFiles(tree, moduleDir.path, path.join(exportPath, 'migrations'), 
-    (filename) => filename.endsWith('.surql'));
+  TreeUtils.copyFiles(tree, moduleDir.path, path.join(exportPath, 'migrations'), filename =>
+    filename.endsWith('.surql')
+  );
 }
 
 async function generatePackageFiles(
@@ -139,12 +136,13 @@ async function generatePackageFiles(
   config: ModuleConfig | null
 ) {
   const exportPath = path.join(options.outputPath, moduleDir.name);
-  
+
   // Generate package.json
   const packageJson = {
     name: `@migrations/${moduleDir.name}`,
     version: options.version,
-    description: options.description || config?.description || `Migration module: ${moduleDir.name}`,
+    description:
+      options.description || config?.description || `Migration module: ${moduleDir.name}`,
     main: 'index.js',
     keywords: ['surrealdb', 'migrations', 'nx'],
     dependencies: config?.dependencies || [],
@@ -154,30 +152,24 @@ async function generatePackageFiles(
       exportedAt: new Date().toISOString(),
       exportedBy: '@deepbrainspace/nx-surrealdb',
       version: options.version,
-    }
+    },
   };
-  
-  tree.write(
-    path.join(exportPath, 'package.json'),
-    JSON.stringify(packageJson, null, 2)
-  );
-  
+
+  tree.write(path.join(exportPath, 'package.json'), JSON.stringify(packageJson, null, 2));
+
   // Generate module configuration
   if (options.includeConfig && config) {
     const moduleConfig = {
-      [moduleDir.name]: config
+      [moduleDir.name]: config,
     };
-    
-    tree.write(
-      path.join(exportPath, 'module.config.json'),
-      JSON.stringify(moduleConfig, null, 2)
-    );
+
+    tree.write(path.join(exportPath, 'module.config.json'), JSON.stringify(moduleConfig, null, 2));
   }
-  
+
   // Generate README.md
   const readmeContent = generateReadme(tree, moduleDir, config, options);
   tree.write(path.join(exportPath, 'README.md'), readmeContent);
-  
+
   // Generate import instructions
   const importScript = generateImportScript(moduleDir, options);
   tree.write(path.join(exportPath, 'import.sh'), importScript);
@@ -190,7 +182,7 @@ function generateReadme(
   options: ReturnType<typeof normalizeOptions>
 ): string {
   const migrationFiles = TreeUtils.getMigrationFiles(tree, moduleDir.path);
-  
+
   return `# Migration Module: ${moduleDir.name}
 
 ## Description
@@ -218,9 +210,12 @@ nx g @deepbrainspace/nx-surrealdb:import-module ${moduleDir.name} --packagePath=
 3. Run migrations: \`nx run your-project:migrate --module ${moduleDir.name}\`
 
 ## Dependencies
-${config?.dependencies?.length > 0 ? 
-  `This module depends on: ${config.dependencies.join(', ')}\n\nEnsure these modules are installed and migrated before using this module.` :
-  'This module has no dependencies.'
+${
+  config?.dependencies?.length > 0
+    ? `This module depends on: ${config.dependencies.join(
+        ', '
+      )}\n\nEnsure these modules are installed and migrated before using this module.`
+    : 'This module has no dependencies.'
 }
 
 ## Generated by
@@ -281,16 +276,16 @@ async function createPackageArchive(
 ) {
   const exportPath = path.join(options.outputPath, moduleDir.name);
   const archiveName = `${moduleDir.name}-${options.version}`;
-  
+
   try {
     if (options.packageFormat === 'tar') {
       execSync(`tar -czf ${archiveName}.tar.gz -C ${options.outputPath} ${moduleDir.name}`, {
-        stdio: 'inherit'
+        stdio: 'inherit',
       });
       logger.info(`📦 Created tar archive: ${archiveName}.tar.gz`);
     } else if (options.packageFormat === 'zip') {
       execSync(`cd ${options.outputPath} && zip -r ${archiveName}.zip ${moduleDir.name}`, {
-        stdio: 'inherit'
+        stdio: 'inherit',
       });
       logger.info(`📦 Created zip archive: ${archiveName}.zip`);
     }

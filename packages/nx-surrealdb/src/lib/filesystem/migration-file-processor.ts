@@ -24,7 +24,8 @@ export class MigrationFileProcessor {
   private static readonly SUBDIR_PATTERN = /^(\d{1,4})_(.+)$/;
   private static readonly NAMESPACE_OPERATIONS = /(?:DEFINE|USE|REMOVE)\s+NAMESPACE/i;
   private static readonly DATABASE_OPERATIONS = /(?:DEFINE|USE|REMOVE)\s+DATABASE/i;
-  private static readonly DDL_OPERATIONS = /^\s*(DEFINE|REMOVE)\s+(NAMESPACE|DATABASE|TABLE|FIELD|INDEX|FUNCTION)/im;
+  private static readonly DDL_OPERATIONS =
+    /^\s*(DEFINE|REMOVE)\s+(NAMESPACE|DATABASE|TABLE|FIELD|INDEX|FUNCTION)/im;
   private static readonly TRANSACTION_BEGIN = /BEGIN\s+TRANSACTION/i;
   private static readonly TRANSACTION_COMMIT = /COMMIT\s+TRANSACTION/i;
 
@@ -61,7 +62,9 @@ export class MigrationFileProcessor {
     }
   }
 
-  static async discoverModules(basePath: string): Promise<Array<{ moduleId: string; modulePath: string }>> {
+  static async discoverModules(
+    basePath: string
+  ): Promise<Array<{ moduleId: string; modulePath: string }>> {
     try {
       const subDirs = await fs.readdir(basePath, { withFileTypes: true });
       const modules: Array<{ moduleId: string; modulePath: string }> = [];
@@ -70,7 +73,7 @@ export class MigrationFileProcessor {
         if (dirent.isDirectory() && this.SUBDIR_PATTERN.test(dirent.name)) {
           modules.push({
             moduleId: dirent.name,
-            modulePath: path.join(basePath, dirent.name)
+            modulePath: path.join(basePath, dirent.name),
           });
         }
       }
@@ -94,7 +97,7 @@ export class MigrationFileProcessor {
     try {
       const files = await fs.readdir(modulePath);
       const migrationFiles = files.filter(f => this.MIGRATION_PATTERN.test(f));
-      
+
       if (migrationFiles.length === 0) {
         return '0001';
       }
@@ -142,13 +145,17 @@ export class MigrationFileProcessor {
     return `${String(nextNumber).padStart(3, '0')}_${normalizedName}`;
   }
 
-  static parseMigrationFile(filename: string, basePath?: string, moduleId?: string): MigrationFile | null {
+  static parseMigrationFile(
+    filename: string,
+    basePath?: string,
+    moduleId?: string
+  ): MigrationFile | null {
     const match = filename.match(this.MIGRATION_PATTERN);
     if (!match) return null;
 
     const [, number, name, direction] = match;
     const filePath = basePath ? path.join(basePath, filename) : filename;
-    
+
     return {
       number,
       name,
@@ -157,7 +164,7 @@ export class MigrationFileProcessor {
       filePath,
       moduleId: moduleId || '',
       content: '',
-      checksum: ''
+      checksum: '',
     };
   }
 
@@ -178,7 +185,11 @@ export class MigrationFileProcessor {
     );
   }
 
-  static filterMigrationFiles(files: string[], filePattern?: string, direction: 'up' | 'down' = 'up'): string[] {
+  static filterMigrationFiles(
+    files: string[],
+    filePattern?: string,
+    direction: 'up' | 'down' = 'up'
+  ): string[] {
     let filtered = files.filter(f => f.endsWith(`_${direction}.surql`));
 
     if (filePattern) {
@@ -197,7 +208,7 @@ export class MigrationFileProcessor {
     const hasDDLOperation = this.DDL_OPERATIONS.test(processed);
     const hasBeginTransaction = this.TRANSACTION_BEGIN.test(processed);
     const hasCommitTransaction = this.TRANSACTION_COMMIT.test(processed);
-    
+
     if (!hasNamespaceOperation && context.defaultNamespace) {
       statements.push(`USE NAMESPACE ${context.defaultNamespace};`);
     }
@@ -205,7 +216,12 @@ export class MigrationFileProcessor {
       statements.push(`USE DATABASE ${context.defaultDatabase};`);
     }
 
-    if (hasDDLOperation || !context.useTransactions || hasBeginTransaction || hasCommitTransaction) {
+    if (
+      hasDDLOperation ||
+      !context.useTransactions ||
+      hasBeginTransaction ||
+      hasCommitTransaction
+    ) {
       statements.push(processed);
     } else {
       statements.push('BEGIN TRANSACTION;');

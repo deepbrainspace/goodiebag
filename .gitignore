@@ -146,3 +146,14 @@ dist
 
 # Nx
 .nx/
+
+# Rust
+target/
+**/*.rs.bk
+Cargo.lock  # For applications (keep for libraries)
+*.rlib
+*.rmeta
+*.pdb
+
+# Temporary directories
+tmp/

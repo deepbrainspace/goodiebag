@@ -6,4 +6,8 @@ export * from './infrastructure/project';
 export { ConfigLoader, type MigrationsConfig } from './configuration/config-loader';
 export { DependencyResolver } from './domain/dependency-resolver';
 export { MigrationService } from './domain/migration-service';
-export { MigrationFileProcessor, type MigrationFile, type MigrationContext } from './filesystem/migration-file-processor';
+export {
+  MigrationFileProcessor,
+  type MigrationFile,
+  type MigrationContext,
+} from './filesystem/migration-file-processor';
