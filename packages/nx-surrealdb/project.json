@@ -42,23 +42,15 @@
         "main": "{projectRoot}/src/index.ts",
         "tsConfig": "{projectRoot}/tsconfig.lib.json",
         "assets": [
+          "{projectRoot}/*.json",
+          "{projectRoot}/*.md",
           {
-            "input": "./packages/nx-surrealdb",
-            "glob": "*.json",
-            "output": "."
-          },
-          {
-            "input": "./packages/nx-surrealdb",
-            "glob": "*.md",
-            "output": "."
-          },
-          {
-            "input": "./packages/nx-surrealdb/src",
+            "input": "{projectRoot}/src",
             "glob": "**/schema.json",
             "output": "src"
           },
           {
-            "input": "./packages/nx-surrealdb/src",
+            "input": "{projectRoot}/src",
             "glob": "**/files/**",
             "output": "src"
           }
@@ -70,18 +62,17 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "dependsOn": ["format"],
       "options": {
         "lintFilePatterns": [
-          "packages/nx-surrealdb/src/**/*.ts",
-          "packages/nx-surrealdb/src/**/*.js"
+          "{projectRoot}/src/**/*.ts",
+          "{projectRoot}/src/**/*.js"
         ]
       }
     },
     "test": {
       "executor": "nx:run-commands",
       "dependsOn": ["install"],
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": ["{projectRoot}/coverage"],
       "cache": false,
       "options": {
         "commands": [
@@ -90,7 +81,7 @@
             "forwardAllArgs": false
           }
         ],
-        "cwd": "packages/nx-surrealdb",
+        "cwd": "{projectRoot}",
         "parallel": false
       }
     },
