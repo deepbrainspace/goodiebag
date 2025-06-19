@@ -110,6 +110,32 @@
         "cwd": "packages/nx-surrealdb",
         "parallel": false
       }
+    },
+    "version": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx release version --projects=nx-surrealdb",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "changelog": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx release changelog --projects=nx-surrealdb",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "release": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx release version --projects=nx-surrealdb",
+          "nx release changelog --projects=nx-surrealdb",
+          "nx release publish --projects=nx-surrealdb"
+        ],
+        "cwd": "{workspaceRoot}",
+        "parallel": false
+      }
     }
   }
 }
