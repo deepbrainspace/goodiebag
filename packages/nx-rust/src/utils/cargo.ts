@@ -1,4 +1,4 @@
-import pc from 'picocolors';
+import * as pc from 'picocolors';
 import { relative } from 'path';
 import { ChildProcess, execSync, spawn, StdioOptions } from 'child_process';
 import { runProcess } from './run-process';
@@ -16,8 +16,23 @@ interface RunCargoOptions {
 
 export let childProcess: ChildProcess | null;
 
-export async function cargoCommand(...args: string[]): Promise<{ success: boolean }> {
-  console.log(pc.dim(`> cargo ${args.join(' ')}`));
+export async function cargoCommand(
+  ...allArgs: (string | undefined)[]
+): Promise<{ success: boolean }> {
+  let cwd: string | undefined;
+  let args: string[];
+
+  // Check if first argument is a directory path (contains path separators)
+  if (
+    allArgs.length > 0 &&
+    typeof allArgs[0] === 'string' &&
+    (allArgs[0].includes('/') || allArgs[0].includes('\\'))
+  ) {
+    cwd = allArgs[0];
+    args = allArgs.slice(1) as string[];
+  } else {
+    args = allArgs as string[];
+  }
 
   // Extract target-dir from args and set as environment variable
   const targetDirIndex = args.findIndex(arg => arg === '--target-dir');
@@ -30,7 +45,14 @@ export async function cargoCommand(...args: string[]): Promise<{ success: boolea
     args.splice(targetDirIndex, 2);
   }
 
-  return runProcess('cargo', ...['--color', 'always', ...args], { env });
+  // Debug output if verbose is enabled
+  const isVerbose = process.env.NX_VERBOSE_LOGGING === 'true' || process.argv.includes('--verbose');
+  if (isVerbose) {
+    console.log(pc.dim(`[DEBUG cargoCommand] cwd: ${cwd || 'undefined'}`));
+    console.log(pc.dim(`> cargo ${args.join(' ')}`));
+  }
+
+  return runProcess('cargo', ...['--color', 'always', ...args], { env, cwd });
 }
 
 export function cargoRunCommand(...args: string[]): Promise<{ success: boolean }> {
@@ -65,7 +87,10 @@ export function cargoRunCommand(...args: string[]): Promise<{ success: boolean }
   });
 }
 
-export function cargoCommandSync(args = '', options?: Partial<RunCargoOptions>): CargoRun {
+export function cargoCommandSync(
+  args = '',
+  options?: Partial<RunCargoOptions & { cwd?: string }>
+): CargoRun {
   const normalizedOptions: RunCargoOptions = {
     stdio: options?.stdio ?? 'inherit',
     env: {
@@ -81,6 +106,7 @@ export function cargoCommandSync(args = '', options?: Partial<RunCargoOptions>):
         windowsHide: true,
         stdio: normalizedOptions.stdio,
         env: normalizedOptions.env,
+        cwd: options?.cwd,
         maxBuffer: 1024 * 1024 * 10,
       }),
       success: true,
@@ -93,9 +119,10 @@ export function cargoCommandSync(args = '', options?: Partial<RunCargoOptions>):
   }
 }
 
-export function cargoMetadata(): CargoMetadata | null {
+export function cargoMetadata(cwd?: string): CargoMetadata | null {
   const output = cargoCommandSync('metadata --format-version=1', {
     stdio: 'pipe',
+    cwd,
   });
 
   if (!output.success) {

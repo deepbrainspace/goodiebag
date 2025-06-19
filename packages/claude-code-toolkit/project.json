@@ -15,7 +15,6 @@
     "format": {
       "executor": "@goodiebag/nx-rust:fmt",
       "options": {
-        "check": true,
         "toolchain": "stable",
         "target-dir": "{projectRoot}/target"
       }
@@ -53,14 +52,6 @@
       "options": {
         "toolchain": "stable",
         "release": false,
-        "target-dir": "{projectRoot}/target"
-      }
-    },
-    "fmt": {
-      "executor": "@goodiebag/nx-rust:fmt",
-      "options": {
-        "check": true,
-        "toolchain": "stable",
         "target-dir": "{projectRoot}/target"
       }
     },

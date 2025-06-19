@@ -1,4 +1,5 @@
-import { ExecutorContext } from '@nx/devkit';
+import { ExecutorContext, workspaceRoot } from '@nx/devkit';
+import { join } from 'path';
 import { buildCommand } from '../../utils/build-command';
 import { cargoCommand } from '../../utils/cargo';
 import { CleanExecutorSchema } from './schema';
@@ -6,7 +7,13 @@ import { CleanExecutorSchema } from './schema';
 export default async function* runExecutor(options: CleanExecutorSchema, context: ExecutorContext) {
   const command = buildCommand('clean', options, context);
 
-  const { success } = await cargoCommand(...command);
+  // Get the project root directory
+  const projectRoot = join(
+    workspaceRoot,
+    context.projectsConfigurations.projects[context.projectName].root
+  );
+
+  const { success } = await cargoCommand(projectRoot, ...command);
   yield {
     success,
   };

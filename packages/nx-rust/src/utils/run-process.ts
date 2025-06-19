@@ -3,6 +3,7 @@ import { cargoMetadata } from './cargo';
 
 interface RunProcessOptions {
   env?: NodeJS.ProcessEnv;
+  cwd?: string;
 }
 
 function runProcessImpl(
@@ -11,22 +12,30 @@ function runProcessImpl(
 ): { success: boolean } | PromiseLike<{ success: boolean }> {
   let args: string[];
   let env = process.env;
+  let cwd = process.cwd();
 
   // Check if last argument is options object
   if (
     argsOrOptions.length > 0 &&
     typeof argsOrOptions[argsOrOptions.length - 1] === 'object' &&
-    !Array.isArray(argsOrOptions[argsOrOptions.length - 1]) &&
-    (argsOrOptions[argsOrOptions.length - 1] as RunProcessOptions).env
+    !Array.isArray(argsOrOptions[argsOrOptions.length - 1])
   ) {
     const options = argsOrOptions.pop() as RunProcessOptions;
-    env = options.env;
+    if (options.env) env = options.env;
+    if (options.cwd) cwd = options.cwd;
     args = argsOrOptions.flat() as string[];
   } else {
     args = argsOrOptions.flat() as string[];
   }
 
-  const metadata = cargoMetadata();
+  // Get cargo metadata from the working directory
+  let metadata = null;
+  try {
+    metadata = cargoMetadata(cwd);
+  } catch {
+    // If metadata fails, we'll use fallback
+  }
+
   // Use metadata target directory, or fall back to 'target' in current directory
   const defaultTargetDir = metadata?.target_directory ?? 'target';
 
@@ -37,7 +46,7 @@ function runProcessImpl(
     }
 
     execSync(processCmd + ' ' + args.join(' '), {
-      cwd: process.cwd(),
+      cwd,
       env: {
         ...env,
         RUSTC_WRAPPER: '',

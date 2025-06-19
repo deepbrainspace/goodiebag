@@ -53,24 +53,31 @@ packages/claude-code-toolkit/
 
 ```rust
 trait ConfigProvider {
-    async fn load_config(&self) -> Result<Config>;
-    async fn save_config(&self, config: &Config) -> Result<()>;
-    async fn validate_config(&self, config: &Config) -> Result<()>;
+  async fn load_config(&self) -> Result<Config>;
+  async fn save_config(&self, config: &Config) -> Result<()>;
+  async fn validate_config(&self, config: &Config) -> Result<()>;
 }
 
 trait SecretManager {
-    async fn sync_secrets(&self, credentials: &Credentials, mapping: &SecretMapping) -> Result<()>;
-    async fn validate_access(&self, targets: &[Target]) -> Result<HashMap<String, bool>>;
+  async fn sync_secrets(
+    &self,
+    credentials: &Credentials,
+    mapping: &SecretMapping
+  ) -> Result<()>;
+  async fn validate_access(
+    &self,
+    targets: &[Target]
+  ) -> Result<HashMap<String, bool>>;
 }
 
 trait ValidationService {
-    fn validate_config(&self, config: &Config) -> Result<Vec<ValidationError>>;
-    fn validate_credentials(&self, credentials: &Credentials) -> Result<()>;
+  fn validate_config(&self, config: &Config) -> Result<Vec<ValidationError>>;
+  fn validate_credentials(&self, credentials: &Credentials) -> Result<()>;
 }
 
 trait SetupWizard {
-    async fn run_setup(&self) -> Result<Config>;
-    fn get_setup_steps(&self) -> Vec<Box<dyn SetupStep>>;
+  async fn run_setup(&self) -> Result<Config>;
+  fn get_setup_steps(&self) -> Vec<Box<dyn SetupStep>>;
 }
 ```
 
@@ -105,9 +112,9 @@ trait SetupWizard {
 
   ```rust
   trait SecretProvider {
-      fn provider_name(&self) -> &str;
-      async fn sync_secrets(&self, secrets: &[Secret]) -> Result<()>;
-      async fn validate_access(&self) -> Result<bool>;
+    fn provider_name(&self) -> &str;
+    async fn sync_secrets(&self, secrets: &[Secret]) -> Result<()>;
+    async fn validate_access(&self) -> Result<bool>;
   }
   ```
 
@@ -142,7 +149,7 @@ trait SetupWizard {
 - **Validation Rules Engine**
   ```rust
   trait ValidationRule {
-      fn validate(&self, config: &Config) -> Result<()>;
+    fn validate(&self, config: &Config) -> Result<()>;
   }
   ```
 
@@ -152,9 +159,9 @@ trait SetupWizard {
 
   ```rust
   trait SetupStep {
-      async fn execute(&self, context: &mut SetupContext) -> Result<()>;
-      fn can_skip(&self, context: &SetupContext) -> bool;
-      fn get_description(&self) -> &str;
+    async fn execute(&self, context: &mut SetupContext) -> Result<()>;
+    fn can_skip(&self, context: &SetupContext) -> bool;
+    fn get_description(&self) -> &str;
   }
   ```
 
@@ -162,8 +169,11 @@ trait SetupWizard {
 
   ```rust
   trait ProviderFactory {
-      fn create_provider(&self, config: &ProviderConfig) -> Result<Box<dyn SecretProvider>>;
-      fn supported_providers(&self) -> Vec<&str>;
+    fn create_provider(
+      &self,
+      config: &ProviderConfig
+    ) -> Result<Box<dyn SecretProvider>>;
+    fn supported_providers(&self) -> Vec<&str>;
   }
   ```
 
@@ -171,14 +181,18 @@ trait SetupWizard {
 
   ```rust
   trait ConfigObserver {
-      async fn on_config_changed(&self, old: &Config, new: &Config) -> Result<()>;
+    async fn on_config_changed(&self, old: &Config, new: &Config) -> Result<()>;
   }
   ```
 
 - **Strategy Pattern** for sync algorithms
   ```rust
   trait SyncStrategy {
-      async fn sync(&self, credentials: &Credentials, targets: &[Target]) -> Result<SyncResult>;
+    async fn sync(
+      &self,
+      credentials: &Credentials,
+      targets: &[Target]
+    ) -> Result<SyncResult>;
   }
   ```
 

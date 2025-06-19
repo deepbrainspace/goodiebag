@@ -8,5 +8,5 @@ pub mod traits;
 pub mod types;
 pub mod utils;
 
-pub use error::{ClaudeCodeError, Result};
+pub use error::{ ClaudeCodeError, Result };
 pub use traits::*;

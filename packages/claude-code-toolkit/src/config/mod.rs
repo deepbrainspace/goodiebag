@@ -4,4 +4,4 @@ pub mod credentials;
 pub mod manager;
 
 pub use credentials::CredentialsManager;
-pub use manager::{ConfigurationManager, YamlConfigProvider};
+pub use manager::{ ConfigurationManager, YamlConfigProvider };
