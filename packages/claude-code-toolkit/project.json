@@ -21,7 +21,6 @@
     },
     "lint": {
       "executor": "@goodiebag/nx-rust:lint",
-      "dependsOn": ["format"],
       "options": {
         "toolchain": "stable",
         "target-dir": "{projectRoot}/target"
@@ -98,12 +97,6 @@
     "nx-release-publish": {
       "executor": "@goodiebag/nx-rust:release-publish",
       "dependsOn": ["build", "test", "lint"],
-      "options": {
-        "toolchain": "stable"
-      }
-    },
-    "nx-release-version": {
-      "executor": "@goodiebag/nx-rust:release-version",
       "options": {
         "toolchain": "stable"
       }

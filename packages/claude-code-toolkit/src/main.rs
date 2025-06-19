@@ -1,5 +1,5 @@
 use clap::Parser;
-use claude_code::{
+use claude_code_toolkit::{
   cli::{ Cli, Commands, OrgCommands, RepoCommands, ServiceCommands, SyncCommands, commands },
   daemon::Daemon,
   error::Result,
@@ -11,7 +11,7 @@ use tracing_subscriber::EnvFilter;
 async fn main() -> Result<()> {
   // Initialize logging
   let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_|
-    EnvFilter::new("claude_code=info")
+    EnvFilter::new("claude_code_toolkit=info")
   );
 
   tracing_subscriber::fmt().with_env_filter(filter).with_target(false).init();
