@@ -3,7 +3,6 @@ import { BuildExecutorSchema } from '../executors/build/schema';
 import { LintExecutorSchema } from '../executors/lint/schema';
 import { RunExecutorSchema } from '../executors/run/schema';
 import { TestExecutorSchema } from '../executors/test/schema';
-import { WasmPackExecutorSchema } from '../executors/wasm-pack/schema';
 
 export function addBuildExecutor(additionalOptions?: BuildExecutorSchema): TargetConfiguration {
   return {
@@ -69,24 +68,6 @@ export function addLintExecutor(additionalOptions?: LintExecutorSchema): TargetC
     outputs: ['{options.target-dir}'],
     options: {
       ...additionalOptions,
-    },
-  };
-}
-
-export function addWasmPackExecutor(
-  additionalOptions?: WasmPackExecutorSchema
-): TargetConfiguration {
-  return {
-    cache: true,
-    executor: '@monodon/rust:wasm-pack',
-    outputs: ['{options.target-dir}'],
-    options: {
-      ...additionalOptions,
-    },
-    configurations: {
-      production: {
-        release: true,
-      },
     },
   };
 }

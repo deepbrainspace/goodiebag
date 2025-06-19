@@ -31,9 +31,9 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/packages/nx-rust"],
+      "outputs": ["{projectRoot}"],
       "options": {
-        "jestConfig": "packages/nx-rust/jest.config.ts"
+        "jestConfig": "{projectRoot}/jest.config.ts"
       }
     },
     "build": {
@@ -41,9 +41,9 @@
       "outputs": ["{options.outputPath}"],
       "cache": false,
       "options": {
-        "outputPath": "{workspaceRoot}/packages/nx-rust/dist",
-        "main": "{workspaceRoot}/packages/nx-rust/src/index.ts",
-        "tsConfig": "{workspaceRoot}/packages/nx-rust/tsconfig.lib.json",
+        "outputPath": "{projectRoot}/dist",
+        "main": "{projectRoot}/src/index.ts",
+        "tsConfig": "{projectRoot}/tsconfig.lib.json",
         "assets": [
           {
             "input": "./packages/nx-rust",

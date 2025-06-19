@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import pc from 'picocolors';
 import { relative } from 'path';
 import { ChildProcess, execSync, spawn, StdioOptions } from 'child_process';
 import { runProcess } from './run-process';
@@ -17,12 +17,24 @@ interface RunCargoOptions {
 export let childProcess: ChildProcess | null;
 
 export async function cargoCommand(...args: string[]): Promise<{ success: boolean }> {
-  console.log(chalk.dim(`> cargo ${args.join(' ')}`));
-  return runProcess('cargo', ...['--color', 'always', ...args]);
+  console.log(pc.dim(`> cargo ${args.join(' ')}`));
+
+  // Extract target-dir from args and set as environment variable
+  const targetDirIndex = args.findIndex(arg => arg === '--target-dir');
+  let env = process.env;
+
+  if (targetDirIndex !== -1 && targetDirIndex + 1 < args.length) {
+    const targetDir = args[targetDirIndex + 1];
+    env = { ...process.env, CARGO_TARGET_DIR: targetDir };
+    // Remove --target-dir and its value from args
+    args.splice(targetDirIndex, 2);
+  }
+
+  return runProcess('cargo', ...['--color', 'always', ...args], { env });
 }
 
 export function cargoRunCommand(...args: string[]): Promise<{ success: boolean }> {
-  console.log(chalk.dim(`> cargo ${args.join(' ')}`));
+  console.log(pc.dim(`> cargo ${args.join(' ')}`));
   return new Promise((resolve, reject) => {
     childProcess = spawn('cargo', ['--color', 'always', ...args], {
       cwd: process.cwd(),

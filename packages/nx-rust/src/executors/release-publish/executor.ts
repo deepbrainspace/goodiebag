@@ -5,7 +5,7 @@ import { relative } from 'node:path';
 import { env as appendLocalEnv } from 'npm-run-path';
 import { parseCargoToml } from '../../utils/toml';
 import { PublishExecutorSchema } from './schema';
-import chalk = require('chalk');
+import pc = require('picocolors');
 
 const LARGE_BUFFER = 1024 * 1000000;
 
@@ -62,9 +62,7 @@ export default async function runExecutor(
     console.log('');
 
     if (isDryRun) {
-      console.log(
-        `Would publish to https://crates.io, but ${chalk.keyword('orange')('[dry-run]')} was set`
-      );
+      console.log(`Would publish to https://crates.io, but ${pc.yellow('[dry-run]')} was set`);
     } else {
       console.log(`Published to https://crates.io`);
     }

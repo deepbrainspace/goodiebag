@@ -135,6 +135,11 @@ describe('release-version', () => {
         return undefined as never;
       });
 
+      // Get the project node to calculate the expected path dynamically
+      const myLibProject = projectGraph.nodes['my-lib'];
+      const packageRoot = myLibProject.data.root; // This is 'libs/my-lib'
+      const cargoTomlPath = `${packageRoot}/Cargo.toml`;
+
       await releaseVersionGenerator(tree, {
         projects: Object.values(projectGraph.nodes), // version all projects
         projectGraph,
@@ -144,7 +149,7 @@ describe('release-version', () => {
       });
 
       expect(outputSpy).toHaveBeenCalledWith({
-        title: `The project "my-lib" does not have a Cargo.toml available at libs/my-lib/Cargo.toml.
+        title: `The project "my-lib" does not have a Cargo.toml available at ${cargoTomlPath}.
 
 To fix this you will either need to add a Cargo.toml file at that location, or configure "release" within your nx.json to exclude "my-lib" from the current release group, or amend the packageRoot configuration to point to where the Cargo.toml should be.`,
       });

@@ -2,7 +2,7 @@ import { NxPlugin } from '@nx/devkit';
 import { createDependencies, createNodes, createNodesV2 } from './graph';
 
 const nxPlugin: NxPlugin = {
-  name: '@deepbrainspace/nx-rust',
+  name: '@goodiebag/nx-rust',
   createDependencies,
   createNodes,
   createNodesV2,
