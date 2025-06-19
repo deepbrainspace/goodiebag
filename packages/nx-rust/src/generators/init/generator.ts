@@ -20,9 +20,7 @@ function normalizeOptions(tree: Tree): NormalizedSchema {
   return {
     libsDir,
     appsDir,
-    cargoMembers: Array.from(
-      new Set([`"${libsDir}/*"`, `"${appsDir}/*"`])
-    ).join(','),
+    cargoMembers: Array.from(new Set([`"${libsDir}/*"`, `"${appsDir}/*"`])).join(','),
   };
 }
 

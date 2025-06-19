@@ -20,14 +20,14 @@ describe('init generator', () => {
     const cargoToml = appTree.read('./Cargo.toml')?.toString() ?? '';
 
     expect(TOML.parse(cargoToml)).toMatchInlineSnapshot(`
-      Object {
-        "profile": Object {
-          "release": Object {
+      {
+        "profile": {
+          "release": {
             "lto": true,
           },
         },
-        "workspace": Object {
-          "members": Array [],
+        "workspace": {
+          "members": [],
           "resolver": "2",
         },
       }
@@ -39,21 +39,21 @@ describe('init generator', () => {
       await generator(appTree);
       const nxJson = readNxJson(appTree);
       expect(nxJson?.plugins).toMatchInlineSnapshot(`
-        Array [
+        [
           "@monodon/rust",
         ]
       `);
     });
 
     it('should not remove previous plugins', async () => {
-      updateJson(appTree, 'nx.json', (json) => {
+      updateJson(appTree, 'nx.json', json => {
         json.plugins = ['@nrwl/graph/plugin'];
         return json;
       });
       await generator(appTree);
       const nxJson = readNxJson(appTree);
       expect(nxJson?.plugins).toMatchInlineSnapshot(`
-        Array [
+        [
           "@nrwl/graph/plugin",
           "@monodon/rust",
         ]

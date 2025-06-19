@@ -1,4 +1,11 @@
-import { Tree, formatFiles, generateFiles, addProjectConfiguration, ProjectConfiguration, installPackagesTask } from '@nx/devkit';
+import {
+  Tree,
+  formatFiles,
+  generateFiles,
+  addProjectConfiguration,
+  ProjectConfiguration,
+  installPackagesTask,
+} from '@nx/devkit';
 import { MigrationsConfig } from '../../lib/configuration/config-loader';
 import * as path from 'path';
 
@@ -11,31 +18,29 @@ export interface InitGeneratorSchema {
   pass?: string;
 }
 
-
-
 export default async function (tree: Tree, options: InitGeneratorSchema) {
   const { name } = options;
-  
+
   // Auto-install required dependencies
   const packageJson = tree.read('package.json');
   if (packageJson) {
     const pkg = JSON.parse(packageJson.toString());
     const requiredDeps = {
-      'surrealdb': '^1.3.2',
-      'dotenv': '^16.5.0',
-      'picocolors': '^1.1.1'
+      surrealdb: '^1.3.2',
+      dotenv: '^16.5.0',
+      picocolors: '^1.1.1',
     };
-    
+
     let depsToAdd = false;
     pkg.dependencies = pkg.dependencies || {};
-    
+
     for (const [dep, version] of Object.entries(requiredDeps)) {
       if (!pkg.dependencies[dep]) {
         pkg.dependencies[dep] = version;
         depsToAdd = true;
       }
     }
-    
+
     if (depsToAdd) {
       tree.write('package.json', JSON.stringify(pkg, null, 2));
       console.log(`
@@ -46,7 +51,7 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
 `);
     }
   }
-  
+
   // Set defaults using the same pattern as the library
   const config = {
     name,
@@ -54,7 +59,7 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
     namespace: options.namespace || 'development',
     database: options.database || 'main',
     user: options.user || 'root',
-    pass: options.pass || 'root'
+    pass: options.pass || 'root',
   };
 
   // Create the initial module configuration and write it to config.json
@@ -65,39 +70,33 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
         description: 'Core database setup and administrative functions',
         dependencies: [],
         locked: true,
-        lockReason: 'Critical system module - contains core admin setup and permissions'
+        lockReason: 'Critical system module - contains core admin setup and permissions',
       },
       '010_auth': {
         name: 'Authentication & Users',
         description: 'User authentication and authorization system',
-        dependencies: ['000_admin']
+        dependencies: ['000_admin'],
       },
       '020_schema': {
         name: 'Application Schema',
         description: 'Core application data models and relationships',
-        dependencies: ['010_auth']
-      }
+        dependencies: ['010_auth'],
+      },
     },
     settings: {
       configFormat: 'json',
       useTransactions: true,
       defaultNamespace: config.namespace,
-      defaultDatabase: config.database
-    }
+      defaultDatabase: config.database,
+    },
   };
 
   // Generate the database project structure
-  generateFiles(
-    tree,
-    path.join(__dirname, 'files'),
-    name,
-    {
-      ...config,
-      template: '',
-      moduleConfig: JSON.stringify(moduleConfig, null, 2)
-    }
-  );
-
+  generateFiles(tree, path.join(__dirname, 'files'), name, {
+    ...config,
+    template: '',
+    moduleConfig: JSON.stringify(moduleConfig, null, 2),
+  });
 
   // Add NX project configuration
   const projectConfig: ProjectConfiguration = {
@@ -112,8 +111,8 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
           pass: '${SURREALDB_ROOT_PASS}',
           namespace: '${SURREALDB_NAMESPACE}',
           database: '${SURREALDB_DATABASE}',
-          initPath: name
-        }
+          initPath: name,
+        },
       },
       rollback: {
         executor: '@deepbrainspace/nx-surrealdb:rollback',
@@ -123,8 +122,8 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
           pass: '${SURREALDB_ROOT_PASS}',
           namespace: '${SURREALDB_NAMESPACE}',
           database: '${SURREALDB_DATABASE}',
-          initPath: name
-        }
+          initPath: name,
+        },
       },
       status: {
         executor: '@deepbrainspace/nx-surrealdb:status',
@@ -134,8 +133,8 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
           pass: '${SURREALDB_ROOT_PASS}',
           namespace: '${SURREALDB_NAMESPACE}',
           database: '${SURREALDB_DATABASE}',
-          initPath: name
-        }
+          initPath: name,
+        },
       },
       reset: {
         executor: '@deepbrainspace/nx-surrealdb:reset',
@@ -144,16 +143,16 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
           user: '${SURREALDB_ROOT_USER}',
           pass: '${SURREALDB_ROOT_PASS}',
           namespace: '${SURREALDB_NAMESPACE}',
-          database: '${SURREALDB_DATABASE}'
-        }
-      }
-    }
+          database: '${SURREALDB_DATABASE}',
+        },
+      },
+    },
   };
 
   addProjectConfiguration(tree, name, projectConfig);
 
   await formatFiles(tree);
-  
+
   // Log helpful next steps
   console.log(`
 ✅ Database project '${name}' created successfully!
@@ -176,7 +175,7 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
 
 For more info, see ${name}/README.md
   `);
-  
+
   // Auto-install packages
   return installPackagesTask(tree);
 }

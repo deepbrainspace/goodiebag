@@ -17,7 +17,7 @@ jobs:
   release:
     name: 🚀 Release Packages
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -36,7 +36,7 @@ jobs:
       - name: Release packages
         run: |
           echo "🚀 Starting release process..."
-          
+
           # Determine version command
           if [ -n "${{ github.event.inputs.version }}" ]; then
             VERSION_CMD="nx release ${{ github.event.inputs.version }} --yes"
@@ -45,7 +45,7 @@ jobs:
             VERSION_CMD="nx release --yes"
             echo "📋 Using automatic version determination from conventional commits"
           fi
-          
+
           echo "🎯 Executing: $VERSION_CMD"
           $VERSION_CMD
         env:

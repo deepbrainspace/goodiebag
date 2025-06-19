@@ -1,0 +1,150 @@
+{
+  "name": "claude-code-toolkit",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/claude-code-toolkit/src",
+  "projectType": "application",
+  "tags": [
+    "type:cli-tool",
+    "lang:rust",
+    "domain:automation",
+    "scope:publishable",
+    "runtime:native",
+    "daemon"
+  ],
+  "targets": {
+    "format": {
+      "executor": "@goodiebag/nx-rust:fmt",
+      "options": {
+        "check": true,
+        "toolchain": "stable",
+        "target-dir": "{projectRoot}/target"
+      }
+    },
+    "lint": {
+      "executor": "@goodiebag/nx-rust:lint",
+      "dependsOn": ["format"],
+      "options": {
+        "toolchain": "stable",
+        "target-dir": "{projectRoot}/target"
+      }
+    },
+    "test": {
+      "executor": "@goodiebag/nx-rust:test",
+      "dependsOn": ["lint"],
+      "options": {
+        "toolchain": "stable",
+        "target-dir": "{projectRoot}/target"
+      }
+    },
+    "build": {
+      "executor": "@goodiebag/nx-rust:build",
+      "dependsOn": ["test"],
+      "outputs": ["{projectRoot}/target/release/claude-code-toolkit"],
+      "options": {
+        "toolchain": "stable",
+        "release": true,
+        "target-dir": "{projectRoot}/target"
+      }
+    },
+    "build-dev": {
+      "executor": "@goodiebag/nx-rust:build",
+      "dependsOn": ["test"],
+      "outputs": ["{projectRoot}/target/debug/claude-code-toolkit"],
+      "options": {
+        "toolchain": "stable",
+        "release": false,
+        "target-dir": "{projectRoot}/target"
+      }
+    },
+    "fmt": {
+      "executor": "@goodiebag/nx-rust:fmt",
+      "options": {
+        "check": true,
+        "toolchain": "stable",
+        "target-dir": "{projectRoot}/target"
+      }
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo run --",
+        "cwd": "packages/claude-code-toolkit"
+      }
+    },
+    "install": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "commands": [
+          "echo '🔧 Installing claude-code-toolkit binary...'",
+          "echo 'Working directory: $(pwd)'",
+          "mkdir -p ~/.cargo/bin",
+          "cp {projectRoot}/target/release/claude-code-toolkit ~/.cargo/bin/claude-code-toolkit",
+          "chmod +x ~/.cargo/bin/claude-code-toolkit",
+          "echo '🔍 Checking installation...'",
+          "which claude-code-toolkit || echo 'WARNING: claude-code-toolkit not found in PATH'",
+          "ls -la ~/.cargo/bin/claude-code-toolkit || echo 'WARNING: Binary not found in ~/.cargo/bin'",
+          "echo '✅ claude-code-toolkit installed to ~/.cargo/bin/claude-code-toolkit'",
+          "echo '📝 Next steps:'",
+          "echo '  1. Add organizations: claude-code-toolkit org add <org-name>'",
+          "echo '  2. Add repositories: claude-code-toolkit repo add <owner/repo>'",
+          "echo '  3. Install daemon service: claude-code-toolkit service install'",
+          "echo '  4. Check status: claude-code-toolkit status'"
+        ],
+        "cwd": "packages/claude-code-toolkit",
+        "parallel": false
+      }
+    },
+    "package": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "outputs": ["{projectRoot}/target/package"],
+      "options": {
+        "command": "cargo package --target-dir {projectRoot}/target",
+        "cwd": "packages/claude-code-toolkit"
+      }
+    },
+    "nx-release-publish": {
+      "executor": "@goodiebag/nx-rust:release-publish",
+      "dependsOn": ["build", "test", "lint"],
+      "options": {
+        "toolchain": "stable"
+      }
+    },
+    "nx-release-version": {
+      "executor": "@goodiebag/nx-rust:release-version",
+      "options": {
+        "toolchain": "stable"
+      }
+    },
+    "check": {
+      "executor": "@goodiebag/nx-rust:check",
+      "options": {
+        "toolchain": "stable"
+      }
+    },
+    "clean": {
+      "executor": "@goodiebag/nx-rust:clean",
+      "options": {
+        "toolchain": "stable",
+        "target-dir": "{projectRoot}/target"
+      }
+    },
+    "quality": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["fmt", "lint", "test"],
+      "options": {
+        "command": "echo '✅ All quality checks passed'",
+        "cwd": "packages/claude-code-toolkit"
+      }
+    },
+    "ci": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["quality", "build"],
+      "options": {
+        "command": "echo '🚀 CI pipeline completed successfully'",
+        "cwd": "packages/claude-code-toolkit"
+      }
+    }
+  }
+}

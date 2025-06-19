@@ -6,11 +6,11 @@ import globals from 'globals';
 
 export default [
   {
-    ignores: ['dist/**', 'coverage/**', 'node_modules/**'],
+    ignores: ['**/dist/**', '**/coverage/**', '**/node_modules/**'],
   },
   js.configs.recommended,
   {
-    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       parser: tsparser,
       parserOptions: {
@@ -29,10 +29,13 @@ export default [
       ...tseslint.configs.recommended.rules,
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-empty-object-type': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+      'no-undef': 'off', // TypeScript handles this
     },
   },
   {
-    files: ['src/**/*.spec.ts', 'src/**/*.test.ts'],
+    files: ['**/*.spec.ts', '**/*.test.ts'],
     languageOptions: {
       parser: tsparser,
       parserOptions: {
@@ -52,6 +55,7 @@ export default [
       ...tseslint.configs.recommended.rules,
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-empty-object-type': 'off',
     },
   },
   {

@@ -10,8 +10,8 @@ jest.mock('@nx/devkit', () => ({
   logger: {
     info: jest.fn(),
     error: jest.fn(),
-    warn: jest.fn()
-  }
+    warn: jest.fn(),
+  },
 }));
 
 const MockMigrationService = MigrationService as jest.MockedClass<typeof MigrationService>;
@@ -19,19 +19,19 @@ const MockMigrationService = MigrationService as jest.MockedClass<typeof Migrati
 describe('Rollback Executor', () => {
   let mockEngine: jest.Mocked<MigrationService>;
   let context: ExecutorContext;
-  
+
   const defaultOptions: RollbackExecutorSchema = {
     url: 'ws://localhost:8000',
     user: 'root',
     pass: 'root',
     namespace: 'test',
     database: 'test',
-    initPath: 'database'
+    initPath: 'database',
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     const tree = createTreeWithEmptyWorkspace();
     context = {
       root: tree.root,
@@ -40,13 +40,13 @@ describe('Rollback Executor', () => {
       projectName: 'test-project',
       projectsConfigurations: {
         version: 2,
-        projects: {}
+        projects: {},
       },
       nxJsonConfiguration: {},
       projectGraph: {
         nodes: {},
-        dependencies: {}
-      }
+        dependencies: {},
+      },
     };
 
     // Setup mock engine
@@ -58,25 +58,27 @@ describe('Rollback Executor', () => {
         filesProcessed: 0,
         filesSkipped: 0,
         executionTimeMs: 100,
-        results: []
+        results: [],
       }),
       validateRollback: jest.fn().mockResolvedValue({
         canRollback: true,
         blockedBy: [],
         warnings: [],
-        migrationChecks: []
+        migrationChecks: [],
       }),
       getMigrationStatus: jest.fn().mockResolvedValue({
         modules: [],
         totalApplied: 0,
-        totalPending: 0
+        totalPending: 0,
       }),
-      resolveTargetModules: jest.fn().mockImplementation((modules: string[]) => modules.map(m => `010_${m}`)),
+      resolveTargetModules: jest
+        .fn()
+        .mockImplementation((modules: string[]) => modules.map(m => `010_${m}`)),
       resolveRollbackFilenames: jest.fn().mockResolvedValue({
         resolved: [],
-        warnings: []
+        warnings: [],
       }),
-      close: jest.fn().mockResolvedValue(undefined)
+      close: jest.fn().mockResolvedValue(undefined),
     };
 
     MockMigrationService.mockImplementation(() => mockEngine);
@@ -89,7 +91,7 @@ describe('Rollback Executor', () => {
   describe('basic execution', () => {
     it('should execute rollback successfully', async () => {
       const options = { ...defaultOptions, module: 'auth' };
-      
+
       mockEngine.executeMigrations.mockResolvedValue({
         success: true,
         filesProcessed: 1,
@@ -105,12 +107,12 @@ describe('Rollback Executor', () => {
               filePath: '/path/to/010_auth/0002_roles_down.surql',
               moduleId: '010_auth',
               content: '-- rollback roles',
-              checksum: 'def456'
+              checksum: 'def456',
             },
             success: true,
-            executionTimeMs: 150
-          }
-        ]
+            executionTimeMs: 150,
+          },
+        ],
       });
 
       const result = await executor(options, context);
@@ -129,17 +131,21 @@ describe('Rollback Executor', () => {
         force: false,
         configPath: undefined,
         debug: undefined,
-        dryRun: false
+        dryRun: false,
       });
       expect(mockEngine.validateRollback).toHaveBeenCalledWith(['auth']);
-      expect(mockEngine.executeMigrations).toHaveBeenCalledWith(['010_auth'], 'rollback', undefined);
+      expect(mockEngine.executeMigrations).toHaveBeenCalledWith(
+        ['010_auth'],
+        'rollback',
+        undefined
+      );
       expect(mockEngine.close).toHaveBeenCalled();
       expect(logger.info).toHaveBeenCalledWith('✅ Rollback completed successfully!');
     });
 
     it('should handle rollback failures', async () => {
       const options = { ...defaultOptions, module: 'auth' };
-      
+
       mockEngine.executeMigrations.mockResolvedValue({
         success: false,
         filesProcessed: 0,
@@ -155,20 +161,22 @@ describe('Rollback Executor', () => {
               filePath: '/path/to/010_auth/0002_roles_down.surql',
               moduleId: '010_auth',
               content: '-- rollback roles',
-              checksum: 'def456'
+              checksum: 'def456',
             },
             success: false,
             executionTimeMs: 50,
-            error: 'SQL constraint violation'
-          }
-        ]
+            error: 'SQL constraint violation',
+          },
+        ],
       });
 
       const result = await executor(options, context);
 
       expect(result.success).toBe(false);
       expect(logger.error).toHaveBeenCalledWith('❌ Rollback failed!');
-      expect(logger.error).toHaveBeenCalledWith('   ❌ 010_auth/0002_roles_down.surql: SQL constraint violation');
+      expect(logger.error).toHaveBeenCalledWith(
+        '   ❌ 010_auth/0002_roles_down.surql: SQL constraint violation'
+      );
     });
 
     it('should handle engine initialization errors', async () => {
@@ -186,7 +194,7 @@ describe('Rollback Executor', () => {
   describe('safety validation', () => {
     it('should validate rollback safety for targeted modules', async () => {
       const options = { ...defaultOptions, module: 'auth' };
-      
+
       await executor(options, context);
 
       expect(mockEngine.validateRollback).toHaveBeenCalledWith(['auth']);
@@ -196,12 +204,12 @@ describe('Rollback Executor', () => {
 
     it('should block unsafe rollbacks', async () => {
       const options = { ...defaultOptions, module: 'auth' };
-      
+
       mockEngine.validateRollback.mockResolvedValue({
         canRollback: false,
         blockedBy: ['020_schema', '030_communications'],
         warnings: ['Module auth has active dependents'],
-        migrationChecks: []
+        migrationChecks: [],
       });
 
       const result = await executor(options, context);
@@ -211,18 +219,20 @@ describe('Rollback Executor', () => {
       expect(logger.error).toHaveBeenCalledWith('   • 020_schema');
       expect(logger.error).toHaveBeenCalledWith('   • 030_communications');
       expect(logger.error).toHaveBeenCalledWith('   • Module auth has active dependents');
-      expect(logger.info).toHaveBeenCalledWith('   Option 2: Use --force to bypass safety checks (not recommended)');
+      expect(logger.info).toHaveBeenCalledWith(
+        '   Option 2: Use --force to bypass safety checks (not recommended)'
+      );
       expect(mockEngine.executeMigrations).not.toHaveBeenCalled();
     });
 
     it('should show warnings but continue with safe rollbacks', async () => {
       const options = { ...defaultOptions, module: 'auth' };
-      
+
       mockEngine.validateRollback.mockResolvedValue({
         canRollback: true,
         blockedBy: [],
         warnings: ['Some data may be lost during rollback'],
-        migrationChecks: []
+        migrationChecks: [],
       });
 
       const result = await executor(options, context);
@@ -239,7 +249,11 @@ describe('Rollback Executor', () => {
       await executor(options, context);
 
       expect(mockEngine.validateRollback).not.toHaveBeenCalled();
-      expect(mockEngine.executeMigrations).toHaveBeenCalledWith(['010_auth'], 'rollback', undefined);
+      expect(mockEngine.executeMigrations).toHaveBeenCalledWith(
+        ['010_auth'],
+        'rollback',
+        undefined
+      );
     });
 
     it('should skip validation for global rollbacks', async () => {
@@ -255,15 +269,19 @@ describe('Rollback Executor', () => {
   describe('module targeting', () => {
     it('should target specific module by name', async () => {
       const options = { ...defaultOptions, module: 'auth' };
-      
+
       await executor(options, context);
 
-      expect(mockEngine.executeMigrations).toHaveBeenCalledWith(['010_auth'], 'rollback', undefined);
+      expect(mockEngine.executeMigrations).toHaveBeenCalledWith(
+        ['010_auth'],
+        'rollback',
+        undefined
+      );
     });
 
     it('should target specific module by number', async () => {
       const options = { ...defaultOptions, module: 10 };
-      
+
       await executor(options, context);
 
       expect(mockEngine.executeMigrations).toHaveBeenCalledWith(['010_10'], 'rollback', undefined);
@@ -287,7 +305,7 @@ describe('Rollback Executor', () => {
           filePath: '/path/to/010_auth/0002_roles_down.surql',
           moduleId: '010_auth',
           content: '-- rollback roles',
-          checksum: 'def456'
+          checksum: 'def456',
         },
         {
           number: '0001',
@@ -297,8 +315,8 @@ describe('Rollback Executor', () => {
           filePath: '/path/to/010_auth/0001_users_down.surql',
           moduleId: '010_auth',
           content: '-- rollback users',
-          checksum: 'abc123'
-        }
+          checksum: 'abc123',
+        },
       ]);
 
       const options = { ...defaultOptions, dryRun: true };
@@ -306,7 +324,9 @@ describe('Rollback Executor', () => {
 
       expect(result.success).toBe(true);
       expect(mockEngine.executeMigrations).toHaveBeenCalledWith(undefined, 'rollback', undefined);
-      expect(logger.info).toHaveBeenCalledWith('🔍 Dry run mode - showing rollback migrations without executing them');
+      expect(logger.info).toHaveBeenCalledWith(
+        '🔍 Dry run mode - showing rollback migrations without executing them'
+      );
     });
 
     it('should handle dry run with no pending rollbacks', async () => {
@@ -321,10 +341,14 @@ describe('Rollback Executor', () => {
 
     it('should respect module targeting in dry run', async () => {
       const options = { ...defaultOptions, dryRun: true, module: 'auth' };
-      
+
       await executor(options, context);
 
-      expect(mockEngine.executeMigrations).toHaveBeenCalledWith(['010_auth'], 'rollback', undefined);
+      expect(mockEngine.executeMigrations).toHaveBeenCalledWith(
+        ['010_auth'],
+        'rollback',
+        undefined
+      );
     });
 
     it('should apply steps limit in dry run', async () => {
@@ -337,7 +361,7 @@ describe('Rollback Executor', () => {
           filePath: '/path/to/010_auth/0003_permissions_down.surql',
           moduleId: '010_auth',
           content: '-- rollback permissions',
-          checksum: 'ghi789'
+          checksum: 'ghi789',
         },
         {
           number: '0002',
@@ -347,7 +371,7 @@ describe('Rollback Executor', () => {
           filePath: '/path/to/010_auth/0002_roles_down.surql',
           moduleId: '010_auth',
           content: '-- rollback roles',
-          checksum: 'def456'
+          checksum: 'def456',
         },
         {
           number: '0001',
@@ -357,8 +381,8 @@ describe('Rollback Executor', () => {
           filePath: '/path/to/010_auth/0001_users_down.surql',
           moduleId: '010_auth',
           content: '-- rollback users',
-          checksum: 'abc123'
-        }
+          checksum: 'abc123',
+        },
       ]);
 
       const options = { ...defaultOptions, dryRun: true, steps: 2 };
@@ -366,7 +390,9 @@ describe('Rollback Executor', () => {
 
       expect(result.success).toBe(true);
       expect(mockEngine.executeMigrations).toHaveBeenCalledWith(undefined, 'rollback', undefined);
-      expect(logger.info).toHaveBeenCalledWith('🔍 Dry run mode - showing rollback migrations without executing them');
+      expect(logger.info).toHaveBeenCalledWith(
+        '🔍 Dry run mode - showing rollback migrations without executing them'
+      );
     });
   });
 
@@ -383,7 +409,7 @@ describe('Rollback Executor', () => {
         initPath: 'custom/migrations',
         schemaPath: 'custom/schema.sql',
         force: true,
-        configPath: 'custom/config.json'
+        configPath: 'custom/config.json',
       };
 
       await executor(options, context);
@@ -401,7 +427,7 @@ describe('Rollback Executor', () => {
         force: true,
         configPath: 'custom/config.json',
         debug: undefined,
-        dryRun: false
+        dryRun: false,
       });
     });
 
@@ -423,7 +449,7 @@ describe('Rollback Executor', () => {
         force: false,
         configPath: undefined,
         debug: undefined,
-        dryRun: false
+        dryRun: false,
       });
     });
   });
@@ -431,7 +457,7 @@ describe('Rollback Executor', () => {
   describe('logging and output', () => {
     it('should log skipped rollbacks', async () => {
       const options = { ...defaultOptions, module: 'auth' };
-      
+
       mockEngine.executeMigrations.mockResolvedValue({
         success: true,
         filesProcessed: 0,
@@ -447,31 +473,33 @@ describe('Rollback Executor', () => {
               filePath: '/path/to/010_auth/0002_roles_down.surql',
               moduleId: '010_auth',
               content: '-- rollback roles',
-              checksum: 'def456'
+              checksum: 'def456',
             },
             success: false,
             executionTimeMs: 50,
             skipped: true,
-            skipReason: 'No matching up migration found'
-          }
-        ]
+            skipReason: 'No matching up migration found',
+          },
+        ],
       });
 
       await executor(options, context);
 
       expect(logger.info).toHaveBeenCalledWith('   Files skipped: 1');
-      expect(logger.info).toHaveBeenCalledWith('   ⏭️ 010_auth/0002_roles_down.surql (No matching up migration found)');
+      expect(logger.info).toHaveBeenCalledWith(
+        '   ⏭️ 010_auth/0002_roles_down.surql (No matching up migration found)'
+      );
     });
 
     it('should log detailed execution statistics', async () => {
       const options = { ...defaultOptions, module: 'auth' };
-      
+
       mockEngine.executeMigrations.mockResolvedValue({
         success: true,
         filesProcessed: 2,
         filesSkipped: 1,
         executionTimeMs: 350,
-        results: []
+        results: [],
       });
 
       await executor(options, context);

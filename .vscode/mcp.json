@@ -6,13 +6,7 @@
     },
     "daisy-ui": {
       "command": "npx",
-      "args": [
-        "-y",
-        "sitemcp",
-        "https://daisyui.com",
-        "-m",
-        "/components/**"
-      ]
+      "args": ["-y", "sitemcp", "https://daisyui.com", "-m", "/components/**"]
     }
   }
 }

@@ -16,11 +16,11 @@ describe('normalize options', () => {
       tags: 'test-tag, test-tag-two',
     });
     expect(options).toMatchInlineSnapshot(`
-      Object {
+      {
         "directory": "test-directory/sub/sub-two",
         "edition": "2021",
         "name": "test-name",
-        "parsedTags": Array [
+        "parsedTags": [
           "test-tag",
           "test-tag-two",
         ],
@@ -39,11 +39,11 @@ describe('normalize options', () => {
       tags: 'test-tag, test-tag-two',
     });
     expect(options).toMatchInlineSnapshot(`
-      Object {
+      {
         "directory": "test-directory/sub/sub-two",
         "edition": "2021",
         "name": "test-name",
-        "parsedTags": Array [
+        "parsedTags": [
           "test-tag",
           "test-tag-two",
         ],
@@ -57,7 +57,7 @@ describe('normalize options', () => {
   });
 
   it('should handle empty appsDir or libsDir', () => {
-    updateJson(appTree, 'nx.json', (json) => {
+    updateJson(appTree, 'nx.json', json => {
       json.workspaceLayout = {
         appsDir: '',
         libsDir: '',
@@ -69,10 +69,10 @@ describe('normalize options', () => {
     });
 
     expect(options).toMatchInlineSnapshot(`
-      Object {
+      {
         "edition": "2021",
         "name": "test-name",
-        "parsedTags": Array [],
+        "parsedTags": [],
         "projectDirectory": "test_name",
         "projectName": "test_name",
         "projectRoot": "test_name",

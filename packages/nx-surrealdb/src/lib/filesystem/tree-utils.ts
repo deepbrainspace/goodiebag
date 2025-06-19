@@ -5,7 +5,6 @@ import * as path from 'path';
  * Shared utilities for working with NX Tree API across generators
  */
 export class TreeUtils {
-  
   /**
    * Find a matching subdirectory based on a pattern (number, name, or full identifier)
    * Supports patterns like: "010", "auth", "010_auth", etc.
@@ -54,18 +53,18 @@ export class TreeUtils {
    */
   static getNextMigrationNumber(tree: Tree, modulePath: string): string {
     const MIGRATION_PATTERN = /^(\d{4})_(.+)_(up|down)\.surql$/;
-    
+
     if (!tree.exists(modulePath)) {
       return '0001';
     }
-    
+
     const files = tree.children(modulePath);
     const migrationFiles = files.filter(f => MIGRATION_PATTERN.test(f));
-    
+
     if (migrationFiles.length === 0) {
       return '0001';
     }
-    
+
     // Extract numbers and find the highest
     const numbers = migrationFiles
       .map(f => {
@@ -73,14 +72,14 @@ export class TreeUtils {
         return match ? parseInt(match[1], 10) : 0;
       })
       .filter(n => n > 0);
-    
+
     if (numbers.length === 0) {
       return '0001';
     }
-    
+
     const maxNumber = Math.max(...numbers);
     const nextNumber = maxNumber + 1;
-    
+
     return nextNumber.toString().padStart(4, '0');
   }
 
@@ -91,8 +90,9 @@ export class TreeUtils {
     if (!tree.exists(modulePath)) {
       return [];
     }
-    
-    return tree.children(modulePath)
+
+    return tree
+      .children(modulePath)
       .filter(file => file.endsWith('.surql'))
       .sort();
   }
@@ -116,16 +116,21 @@ export class TreeUtils {
   /**
    * Copy files from source to destination using Tree API
    */
-  static copyFiles(tree: Tree, sourcePath: string, destPath: string, fileFilter?: (filename: string) => boolean): void {
+  static copyFiles(
+    tree: Tree,
+    sourcePath: string,
+    destPath: string,
+    fileFilter?: (filename: string) => boolean
+  ): void {
     if (!tree.exists(sourcePath)) {
       return;
     }
 
     const files = tree.children(sourcePath);
-    
+
     for (const file of files) {
       const sourceFilePath = path.join(sourcePath, file);
-      
+
       if (tree.isFile(sourceFilePath)) {
         if (!fileFilter || fileFilter(file)) {
           const content = tree.read(sourceFilePath, 'utf-8');
@@ -176,15 +181,18 @@ export class TreeUtils {
   /**
    * Find all module directories in a migrations path
    */
-  static findModuleDirectories(tree: Tree, migrationsPath: string): Array<{ name: string; path: string }> {
+  static findModuleDirectories(
+    tree: Tree,
+    migrationsPath: string
+  ): Array<{ name: string; path: string }> {
     const MODULE_PATTERN = /^(\d{1,4})_(.+)$/;
-    
+
     if (!tree.exists(migrationsPath)) {
       return [];
     }
 
     const children = tree.children(migrationsPath);
-    
+
     return children
       .filter(child => {
         const fullPath = path.join(migrationsPath, child);
@@ -192,7 +200,7 @@ export class TreeUtils {
       })
       .map(child => ({
         name: child,
-        path: path.join(migrationsPath, child)
+        path: path.join(migrationsPath, child),
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }

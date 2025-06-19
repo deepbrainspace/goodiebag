@@ -20,7 +20,7 @@ export interface Package {
   license: string;
   license_file: string;
   description: string;
-  source: any;
+  source: string | null;
   dependencies: Dependency[];
   targets: Target[];
   features: Features;
@@ -38,7 +38,7 @@ export interface Package {
   publish: string[] | null;
   authors: string[];
   categories: string[];
-  default_run: any;
+  default_run: string | null;
   rust_version: string;
   keywords: string[];
   readme: string;
@@ -46,21 +46,21 @@ export interface Package {
   homepage: string;
   documentation: string;
   edition: string;
-  links: any;
+  links: string | null;
 }
 
 export interface Dependency {
   name: string;
   source: string;
   req: string;
-  kind: any;
-  rename: any;
+  kind: string | null;
+  rename: string | null;
   optional: boolean;
   uses_default_features: boolean;
-  features: any[];
+  features: string[];
   target: string;
   path: string;
-  registry: any;
+  registry: string | null;
 }
 
 export interface Target {
@@ -77,8 +77,8 @@ export interface Target {
 
 export interface Features {
   default: string[];
-  feat1: any[];
-  feat2: any[];
+  feat1: string[];
+  feat2: string[];
 }
 
 export interface Metadata {
@@ -112,7 +112,7 @@ export interface Dep {
 }
 
 export interface DepKind {
-  kind: any;
+  kind: string | null;
   target: string;
 }
 

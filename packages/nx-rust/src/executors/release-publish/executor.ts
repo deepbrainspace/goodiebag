@@ -31,23 +31,18 @@ export default async function runExecutor(
    */
   const isDryRun = process.env.NX_DRY_RUN === 'true' || options.dryRun || false;
 
-  const projectConfig =
-    context.projectsConfigurations!.projects[context.projectName!]!;
+  const projectConfig = context.projectsConfigurations!.projects[context.projectName!]!;
 
-  const packageRoot = joinPathFragments(
-    context.root,
-    options.packageRoot ?? projectConfig.root
-  );
-  const workspaceRelativePackageRoot = relative(context.root, packageRoot);
-
+  const packageRoot = joinPathFragments(context.root, options.packageRoot ?? projectConfig.root);
   const cargoTomlPath = joinPathFragments(packageRoot, 'Cargo.toml');
   const cargoTomlContents = readFileSync(cargoTomlPath, 'utf-8');
   const cargoToml = parseCargoToml(cargoTomlContents);
   const crateName = cargoToml.package.name;
 
-  const cargoPublishCommandSegments = [
-    `cargo publish --allow-dirty -p ${crateName}`,
-  ];
+  const workspaceRelativePackageRoot = relative(context.root, packageRoot);
+  console.log(`[nx-rust] Publishing ${crateName} from ${workspaceRelativePackageRoot}`);
+
+  const cargoPublishCommandSegments = [`cargo publish --allow-dirty -p ${crateName}`];
 
   if (isDryRun) {
     cargoPublishCommandSegments.push(`--dry-run`);
@@ -68,9 +63,7 @@ export default async function runExecutor(
 
     if (isDryRun) {
       console.log(
-        `Would publish to https://crates.io, but ${chalk.keyword('orange')(
-          '[dry-run]'
-        )} was set`
+        `Would publish to https://crates.io, but ${chalk.keyword('orange')('[dry-run]')} was set`
       );
     } else {
       console.log(`Published to https://crates.io`);
@@ -79,9 +72,12 @@ export default async function runExecutor(
     return {
       success: true,
     };
-  } catch (err: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`[nx-rust] Release publish failed: ${errorMessage}`);
     return {
       success: false,
+      error: errorMessage,
     };
   }
 }

@@ -3,6 +3,7 @@
 ## Design Principles
 
 **Always think architecture and plan first before diving into implementation.**
+
 - Make things modular and reusable
 - Design for extensibility and maintainability
 - Plan the system before coding
@@ -12,7 +13,7 @@
 ## Project Structure
 
 ```
-packages/claude-code/
+packages/claude-code-toolkit/
 ├── Cargo.toml                  # Project metadata and dependencies
 ├── project.json               # NX build configuration
 ├── README.md                  # User documentation
@@ -76,16 +77,19 @@ trait SetupWizard {
 ### 2. Modular Components
 
 - **ConfigurationManager** - orchestrates config operations
+
   - Handles loading, saving, validation
   - Manages config migrations
   - Provides unified config interface
 
 - **SecretsRegistry** - extensible secret name mappings
+
   - Supports multiple secret schemas
   - Allows custom naming conventions
   - Template-based secret generation
 
 - **ProviderRegistry** - pluggable sync providers
+
   - GitHub provider (current)
   - Future: GitLab, BitBucket, Azure DevOps
   - Custom provider interface
@@ -98,6 +102,7 @@ trait SetupWizard {
 ### 3. Extensibility Points
 
 - **Plugin System for Secret Providers**
+
   ```rust
   trait SecretProvider {
       fn provider_name(&self) -> &str;
@@ -107,6 +112,7 @@ trait SetupWizard {
   ```
 
 - **Configurable Secret Mappings**
+
   ```yaml
   secret_schemas:
     claude:
@@ -120,6 +126,7 @@ trait SetupWizard {
   ```
 
 - **Template-based Config Generation**
+
   ```yaml
   templates:
     github_org:
@@ -142,6 +149,7 @@ trait SetupWizard {
 ### 4. Reusable Patterns
 
 - **Command Pattern** for setup steps
+
   ```rust
   trait SetupStep {
       async fn execute(&self, context: &mut SetupContext) -> Result<()>;
@@ -151,6 +159,7 @@ trait SetupWizard {
   ```
 
 - **Factory Pattern** for provider creation
+
   ```rust
   trait ProviderFactory {
       fn create_provider(&self, config: &ProviderConfig) -> Result<Box<dyn SecretProvider>>;
@@ -159,6 +168,7 @@ trait SetupWizard {
   ```
 
 - **Observer Pattern** for config changes
+
   ```rust
   trait ConfigObserver {
       async fn on_config_changed(&self, old: &Config, new: &Config) -> Result<()>;
@@ -178,13 +188,15 @@ trait SetupWizard {
 2. **Reusability**: Common patterns can be reused across different features
 3. **Extensibility**: Easy to add new providers, secret schemas, or setup flows
 4. **Testability**: Each component can be unit tested independently
-5. **Maintainability**: Clear separation of concerns makes code easier to maintain
+5. **Maintainability**: Clear separation of concerns makes code easier to
+   maintain
 
 ## Future Extensions
 
 - Support for multiple CI/CD platforms (GitLab CI, Azure DevOps, etc.)
 - Custom secret naming schemes per organization
-- Integration with external secret managers (HashiCorp Vault, AWS Secrets Manager)
+- Integration with external secret managers (HashiCorp Vault, AWS Secrets
+  Manager)
 - Multi-tenant configuration support
 - Configuration templates and inheritance
 - Real-time config validation and suggestions
@@ -281,26 +293,31 @@ nx publish claude-code         # Publish to crates.io
 ## Design Pattern Implementation
 
 ### Repository Pattern
+
 - `ConfigProvider` trait with `YamlConfigProvider` implementation
 - `CredentialsManager` encapsulates Claude credential access
 - Clean separation between data access and business logic
 
 ### Factory Pattern
+
 - `ProviderFactory` creates secret providers based on configuration
 - `ProviderCreator` trait for extensible provider instantiation
 - Type-safe provider creation with validation
 
 ### Service Locator Pattern
+
 - `ProviderRegistry` manages and locates secret providers
 - Centralized provider management and lifecycle
 - Lazy initialization and caching
 
 ### Strategy Pattern
+
 - `SecretProvider` trait with multiple implementations (GitHub, GitLab, etc.)
 - `SecretMapping` for different secret naming strategies
 - `SyncStrategy` for different synchronization approaches
 
 ### Dependency Injection
+
 - All services accept dependencies through constructors
 - Interfaces over implementations
 - Testable and mockable components

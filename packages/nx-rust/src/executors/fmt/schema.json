@@ -1,0 +1,40 @@
+{
+  "version": 2,
+  "outputCapture": "pipe",
+  "$schema": "http://json-schema.org/schema",
+  "title": "Fmt executor",
+  "description": "Format Rust code using cargo fmt",
+  "type": "object",
+  "properties": {
+    "check": {
+      "type": "boolean",
+      "default": false,
+      "description": "Run rustfmt in check mode (exit with non-zero code if formatting is required)"
+    },
+    "toolchain": {
+      "type": "string",
+      "enum": ["stable", "beta", "nightly"],
+      "default": "stable"
+    },
+    "all": {
+      "type": "boolean",
+      "default": false,
+      "description": "Format all packages in the workspace"
+    },
+    "args": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "description": "Extra arguments. You can pass them as follows: nx run project:fmt --args='--verbose'."
+    }
+  },
+  "required": []
+}

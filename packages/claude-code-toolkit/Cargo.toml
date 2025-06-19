@@ -1,5 +1,5 @@
 [package]
-name = "claude-code"
+name = "claude-code-toolkit"
 version = "0.1.0"
 edition = "2024"
 description = "Claude Code management tool for credential sync, session monitoring, and GitHub integration"
@@ -21,7 +21,7 @@ exclude = [
 ]
 
 [[bin]]
-name = "claude-code"
+name = "claude-code-toolkit"
 path = "src/main.rs"
 
 [dependencies]

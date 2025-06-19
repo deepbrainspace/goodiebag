@@ -1,3 +1,4 @@
+import type { ExecutorContext } from '@nx/devkit';
 import { buildCommand } from './build-command';
 
 describe('build command', () => {
@@ -6,19 +7,16 @@ describe('build command', () => {
     cwd: '',
     isVerbose: false,
     root: '',
-    workspace: {} as any,
-    projectsConfigurations: {} as any,
-    nxJsonConfiguration: {} as any,
-    projectGraph: {} as any,
+    projectsConfigurations: {} as ExecutorContext['projectsConfigurations'],
+    nxJsonConfiguration: {} as ExecutorContext['nxJsonConfiguration'],
+    projectGraph: {} as ExecutorContext['projectGraph'],
   };
 
   it('should build a command for cargo with no arguments', () => {
     const command = buildCommand('run', {}, context);
     expect(command).toMatchInlineSnapshot(`
-      Array [
+      [
         "run",
-        "-p",
-        "project",
       ]
     `);
   });
@@ -30,14 +28,12 @@ describe('build command', () => {
       context
     );
     expect(command).toMatchInlineSnapshot(`
-      Array [
+      [
         "+beta",
         "run",
         "--all-features",
         "--profile",
         "release",
-        "-p",
-        "project",
       ]
     `);
   });
@@ -46,10 +42,8 @@ describe('build command', () => {
     it('false arguments should not be present', () => {
       const command = buildCommand('run', { release: false }, context);
       expect(command).toMatchInlineSnapshot(`
-        Array [
+        [
           "run",
-          "-p",
-          "project",
         ]
       `);
     });
@@ -57,11 +51,9 @@ describe('build command', () => {
     it('true arguments should be present', () => {
       const command = buildCommand('run', { release: true }, context);
       expect(command).toMatchInlineSnapshot(`
-        Array [
+        [
           "run",
           "--release",
-          "-p",
-          "project",
         ]
       `);
     });
@@ -77,14 +69,12 @@ describe('build command', () => {
         context
       );
       expect(command).toMatchInlineSnapshot(`
-        Array [
+        [
           "run",
           "--features",
           "foo",
           "--features",
           "bar",
-          "-p",
-          "project",
         ]
       `);
     });
@@ -92,16 +82,10 @@ describe('build command', () => {
 
   describe('user arguments', () => {
     it('should put single string user arguments at the end of the command after --', () => {
-      const command = buildCommand(
-        'run',
-        { args: "file1 file2" },
-        context
-      );
+      const command = buildCommand('run', { args: 'file1 file2' }, context);
       expect(command).toMatchInlineSnapshot(`
-        Array [
+        [
           "run",
-          "-p",
-          "project",
           "--",
           "file1 file2",
         ]
@@ -109,16 +93,10 @@ describe('build command', () => {
     });
 
     it('should put array of user arguments at the end of the command after --', () => {
-      const command = buildCommand(
-        'run',
-        { args: ["file1", "file2"] },
-        context
-      );
+      const command = buildCommand('run', { args: ['file1', 'file2'] }, context);
       expect(command).toMatchInlineSnapshot(`
-        Array [
+        [
           "run",
-          "-p",
-          "project",
           "--",
           "file1",
           "file2",

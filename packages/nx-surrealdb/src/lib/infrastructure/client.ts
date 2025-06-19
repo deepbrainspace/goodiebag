@@ -38,14 +38,14 @@ export class SurrealDBClient {
         namespace: config.namespace,
         database: config.database,
         username: config.username,
-        hasPassword: !!config.password
+        hasPassword: !!config.password,
       });
-      
+
       // Store connection details
       this.username = config.username;
       this.namespace = config.namespace;
       this.database = config.database;
-      
+
       // Still establish real connection for read-only queries in dry-run mode
       // This allows us to check migration status and other read operations
     }
@@ -56,9 +56,9 @@ export class SurrealDBClient {
         namespace: config.namespace,
         database: config.database,
         username: config.username,
-        hasPassword: !!config.password
+        hasPassword: !!config.password,
       });
-      
+
       await this.db.connect(config.url);
       await this.db.signin({
         username: config.username,
@@ -83,24 +83,24 @@ export class SurrealDBClient {
     if (this.isDryRun) {
       // Check if this is a read-only query
       const isReadOnlyQuery = this.isReadOnlyQuery(sql);
-      
+
       if (isReadOnlyQuery) {
         this.debug.log('🔍 [DRY-RUN] Executing read-only query:');
       } else {
         this.debug.log('🔍 [DRY-RUN] Would execute write query:');
       }
-      
+
       // Format SQL for better readability
       const formattedSql = this.formatSqlForDisplay(sql);
       this.debug.log(`   SQL:\n${formattedSql}`);
-      
+
       if (params && Object.keys(params).length > 0) {
         this.debug.log(`   Parameters:`);
         for (const [key, value] of Object.entries(params)) {
           this.debug.log(`     $${key}: ${JSON.stringify(value)}`);
         }
       }
-      
+
       // For read-only queries, execute them even in dry-run mode
       if (isReadOnlyQuery) {
         try {
@@ -109,7 +109,7 @@ export class SurrealDBClient {
           throw new Error(`Query execution failed: ${error.message}`);
         }
       }
-      
+
       // For write queries, return empty result in dry-run mode
       return [];
     }
@@ -124,38 +124,38 @@ export class SurrealDBClient {
   private isReadOnlyQuery(sql: string): boolean {
     // Normalize SQL for checking (case insensitive)
     const normalizedSql = sql.trim().toLowerCase();
-    
+
     // Common read-only patterns (case insensitive)
     const readOnlyPatterns = [
-      /^select\s/i,           // SELECT queries
-      /^show\s/i,             // SHOW queries
-      /^describe\s/i,         // DESCRIBE queries
-      /^explain\s/i           // EXPLAIN queries
+      /^select\s/i, // SELECT queries
+      /^show\s/i, // SHOW queries
+      /^describe\s/i, // DESCRIBE queries
+      /^explain\s/i, // EXPLAIN queries
     ];
-    
+
     // Common write patterns (case insensitive)
     const writePatterns = [
-      /^insert\s/i,           // INSERT
-      /^update\s/i,           // UPDATE  
-      /^delete\s/i,           // DELETE
-      /^create\s/i,           // CREATE
-      /^drop\s/i,             // DROP
-      /^alter\s/i,            // ALTER
-      /^define\s/i,           // DEFINE (SurrealDB)
-      /^remove\s/i,           // REMOVE (SurrealDB)
-      /^relate\s/i            // RELATE (SurrealDB)
+      /^insert\s/i, // INSERT
+      /^update\s/i, // UPDATE
+      /^delete\s/i, // DELETE
+      /^create\s/i, // CREATE
+      /^drop\s/i, // DROP
+      /^alter\s/i, // ALTER
+      /^define\s/i, // DEFINE (SurrealDB)
+      /^remove\s/i, // REMOVE (SurrealDB)
+      /^relate\s/i, // RELATE (SurrealDB)
     ];
-    
+
     // Check for write patterns first (more specific)
     if (writePatterns.some(pattern => pattern.test(normalizedSql))) {
       return false;
     }
-    
+
     // Check for read patterns
     if (readOnlyPatterns.some(pattern => pattern.test(normalizedSql))) {
       return true;
     }
-    
+
     // Default to write operation for safety
     return false;
   }
@@ -169,14 +169,12 @@ export class SurrealDBClient {
       .join('\n');
   }
 
-
-
   async close() {
     if (this.isDryRun) {
       this.debug.log('🔍 [DRY-RUN] Would close database connection');
       return;
     }
-    
+
     await this.db.close();
   }
 }

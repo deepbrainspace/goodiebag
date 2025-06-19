@@ -64,8 +64,10 @@ Or re-run the generator to auto-install dependencies:
 
   // Check for environment variables
   const requiredEnvVars = ['SURREALDB_URL', 'SURREALDB_ROOT_USER', 'SURREALDB_ROOT_PASS'];
-  const missingEnvVars = requiredEnvVars.filter(v => !process.env[v] && !options[v.replace('SURREALDB_', '').toLowerCase()]);
-  
+  const missingEnvVars = requiredEnvVars.filter(
+    v => !process.env[v] && !options[v.replace('SURREALDB_', '').toLowerCase()]
+  );
+
   if (missingEnvVars.length > 0) {
     logger.warn(`
 ${pc.yellow('⚠')} Missing environment variables:
@@ -85,9 +87,8 @@ Example .env file:
 
   // Enable debug mode if requested
   Debug.setEnabled(!!options.debug);
-  
-  try {
 
+  try {
     // Initialize migration engine
     await engine.initialize({
       url: options.url || '',
@@ -101,29 +102,41 @@ Example .env file:
       schemaPath: options.schemaPath,
       force: false, // Not applicable for status
       configPath: options.configPath,
-      debug: options.debug
+      debug: options.debug,
     });
 
     // Determine target modules and filenames
-    const targetModules = (options.module !== undefined && options.module !== '') 
-      ? String(options.module).split(',').map(m => m.trim()).filter(m => m.length > 0)
-      : undefined;
-    const targetFilenames = (options.filename !== undefined && options.filename !== '') 
-      ? String(options.filename).split(',').map(f => f.trim()).filter(f => f.length > 0)
-      : undefined;
+    const targetModules =
+      options.module !== undefined && options.module !== ''
+        ? String(options.module)
+            .split(',')
+            .map(m => m.trim())
+            .filter(m => m.length > 0)
+        : undefined;
+    const targetFilenames =
+      options.filename !== undefined && options.filename !== ''
+        ? String(options.filename)
+            .split(',')
+            .map(f => f.trim())
+            .filter(f => f.length > 0)
+        : undefined;
 
     // Get migration status
     const status = await engine.getMigrationStatus(targetModules);
-    
+
     // Initialize lock manager
     const config = engine.getConfig();
     const lockManager = ModuleLockManager.createLockManager(config);
 
     // If filename filtering is specified, show specific file status instead
     if (targetFilenames && targetFilenames.length > 0) {
-      const resolvedFilenames = await engine.resolveTargetFilenames(targetFilenames, targetModules, 'up');
+      const resolvedFilenames = await engine.resolveTargetFilenames(
+        targetFilenames,
+        targetModules,
+        'up'
+      );
       const fileStatuses = await engine.getFileStatus(resolvedFilenames);
-      
+
       if (options.json) {
         const fileStatus = {
           files: fileStatuses.map(fs => ({
@@ -136,8 +149,8 @@ Example .env file:
             appliedAt: fs.appliedAt,
             checksum: fs.checksum,
             dependencies: fs.dependencies,
-            dependents: fs.dependents
-          }))
+            dependents: fs.dependents,
+          })),
         };
         console.log(JSON.stringify(fileStatus, null, 2));
         return { success: true };
@@ -156,20 +169,22 @@ Example .env file:
       for (const fileStatus of fileStatuses) {
         const statusIcon = fileStatus.status === 'applied' ? '✅' : '🔄';
         const statusText = fileStatus.status === 'applied' ? 'APPLIED' : 'PENDING';
-        
-        logger.info(`\n   ${statusIcon} ${fileStatus.moduleId}/${fileStatus.filename} [${statusText}]`);
+
+        logger.info(
+          `\n   ${statusIcon} ${fileStatus.moduleId}/${fileStatus.filename} [${statusText}]`
+        );
         logger.info(`      Number: ${fileStatus.number}`);
         logger.info(`      Name: ${fileStatus.name}`);
         logger.info(`      Direction: ${fileStatus.direction}`);
-        
+
         if (fileStatus.appliedAt) {
           logger.info(`      Applied At: ${fileStatus.appliedAt.toISOString()}`);
         }
-        
+
         if (fileStatus.dependencies.length > 0) {
           logger.info(`      Module Dependencies: ${fileStatus.dependencies.join(', ')}`);
         }
-        
+
         if (fileStatus.dependents.length > 0) {
           logger.info(`      Module Dependents: ${fileStatus.dependents.join(', ')}`);
         }
@@ -183,7 +198,7 @@ Example .env file:
       if (options.detailed) {
         const involvedModules = [...new Set(fileStatuses.map(fs => fs.moduleId))];
         const moduleStatuses = status.modules.filter(m => involvedModules.includes(m.moduleId));
-        
+
         showDependencyGraph(moduleStatuses, '🌐 Module Dependency Graph:');
       }
 
@@ -204,7 +219,7 @@ Example .env file:
             dependents: module.dependents,
             status: module.pendingMigrations > 0 ? 'pending' : 'up-to-date',
             locked: lockValidation.isLocked ? true : undefined,
-            lockReason: lockValidation.reason
+            lockReason: lockValidation.reason,
           };
         }),
         totalApplied: status.totalApplied,
@@ -212,7 +227,7 @@ Example .env file:
         dependencyGraph: status.modules.reduce((graph, module) => {
           graph[module.moduleId] = module.dependencies;
           return graph;
-        }, {} as Record<string, string[]>)
+        }, {} as Record<string, string[]>),
       };
 
       console.log(JSON.stringify(output, null, 2));
@@ -239,7 +254,7 @@ Example .env file:
     logger.info(`\n📈 Migration Status Summary`);
     logger.info(`   Total Applied: ${status.totalApplied}`);
     logger.info(`   Total Pending: ${status.totalPending}`);
-    
+
     if (status.totalPending > 0) {
       logger.info(`   🔄 ${status.totalPending} migration(s) pending`);
     } else {
@@ -247,25 +262,24 @@ Example .env file:
     }
 
     logger.info(`\n📋 Module Details:`);
-    
+
     for (const module of status.modules) {
       const statusIcon = module.pendingMigrations > 0 ? '🔄' : '✅';
       const statusText = module.pendingMigrations > 0 ? 'PENDING' : 'UP-TO-DATE';
-      const coloredStatus = module.pendingMigrations > 0 
-        ? pc.yellow(`[${statusText}]`)
-        : pc.green(`[${statusText}]`);
-      
+      const coloredStatus =
+        module.pendingMigrations > 0 ? pc.yellow(`[${statusText}]`) : pc.green(`[${statusText}]`);
+
       // Add lock information
       const lockValidation = lockManager.validateModuleLock(module.moduleId);
       const lockDisplay = lockValidation.isLocked ? ` ${lockValidation.lockIcon}` : '';
-      
+
       logger.info(`\n   ${statusIcon} ${module.moduleId} ${coloredStatus}${lockDisplay}`);
       logger.info(`      Applied: ${module.appliedMigrations} migration(s)`);
-      
+
       if (module.pendingMigrations > 0) {
         logger.info(`      Pending: ${module.pendingMigrations} migration(s)`);
       }
-      
+
       if (module.lastApplied) {
         logger.info(`      Last Applied: ${module.lastApplied.toISOString()}`);
       }
@@ -293,9 +307,8 @@ Example .env file:
           logger.info(`      Pending Files:`);
           for (const migration of pendingMigrations) {
             // Add dependency label if file is from a different module
-            const dependencyLabel = migration.moduleId !== module.moduleId 
-              ? ` (dependency: ${migration.moduleId})`
-              : '';
+            const dependencyLabel =
+              migration.moduleId !== module.moduleId ? ` (dependency: ${migration.moduleId})` : '';
             logger.info(`        • ${migration.filename}${dependencyLabel}`);
           }
         }
@@ -306,7 +319,6 @@ Example .env file:
     showDependencyGraph(status.modules);
 
     return { success: true };
-
   } catch (error) {
     logger.error('💥 Status check failed:');
     logger.error(error instanceof Error ? error.message : String(error));
@@ -317,14 +329,14 @@ Example .env file:
 }
 
 function showDependencyGraph(
-  modules: Array<{ moduleId: string; dependencies: string[]; dependents: string[] }>, 
+  modules: Array<{ moduleId: string; dependencies: string[]; dependents: string[] }>,
   title: string = '🌐 Dependency Graph:'
 ): void {
   logger.info(`\n${title}`);
-  
+
   // Build a complete tree structure from the modules
   const tree = buildDependencyTree(modules);
-  
+
   // Display the tree
   displayDependencyTree(tree, '   ');
 }
@@ -342,22 +354,22 @@ function buildDependencyTree(
   const moduleMap = new Map(modules.map(m => [m.moduleId, m]));
   const nodeMap = new Map<string, TreeNode>();
   const processedModules = new Set<string>();
-  
+
   // Create nodes for all modules
   for (const module of modules) {
     nodeMap.set(module.moduleId, {
       moduleId: module.moduleId,
       isRoot: module.dependencies.length === 0,
       children: [],
-      dependencies: module.dependencies
+      dependencies: module.dependencies,
     });
   }
-  
+
   // Build parent-child relationships
   for (const module of modules) {
     const parentNode = nodeMap.get(module.moduleId);
     if (!parentNode) continue;
-    
+
     for (const dependent of module.dependents) {
       const childNode = nodeMap.get(dependent);
       if (childNode) {
@@ -365,23 +377,23 @@ function buildDependencyTree(
       }
     }
   }
-  
+
   // Find root nodes (modules with no dependencies within our set)
   const roots: TreeNode[] = [];
   for (const module of modules) {
     const node = nodeMap.get(module.moduleId);
     if (!node) continue;
-    
+
     // Check if all dependencies are outside our module set
     const hasInternalDependencies = module.dependencies.some(dep => moduleMap.has(dep));
-    
+
     if (!hasInternalDependencies) {
       roots.push(node);
       processedModules.add(module.moduleId);
     }
   }
-  
-  // If no roots found (circular dependencies or all modules have deps), 
+
+  // If no roots found (circular dependencies or all modules have deps),
   // find modules with external dependencies only
   if (roots.length === 0) {
     for (const module of modules) {
@@ -392,20 +404,20 @@ function buildDependencyTree(
       }
     }
   }
-  
+
   return roots;
 }
 
 function displayDependencyTree(nodes: TreeNode[], prefix: string, isChild: boolean = false): void {
   for (const node of nodes) {
     const suffix = node.isRoot ? ' (root)' : '';
-    
+
     if (isChild) {
       logger.info(`${prefix}└─ ${node.moduleId}${suffix}`);
     } else {
       logger.info(`${prefix}${node.moduleId}${suffix}`);
     }
-    
+
     // Display children
     if (node.children.length > 0) {
       const childPrefix = isChild ? prefix + '  ' : prefix;
@@ -413,4 +425,3 @@ function displayDependencyTree(nodes: TreeNode[], prefix: string, isChild: boole
     }
   }
 }
-

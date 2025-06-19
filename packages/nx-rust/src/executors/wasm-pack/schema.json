@@ -10,12 +10,7 @@
     },
     "target": {
       "type": "string",
-      "enum": [
-        "bundler",
-        "nodejs",
-        "web",
-        "no-module"
-      ],
+      "enum": ["bundler", "nodejs", "web", "no-module"],
       "default": "bundler"
     },
     "target-dir": {

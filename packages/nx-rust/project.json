@@ -3,11 +3,31 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/nx-rust/src",
   "projectType": "library",
-  "tags": [],
+  "tags": [
+    "type:nx-plugin",
+    "lang:typescript",
+    "domain:build-system",
+    "scope:publishable",
+    "runtime:node"
+  ],
   "targets": {
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "prettier --write src/**/*.{ts,js,json}",
+        "cwd": "{projectRoot}"
+      }
+    },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"]
+      "dependsOn": ["format"],
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "{projectRoot}/src/**/*.ts",
+          "{projectRoot}/src/**/*.js"
+        ]
+      }
     },
     "test": {
       "executor": "@nx/jest:jest",

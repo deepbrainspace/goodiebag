@@ -51,12 +51,11 @@ describe('add-napi generator', () => {
 
   it('should update the base tsconfig file', async () => {
     await generator(appTree, options);
-    expect(JSON.parse(appTree.read('tsconfig.base.json')?.toString() ?? ''))
-      .toMatchInlineSnapshot(`
-      Object {
-        "compilerOptions": Object {
-          "paths": Object {
-            "@proj/test": Array [
+    expect(JSON.parse(appTree.read('tsconfig.base.json')?.toString() ?? '')).toMatchInlineSnapshot(`
+      {
+        "compilerOptions": {
+          "paths": {
+            "@proj/test": [
               "test/index.d.ts",
             ],
           },
@@ -69,20 +68,20 @@ describe('add-napi generator', () => {
     await generator(appTree, options);
     const project = readProjectConfiguration(appTree, 'test');
     expect(project.targets?.build).toMatchInlineSnapshot(`
-      Object {
+      {
         "cache": true,
-        "configurations": Object {
-          "production": Object {
+        "configurations": {
+          "production": {
             "dist": "dist/test",
             "release": true,
           },
         },
         "executor": "@monodon/rust:napi",
-        "options": Object {
+        "options": {
           "dist": "test",
           "jsFile": "index.js",
         },
-        "outputs": Array [
+        "outputs": [
           "{workspaceRoot}/test",
         ],
       }

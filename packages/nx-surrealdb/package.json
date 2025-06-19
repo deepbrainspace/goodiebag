@@ -1,5 +1,5 @@
 {
-  "name": "@deepbrainspace/nx-surrealdb",
+  "name": "@goodiebag/nx-surrealdb",
   "version": "0.1.4",
   "description": "NX plugin for SurrealDB migrations with modular architecture",
   "main": "./src/index.js",
@@ -23,7 +23,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepbrainspace/nx-plugins.git",
+    "url": "git+https://github.com/deepbrainspace/goodiebag.git",
     "directory": "packages/nx-surrealdb"
   },
   "license": "MIT",

@@ -21,7 +21,7 @@ export function normalizeOptions<
   const projectDirectory = options.directory
     ? `${options.directory
         .split('/')
-        .map((p) => snake_case(p))
+        .map(p => snake_case(p))
         .join('/')}/${name}`
     : name;
   const projectName = projectDirectory.replace(new RegExp('/', 'g'), '_');
@@ -32,9 +32,7 @@ export function normalizeOptions<
     baseDir = (type === 'app' ? appsDir : libsDir) + '/';
   }
   const projectRoot = `${baseDir}${projectDirectory}`;
-  const parsedTags = options.tags
-    ? options.tags.split(',').map((s) => s.trim())
-    : [];
+  const parsedTags = options.tags ? options.tags.split(',').map(s => s.trim()) : [];
 
   // rust specifics
   options.edition ??= '2021';

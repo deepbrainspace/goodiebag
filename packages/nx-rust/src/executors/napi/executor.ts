@@ -4,13 +4,9 @@ import { join } from 'path';
 import { fileExists } from 'nx/src/utils/fileutils.js';
 import { cargoMetadata } from '../../utils/cargo';
 
-export default async function runExecutor(
-  options: NapiExecutorSchema,
-  context: ExecutorContext
-) {
+export default async function runExecutor(options: NapiExecutorSchema, context: ExecutorContext) {
   const { NapiCli } = await import('@napi-rs/cli');
-  const projectRoot =
-    context.projectGraph?.nodes[context.projectName ?? ''].data.root;
+  const projectRoot = context.projectGraph?.nodes[context.projectName ?? ''].data.root;
   const packageJson = join(projectRoot ?? '.', 'package.json');
   if (!fileExists(packageJson)) {
     throw new Error(`Could not find package.json at ${packageJson}`);
@@ -40,8 +36,7 @@ export default async function runExecutor(
 
   const metadata = cargoMetadata();
   buildOptions.targetDir =
-    metadata?.target_directory ??
-    joinPathFragments(workspaceRoot, 'dist', 'cargo');
+    metadata?.target_directory ?? joinPathFragments(workspaceRoot, 'dist', 'cargo');
 
   if (process.env.VERCEL) {
     // Vercel doesnt have support for cargo atm, so auto success builds

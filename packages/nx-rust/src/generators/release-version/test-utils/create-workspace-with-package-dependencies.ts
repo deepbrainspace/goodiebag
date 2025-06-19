@@ -33,16 +33,10 @@ export function createWorkspaceWithPackageDependencies(
       },
     };
     for (const dependency of data.localDependencies) {
-      const dependencyPackageName =
-        projectAndPackageData[dependency.projectName].packageName;
-      modifyCargoTable(
-        cargoToml,
-        dependency.dependencyCollection,
-        dependencyPackageName,
-        {
-          version: dependency.version,
-        }
-      );
+      const dependencyPackageName = projectAndPackageData[dependency.projectName].packageName;
+      modifyCargoTable(cargoToml, dependency.dependencyCollection, dependencyPackageName, {
+        version: dependency.version,
+      });
     }
     // add the project and its nx project level dependencies to the projectGraph
     projectGraph.nodes[projectName] = {
@@ -52,13 +46,11 @@ export function createWorkspaceWithPackageDependencies(
         root: data.projectRoot,
       },
     };
-    projectGraph.dependencies[projectName] = data.localDependencies.map(
-      (dependency) => ({
-        source: projectName,
-        target: dependency.projectName,
-        type: 'static',
-      })
-    );
+    projectGraph.dependencies[projectName] = data.localDependencies.map(dependency => ({
+      source: projectName,
+      target: dependency.projectName,
+      type: 'static',
+    }));
 
     // create the Cargo.toml in the tree
     tree.write(data.cargoTomlPath, stringifyCargoToml(cargoToml));

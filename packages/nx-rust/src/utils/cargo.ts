@@ -16,16 +16,12 @@ interface RunCargoOptions {
 
 export let childProcess: ChildProcess | null;
 
-export async function cargoCommand(
-  ...args: string[]
-): Promise<{ success: boolean }> {
+export async function cargoCommand(...args: string[]): Promise<{ success: boolean }> {
   console.log(chalk.dim(`> cargo ${args.join(' ')}`));
   return runProcess('cargo', ...['--color', 'always', ...args]);
 }
 
-export function cargoRunCommand(
-  ...args: string[]
-): Promise<{ success: boolean }> {
+export function cargoRunCommand(...args: string[]): Promise<{ success: boolean }> {
   console.log(chalk.dim(`> cargo ${args.join(' ')}`));
   return new Promise((resolve, reject) => {
     childProcess = spawn('cargo', ['--color', 'always', ...args], {
@@ -41,11 +37,12 @@ export function cargoRunCommand(
     process.on('SIGTERM', () => childProcess?.kill());
     process.on('SIGINT', () => childProcess?.kill());
 
-    childProcess.on('error', (err) => {
-      reject({ success: false });
+    childProcess.on('error', error => {
+      console.error(`[nx-rust] Cargo process error: ${error.message}`);
+      reject({ success: false, error: error.message });
     });
 
-    childProcess.on('exit', (code) => {
+    childProcess.on('exit', code => {
       childProcess = null;
       if (code === 0) {
         resolve({ success: true });
@@ -56,10 +53,7 @@ export function cargoRunCommand(
   });
 }
 
-export function cargoCommandSync(
-  args = '',
-  options?: Partial<RunCargoOptions>
-): CargoRun {
+export function cargoCommandSync(args = '', options?: Partial<RunCargoOptions>): CargoRun {
   const normalizedOptions: RunCargoOptions = {
     stdio: options?.stdio ?? 'inherit',
     env: {
@@ -99,15 +93,11 @@ export function cargoMetadata(): CargoMetadata | null {
   return JSON.parse(output.output) as CargoMetadata;
 }
 
-export function isExternal(
-  packageOrDep: Package | Dependency,
-  workspaceRoot: string
-) {
+export function isExternal(packageOrDep: Package | Dependency, workspaceRoot: string) {
   const isRegistry = packageOrDep.source?.startsWith('registry+') ?? false;
   const isGit = packageOrDep.source?.startsWith('git+') ?? false;
   const isOutsideWorkspace =
-    'path' in packageOrDep &&
-    relative(workspaceRoot, packageOrDep.path).startsWith('..');
+    'path' in packageOrDep && relative(workspaceRoot, packageOrDep.path).startsWith('..');
 
   return isRegistry || isGit || isOutsideWorkspace;
 }

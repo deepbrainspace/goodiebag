@@ -1,9 +1,4 @@
-import {
-  Tree,
-  formatFiles,
-  joinPathFragments,
-  readProjectConfiguration
-} from '@nx/devkit';
+import { Tree, formatFiles, joinPathFragments, readProjectConfiguration } from '@nx/devkit';
 import { MigrationFileProcessor } from '../../lib/filesystem/migration-file-processor';
 import { TreeUtils } from '../../lib/filesystem/tree-utils';
 
@@ -62,10 +57,10 @@ async function resolveModuleInfo(
       return {
         moduleId: existingModule.moduleId,
         modulePath: existingModule.modulePath,
-        nextMigrationNumber: nextNumber
+        nextMigrationNumber: nextNumber,
       };
     }
-    
+
     // Module doesn't exist
     if (createModule) {
       return await createNewModule(tree, migrationsPath, String(modulePattern));
@@ -73,21 +68,21 @@ async function resolveModuleInfo(
       throw new Error(`Module '${modulePattern}' not found. Use --createModule to create it.`);
     }
   }
-  
+
   // No module specified - find the highest numbered existing module
   const existingModules = await discoverExistingModules(tree, migrationsPath);
   if (existingModules.length === 0) {
     // No modules exist, create first one
     return await createNewModule(tree, migrationsPath, '000_admin');
   }
-  
+
   // Use the highest numbered module
   const lastModule = existingModules[existingModules.length - 1];
   const nextNumber = getNextMigrationNumberFromTree(tree, lastModule.modulePath);
   return {
     moduleId: lastModule.moduleId,
     modulePath: lastModule.modulePath,
-    nextMigrationNumber: nextNumber
+    nextMigrationNumber: nextNumber,
   };
 }
 
@@ -101,18 +96,18 @@ async function findExistingModule(
   pattern: string
 ): Promise<{ moduleId: string; modulePath: string } | null> {
   const modules = await discoverExistingModules(tree, migrationsPath);
-  
+
   const normalizedPattern = pattern.trim().toLowerCase();
   const patternAsNumber = parseInt(normalizedPattern, 10);
   const normalizedPatternNumber = isNaN(patternAsNumber) ? null : patternAsNumber.toString();
-  
+
   for (const module of modules) {
     const match = module.moduleId.match(/^(\d{1,4})_(.+)$/);
     if (!match) continue;
-    
+
     const [, number, name] = match;
     const normalizedNumber = parseInt(number, 10).toString();
-    
+
     if (
       module.moduleId.toLowerCase() === normalizedPattern ||
       (normalizedPatternNumber !== null && normalizedPatternNumber === normalizedNumber) ||
@@ -123,7 +118,7 @@ async function findExistingModule(
       return module;
     }
   }
-  
+
   return null;
 }
 
@@ -131,8 +126,10 @@ async function discoverExistingModules(
   tree: Tree,
   migrationsPath: string
 ): Promise<{ moduleId: string; modulePath: string }[]> {
-  return TreeUtils.findModuleDirectories(tree, migrationsPath)
-    .map(({ name, path }) => ({ moduleId: name, modulePath: path }));
+  return TreeUtils.findModuleDirectories(tree, migrationsPath).map(({ name, path }) => ({
+    moduleId: name,
+    modulePath: path,
+  }));
 }
 
 async function createNewModule(
@@ -142,7 +139,7 @@ async function createNewModule(
 ): Promise<ModuleInfo> {
   // Parse the pattern to determine module ID
   let moduleId: string;
-  
+
   if (/^\d{1,4}_/.test(pattern)) {
     // Already in XXX_name format
     moduleId = pattern;
@@ -152,19 +149,18 @@ async function createNewModule(
     const cleanName = pattern.replace(/^\d+_?/, '').toLowerCase();
     moduleId = MigrationFileProcessor.generateModuleId(cleanName, existingModules);
   }
-  
+
   const modulePath = joinPathFragments(migrationsPath, moduleId);
-  
+
   // Create the module directory
   TreeUtils.ensureDirectory(tree, modulePath);
-  
+
   return {
     moduleId,
     modulePath,
-    nextMigrationNumber: '0001'
+    nextMigrationNumber: '0001',
   };
 }
-
 
 export async function migrationGenerator(
   tree: Tree,
@@ -176,7 +172,7 @@ export async function migrationGenerator(
     project: options.project,
     migrationsDir: options.migrationsDir || 'migrations',
     module: options.module,
-    createModule: options.createModule || false
+    createModule: options.createModule || false,
   };
 
   if (!normalizedOptions.name) {

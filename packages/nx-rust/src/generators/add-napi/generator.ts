@@ -13,16 +13,8 @@ import {
   updateProjectConfiguration,
 } from '@nx/devkit';
 import * as path from 'path';
-import {
-  modifyCargoTable,
-  parseCargoTomlWithTree,
-  stringifyCargoToml,
-} from '../../utils/toml';
-import {
-  NAPI_EMNAPI,
-  NAPI_VERSION,
-  NAPI_WASM_RUNTIME,
-} from '../../utils/versions';
+import { modifyCargoTable, parseCargoTomlWithTree, stringifyCargoToml } from '../../utils/toml';
+import { NAPI_EMNAPI, NAPI_VERSION, NAPI_WASM_RUNTIME } from '../../utils/versions';
 import { AddNapiGeneratorSchema } from './schema';
 
 interface NormalizedSchema extends AddNapiGeneratorSchema {
@@ -96,9 +88,7 @@ function normalizeOptions(
 ): NormalizedSchema {
   const npmScope = getNpmScope(tree);
   const projectName = project.name ?? options.project;
-  const packageName = npmScope
-    ? `@${npmScope}/${names(projectName).fileName}`
-    : projectName;
+  const packageName = npmScope ? `@${npmScope}/${names(projectName).fileName}` : projectName;
   return {
     ...options,
     projectName,
@@ -112,9 +102,7 @@ function normalizeOptions(
  * Read the npm scope that a workspace should use by default
  */
 function getNpmScope(tree: Tree) {
-  const { name } = tree.exists('package.json')
-    ? readJson(tree, 'package.json')
-    : { name: null };
+  const { name } = tree.exists('package.json') ? readJson(tree, 'package.json') : { name: null };
   if (name?.startsWith('@')) {
     return name.split('/')[0].substring(1);
   }
@@ -135,20 +123,11 @@ function addFiles(tree: Tree, options: NormalizedSchema) {
     ...names(options.project),
     template: '',
   };
-  generateFiles(
-    tree,
-    path.join(__dirname, 'files'),
-    options.projectRoot,
-    templateOptions
-  );
+  generateFiles(tree, path.join(__dirname, 'files'), options.projectRoot, templateOptions);
 }
 
 function updateCargo(tree: Tree, options: NormalizedSchema) {
-  const cargoToml = parseCargoTomlWithTree(
-    tree,
-    options.projectRoot,
-    options.projectName
-  );
+  const cargoToml = parseCargoTomlWithTree(tree, options.projectRoot, options.projectName);
 
   modifyCargoTable(cargoToml, 'lib', 'crate-type', ['cdylib']);
   modifyCargoTable(cargoToml, 'dependencies', 'napi', {
@@ -159,10 +138,7 @@ function updateCargo(tree: Tree, options: NormalizedSchema) {
   modifyCargoTable(cargoToml, 'dependencies', 'napi-derive', '2.9.3');
   modifyCargoTable(cargoToml, 'build-dependencies', 'napi-build', '2.0.1');
 
-  tree.write(
-    options.projectRoot + '/Cargo.toml',
-    stringifyCargoToml(cargoToml)
-  );
+  tree.write(options.projectRoot + '/Cargo.toml', stringifyCargoToml(cargoToml));
 }
 
 function updateGitIgnore(tree: Tree) {
@@ -186,7 +162,7 @@ function updateTsConfig(tree: Tree, options: NormalizedSchema) {
     return;
   }
 
-  updateJson(tree, tsConfig, (json) => {
+  updateJson(tree, tsConfig, json => {
     const c = json.compilerOptions;
     c.paths = c.paths || {};
 
@@ -196,9 +172,7 @@ function updateTsConfig(tree: Tree, options: NormalizedSchema) {
       );
     }
 
-    c.paths[options.packageName] = [
-      joinPathFragments(options.projectRoot, 'index.d.ts'),
-    ];
+    c.paths[options.packageName] = [joinPathFragments(options.projectRoot, 'index.d.ts')];
 
     return json;
   });

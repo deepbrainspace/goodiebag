@@ -28,10 +28,7 @@ export class PatternResolver {
   private static readonly MIGRATION_PATTERN = /^(\d{4})_(.+?)_(up|down)\.surql$/;
   private debug = Debug.scope('pattern-resolver');
 
-  constructor(
-    private resolver: DependencyResolver,
-    private basePath: string
-  ) {}
+  constructor(private resolver: DependencyResolver, private basePath: string) {}
 
   /**
    * Resolve module patterns using auto-globbing
@@ -59,8 +56,8 @@ export class PatternResolver {
    * Examples: "1" -> "0001_authentication_up.surql", "auth" -> "0001_authentication_up.surql"
    */
   async resolveFilenames(
-    patterns: string[], 
-    targetModules?: string[], 
+    patterns: string[],
+    targetModules?: string[],
     direction: 'up' | 'down' = 'up'
   ): Promise<PatternResolutionResult<ResolvedFilename>> {
     const resolved: ResolvedFilename[] = [];
@@ -76,7 +73,7 @@ export class PatternResolver {
       for (const moduleId of modulesToSearch) {
         const moduleFiles = await this.getModuleFiles(moduleId, direction);
         const matchingFile = this.findMatchingFile(pattern, moduleFiles, moduleId);
-        
+
         if (matchingFile) {
           candidates.push(matchingFile);
         }
@@ -91,7 +88,11 @@ export class PatternResolver {
         // Multiple matches - take all of them regardless of module specification
         // This allows users to operate on files with the same pattern across multiple modules
         resolved.push(...candidates);
-        this.debug.log(`Multiple matches for pattern "${pattern}": ${candidates.map(c => `${c.moduleId}/${c.filename}`).join(', ')}`);
+        this.debug.log(
+          `Multiple matches for pattern "${pattern}": ${candidates
+            .map(c => `${c.moduleId}/${c.filename}`)
+            .join(', ')}`
+        );
       }
     }
 
@@ -104,9 +105,11 @@ export class PatternResolver {
   async resolveRollbackFilenames(
     patterns: string[],
     targetModules?: string[]
-  ): Promise<PatternResolutionResult<ResolvedFilename> & { 
-    dependencyWarnings: string[] 
-  }> {
+  ): Promise<
+    PatternResolutionResult<ResolvedFilename> & {
+      dependencyWarnings: string[];
+    }
+  > {
     const result = await this.resolveFilenames(patterns, targetModules, 'down');
     const dependencyWarnings: string[] = [];
 
@@ -114,19 +117,21 @@ export class PatternResolver {
     for (const resolved of result.resolved) {
       // Get all modules that would be affected by this rollback
       const affectedModules = [resolved.moduleId];
-      
+
       // Validate rollback dependencies
       const validation = this.resolver.validateRollback(resolved.moduleId, affectedModules);
       if (!validation.canRollback) {
         dependencyWarnings.push(
-          `Warning: Rolling back ${resolved.filename} may cause dependency conflicts: ${validation.blockedBy.join(', ')}`
+          `Warning: Rolling back ${
+            resolved.filename
+          } may cause dependency conflicts: ${validation.blockedBy.join(', ')}`
         );
       }
     }
 
     return {
       ...result,
-      dependencyWarnings
+      dependencyWarnings,
     };
   }
 
@@ -165,8 +170,8 @@ export class PatternResolver {
   }
 
   private findMatchingFile(
-    pattern: string, 
-    files: string[], 
+    pattern: string,
+    files: string[],
     moduleId: string
   ): ResolvedFilename | null {
     const normalizedPattern = pattern.trim().toLowerCase();
@@ -181,7 +186,7 @@ export class PatternResolver {
             moduleId,
             number: parsed.number,
             name: parsed.name,
-            direction: parsed.direction
+            direction: parsed.direction,
           };
         }
       }
@@ -196,12 +201,12 @@ export class PatternResolver {
 
     const lowerPattern = pattern.toLowerCase();
     const lowerFilename = filename.toLowerCase();
-    
+
     // For exact filename matches, don't remove leading zeros
     if (lowerFilename === lowerPattern || lowerFilename === `${lowerPattern}.surql`) {
       return true;
     }
-    
+
     // For numeric and name patterns, apply normalization
     const normalizedPattern = pattern.replace(/^0+/, '').toLowerCase();
     const normalizedNumber = parseInt(migration.number, 10).toString();
@@ -220,7 +225,7 @@ export class PatternResolver {
     try {
       const modulePath = path.join(this.basePath, moduleId);
       const files = await fs.readdir(modulePath);
-      
+
       return MigrationFileProcessor.filterMigrationFiles(files as string[], undefined, direction);
     } catch (error) {
       this.debug.log(`Could not read files from module ${moduleId}: ${error.message}`);

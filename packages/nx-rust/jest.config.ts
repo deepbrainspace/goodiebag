@@ -6,18 +6,15 @@ export default {
   maxWorkers: 1,
   workerIdleMemoryLimit: '1024MB',
   transform: {
-    '^.+\\.ts$': ['ts-jest', {
-      tsconfig: '<rootDir>/tsconfig.spec.json'
-    }],
+    '^.+\\.ts$': [
+      'ts-jest',
+      {
+        tsconfig: '<rootDir>/tsconfig.spec.json',
+      },
+    ],
   },
   moduleFileExtensions: ['ts', 'js'],
   coverageDirectory: './coverage',
-  collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/**/files/**',
-    '!jest.config.ts',
-  ],
-  testMatch: [
-    '<rootDir>/src/**/*.spec.ts'
-  ]
+  collectCoverageFrom: ['src/**/*.ts', '!src/**/files/**', '!jest.config.ts'],
+  testMatch: ['<rootDir>/src/**/*.spec.ts'],
 };

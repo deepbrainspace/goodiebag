@@ -5,9 +5,7 @@ import { RunExecutorSchema } from '../executors/run/schema';
 import { TestExecutorSchema } from '../executors/test/schema';
 import { WasmPackExecutorSchema } from '../executors/wasm-pack/schema';
 
-export function addBuildExecutor(
-  additionalOptions?: BuildExecutorSchema
-): TargetConfiguration {
+export function addBuildExecutor(additionalOptions?: BuildExecutorSchema): TargetConfiguration {
   return {
     cache: true,
     executor: '@monodon/rust:build',
@@ -23,9 +21,7 @@ export function addBuildExecutor(
   };
 }
 
-export function addCheckExecutor(
-  additionalOptions?: BuildExecutorSchema
-): TargetConfiguration {
+export function addCheckExecutor(additionalOptions?: BuildExecutorSchema): TargetConfiguration {
   return {
     executor: '@monodon/rust:check',
     outputs: ['{options.target-dir}'],
@@ -35,9 +31,7 @@ export function addCheckExecutor(
   };
 }
 
-export function addTestExecutor(
-  additionalOptions?: TestExecutorSchema
-): TargetConfiguration {
+export function addTestExecutor(additionalOptions?: TestExecutorSchema): TargetConfiguration {
   return {
     cache: true,
     executor: '@monodon/rust:test',
@@ -53,9 +47,7 @@ export function addTestExecutor(
   };
 }
 
-export function addRunExecutor(
-  additionalOptions?: RunExecutorSchema
-): TargetConfiguration {
+export function addRunExecutor(additionalOptions?: RunExecutorSchema): TargetConfiguration {
   return {
     executor: '@monodon/rust:run',
     outputs: ['{options.target-dir}'],
@@ -70,9 +62,7 @@ export function addRunExecutor(
   };
 }
 
-export function addLintExecutor(
-  additionalOptions?: LintExecutorSchema
-): TargetConfiguration {
+export function addLintExecutor(additionalOptions?: LintExecutorSchema): TargetConfiguration {
   return {
     cache: true,
     executor: '@monodon/rust:lint',

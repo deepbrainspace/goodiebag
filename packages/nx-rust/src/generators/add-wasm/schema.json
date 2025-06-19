@@ -23,7 +23,5 @@
       "description": "Generates a default lib that contains wasm code. This will over write the existing lib.rs file."
     }
   },
-  "required": [
-    "project"
-  ]
+  "required": ["project"]
 }

@@ -84,10 +84,7 @@ describe('TreeUtils', () => {
 
     it('should return only .surql files', () => {
       const result = TreeUtils.getMigrationFiles(tree, 'database/010_auth');
-      expect(result).toEqual([
-        '0001_create_users_down.surql',
-        '0001_create_users_up.surql'
-      ]);
+      expect(result).toEqual(['0001_create_users_down.surql', '0001_create_users_up.surql']);
     });
 
     it('should return empty array for non-existent module', () => {
@@ -140,7 +137,7 @@ describe('TreeUtils', () => {
 
     it('should copy all files when no filter provided', () => {
       TreeUtils.copyFiles(tree, 'source', 'dest');
-      
+
       expect(tree.exists('dest/file1.surql')).toBe(true);
       expect(tree.exists('dest/file2.surql')).toBe(true);
       expect(tree.exists('dest/readme.md')).toBe(true);
@@ -148,8 +145,8 @@ describe('TreeUtils', () => {
     });
 
     it('should copy only filtered files', () => {
-      TreeUtils.copyFiles(tree, 'source', 'dest', (filename) => filename.endsWith('.surql'));
-      
+      TreeUtils.copyFiles(tree, 'source', 'dest', filename => filename.endsWith('.surql'));
+
       expect(tree.exists('dest/file1.surql')).toBe(true);
       expect(tree.exists('dest/file2.surql')).toBe(true);
       expect(tree.exists('dest/readme.md')).toBe(false);
@@ -187,7 +184,7 @@ describe('TreeUtils', () => {
     it('should write JSON with proper formatting', () => {
       const data = { name: 'test', nested: { value: 42 } };
       TreeUtils.writeJsonFile(tree, 'output.json', data);
-      
+
       const content = tree.read('output.json', 'utf-8');
       expect(content).toBe(JSON.stringify(data, null, 2));
     });
@@ -204,17 +201,17 @@ describe('TreeUtils', () => {
 
     it('should find all valid module directories', () => {
       const result = TreeUtils.findModuleDirectories(tree, 'database');
-      
+
       expect(result).toEqual([
         { name: '000_admin', path: 'database/000_admin' },
         { name: '010_auth', path: 'database/010_auth' },
-        { name: '020_schema', path: 'database/020_schema' }
+        { name: '020_schema', path: 'database/020_schema' },
       ]);
     });
 
     it('should exclude files and invalid module names', () => {
       const result = TreeUtils.findModuleDirectories(tree, 'database');
-      
+
       const names = result.map(r => r.name);
       expect(names).not.toContain('config.json');
       expect(names).not.toContain('invalid_module');

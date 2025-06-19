@@ -1,0 +1,44 @@
+{
+  "version": 2,
+  "outputCapture": "pipe",
+  "$schema": "http://json-schema.org/schema",
+  "title": "Clean executor",
+  "description": "Remove build artifacts using cargo clean",
+  "type": "object",
+  "properties": {
+    "target-dir": {
+      "type": "string",
+      "description": "Directory for all generated artifacts"
+    },
+    "toolchain": {
+      "type": "string",
+      "enum": ["stable", "beta", "nightly"],
+      "default": "stable"
+    },
+    "release": {
+      "type": "boolean",
+      "default": false,
+      "description": "Remove only release artifacts"
+    },
+    "doc": {
+      "type": "boolean",
+      "default": false,
+      "description": "Remove only doc artifacts"
+    },
+    "args": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "description": "Extra arguments. You can pass them as follows: nx run project:clean --args='--verbose'."
+    }
+  },
+  "required": []
+}

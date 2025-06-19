@@ -46,16 +46,24 @@ export default async function runExecutor(
       force: options.force || false,
       configPath: options.configPath,
       debug: options.debug,
-      dryRun: options.dryRun || false
+      dryRun: options.dryRun || false,
     });
 
     // Determine target modules and filenames
-    const targetModules = (options.module !== undefined && options.module !== '') 
-      ? String(options.module).split(',').map(m => m.trim()).filter(m => m.length > 0)
-      : undefined;
-    const targetFilenames = (options.filename !== undefined && options.filename !== '') 
-      ? String(options.filename).split(',').map(f => f.trim()).filter(f => f.length > 0)
-      : undefined;
+    const targetModules =
+      options.module !== undefined && options.module !== ''
+        ? String(options.module)
+            .split(',')
+            .map(m => m.trim())
+            .filter(m => m.length > 0)
+        : undefined;
+    const targetFilenames =
+      options.filename !== undefined && options.filename !== ''
+        ? String(options.filename)
+            .split(',')
+            .map(f => f.trim())
+            .filter(f => f.length > 0)
+        : undefined;
     debug.log(`Target modules: ${targetModules ? targetModules.join(', ') : 'all'}`);
     debug.log(`Target filenames: ${targetFilenames ? targetFilenames.join(', ') : 'all'}`);
 
@@ -65,9 +73,9 @@ export default async function runExecutor(
     } else if (options.debug) {
       logger.info('🚀 Starting migration execution...');
     }
-    
+
     const result = await engine.executeMigrations(targetModules, 'migrate', targetFilenames);
-    
+
     if (result.success) {
       if (result.filesProcessed === 0 && result.results.length === 0) {
         logger.info(`✅ All migrations are up to date - no pending migrations found`);
@@ -78,18 +86,25 @@ export default async function runExecutor(
         logger.info(`   Files skipped: ${result.filesSkipped}`);
         logger.info(`   Execution time: ${result.executionTimeMs}ms`);
       }
-      
+
       if (result.results.length > 0) {
         logger.info('\n📊 Migration Details:');
         for (const fileResult of result.results) {
           const status = fileResult.success ? '✅' : fileResult.skipped ? '⏭️' : '❌';
-          const reason = fileResult.skipped ? ` (${fileResult.skipReason})` : 
-                        fileResult.error ? ` (${fileResult.error})` : '';
-          logger.info(`   ${status} ${fileResult.file.moduleId}/${fileResult.file.filename}${reason}`);
-          
+          const reason = fileResult.skipped
+            ? ` (${fileResult.skipReason})`
+            : fileResult.error
+            ? ` (${fileResult.error})`
+            : '';
+          logger.info(
+            `   ${status} ${fileResult.file.moduleId}/${fileResult.file.filename}${reason}`
+          );
+
           // Show detailed information when detailed flag is used
           if (options.detailed && (fileResult.success || fileResult.skipped)) {
-            logger.info(`      File: ${fileResult.file.number}_${fileResult.file.name}_${fileResult.file.direction}.surql`);
+            logger.info(
+              `      File: ${fileResult.file.number}_${fileResult.file.name}_${fileResult.file.direction}.surql`
+            );
             logger.info(`      Execution time: ${fileResult.executionTimeMs}ms`);
             if (fileResult.file.checksum) {
               logger.info(`      Checksum: ${fileResult.file.checksum.substring(0, 12)}...`);
@@ -99,19 +114,20 @@ export default async function runExecutor(
       }
     } else {
       logger.error('❌ Migration failed!');
-      
+
       for (const fileResult of result.results) {
         if (!fileResult.success && !fileResult.skipped) {
-          logger.error(`   ❌ ${fileResult.file.moduleId}/${fileResult.file.filename}: ${fileResult.error}`);
+          logger.error(
+            `   ❌ ${fileResult.file.moduleId}/${fileResult.file.filename}: ${fileResult.error}`
+          );
         }
       }
-      
+
       logger.info(`   Files processed: ${result.filesProcessed}`);
       logger.info(`   Execution time: ${result.executionTimeMs}ms`);
     }
 
     return { success: result.success };
-
   } catch (error) {
     logger.error('💥 Migration execution failed:');
     logger.error(error instanceof Error ? error.message : String(error));

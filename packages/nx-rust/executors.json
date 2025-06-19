@@ -36,6 +36,16 @@
       "schema": "./src/executors/napi/schema.json",
       "description": "Wrapper to run the napi-cli"
     },
+    "fmt": {
+      "implementation": "./src/executors/fmt/executor",
+      "schema": "./src/executors/fmt/schema.json",
+      "description": "Format Rust code using cargo fmt"
+    },
+    "clean": {
+      "implementation": "./src/executors/clean/executor",
+      "schema": "./src/executors/clean/schema.json",
+      "description": "Remove build artifacts using cargo clean"
+    },
     "release-publish": {
       "implementation": "./src/executors/release-publish/executor",
       "schema": "./src/executors/release-publish/schema.json",

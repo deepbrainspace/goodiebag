@@ -22,17 +22,17 @@ describe('DependencyResolver', () => {
       modules: {
         '000_admin': {
           name: 'Admin',
-          dependencies: []
+          dependencies: [],
         },
         '010_auth': {
           name: 'Auth',
-          dependencies: ['000_admin']
+          dependencies: ['000_admin'],
         },
         '020_schema': {
           name: 'Schema',
-          dependencies: ['010_auth']
-        }
-      }
+          dependencies: ['010_auth'],
+        },
+      },
     };
 
     it('should initialize with existing config', async () => {
@@ -48,17 +48,21 @@ describe('DependencyResolver', () => {
     it('should auto-discover modules when no config exists', async () => {
       MockConfigLoader.loadConfig.mockResolvedValue(null);
       MockConfigLoader.createDefaultConfig.mockReturnValue(testConfig);
-      
+
       mockFs.readdir.mockResolvedValue([
         { name: '000_admin', isDirectory: () => true },
         { name: '010_auth', isDirectory: () => true },
         { name: '020_schema', isDirectory: () => true },
-        { name: 'file.txt', isDirectory: () => false }
+        { name: 'file.txt', isDirectory: () => false },
       ] as { name: string; isDirectory(): boolean }[]);
 
       await resolver.initialize();
 
-      expect(MockConfigLoader.createDefaultConfig).toHaveBeenCalledWith(['000_admin', '010_auth', '020_schema']);
+      expect(MockConfigLoader.createDefaultConfig).toHaveBeenCalledWith([
+        '000_admin',
+        '010_auth',
+        '020_schema',
+      ]);
       expect(resolver.hasConfig()).toBe(true);
     });
 
@@ -90,8 +94,8 @@ describe('DependencyResolver', () => {
           '000_admin': { name: 'Admin', dependencies: [] },
           '010_auth': { name: 'Auth', dependencies: ['000_admin'] },
           '020_schema': { name: 'Schema', dependencies: ['010_auth'] },
-          '030_messaging': { name: 'Messaging', dependencies: ['010_auth'] }
-        }
+          '030_messaging': { name: 'Messaging', dependencies: ['010_auth'] },
+        },
       });
 
       await resolver.initialize();
@@ -99,26 +103,26 @@ describe('DependencyResolver', () => {
 
     it('should return correct execution order for all modules', () => {
       const order = resolver.getExecutionOrder();
-      
+
       expect(order).toEqual(['000_admin', '010_auth', '020_schema', '030_messaging']);
     });
 
     it('should return correct execution order for specific modules', () => {
       const order = resolver.getExecutionOrder(['020_schema']);
-      
+
       // 020_schema depends on 010_auth, which depends on 000_admin
       expect(order).toEqual(['000_admin', '010_auth', '020_schema']);
     });
 
     it('should handle single module', () => {
       const order = resolver.getExecutionOrder(['000_admin']);
-      
+
       expect(order).toEqual(['000_admin']);
     });
 
     it('should return empty array when no modules specified', () => {
       const order = resolver.getExecutionOrder([]);
-      
+
       expect(order).toEqual([]);
     });
   });
@@ -129,8 +133,8 @@ describe('DependencyResolver', () => {
         modules: {
           '000_admin': { name: 'Admin', dependencies: [] },
           '010_auth': { name: 'Auth', dependencies: ['000_admin'] },
-          '020_schema': { name: 'Schema', dependencies: ['010_auth'] }
-        }
+          '020_schema': { name: 'Schema', dependencies: ['010_auth'] },
+        },
       });
 
       await resolver.initialize();
@@ -139,13 +143,13 @@ describe('DependencyResolver', () => {
     it('should return reverse execution order', () => {
       const rollbackOrder = resolver.getRollbackOrder();
       const executionOrder = resolver.getExecutionOrder();
-      
+
       expect(rollbackOrder).toEqual(executionOrder.reverse());
     });
 
     it('should handle specific modules in rollback order', () => {
       const order = resolver.getRollbackOrder(['020_schema']);
-      
+
       // Should be reverse of execution order including dependencies
       expect(order).toEqual(['020_schema', '010_auth', '000_admin']);
     });
@@ -157,8 +161,8 @@ describe('DependencyResolver', () => {
         modules: {
           '000_admin': { name: 'Admin', dependencies: [] },
           '010_auth': { name: 'Auth', dependencies: ['000_admin'] },
-          '020_schema': { name: 'Schema', dependencies: ['010_auth'] }
-        }
+          '020_schema': { name: 'Schema', dependencies: ['010_auth'] },
+        },
       });
 
       await resolver.initialize();
@@ -166,28 +170,32 @@ describe('DependencyResolver', () => {
 
     it('should allow rollback of module with no dependents', () => {
       const validation = resolver.validateRollback('020_schema');
-      
+
       expect(validation.canRollback).toBe(true);
       expect(validation.blockedBy).toEqual([]);
     });
 
     it('should block rollback of module with dependents', () => {
       const validation = resolver.validateRollback('000_admin');
-      
+
       expect(validation.canRollback).toBe(false);
       expect(validation.blockedBy).toContain('010_auth');
       expect(validation.reason).toContain('active dependents');
     });
 
     it('should allow rollback when dependents are in target list', () => {
-      const validation = resolver.validateRollback('000_admin', ['000_admin', '010_auth', '020_schema']);
-      
+      const validation = resolver.validateRollback('000_admin', [
+        '000_admin',
+        '010_auth',
+        '020_schema',
+      ]);
+
       expect(validation.canRollback).toBe(true); // Allowed because all dependents are also being rolled back
     });
 
     it('should handle non-existent module', () => {
       const validation = resolver.validateRollback('999_nonexistent');
-      
+
       expect(validation.canRollback).toBe(false);
       expect(validation.reason).toContain('not found');
     });
@@ -199,8 +207,8 @@ describe('DependencyResolver', () => {
         modules: {
           '000_admin': { name: 'Admin', dependencies: [] },
           '010_auth': { name: 'Auth', dependencies: ['000_admin'] },
-          '020_schema': { name: 'Schema', dependencies: ['010_auth'] }
-        }
+          '020_schema': { name: 'Schema', dependencies: ['010_auth'] },
+        },
       });
 
       await resolver.initialize();
@@ -208,13 +216,13 @@ describe('DependencyResolver', () => {
 
     it('should return module dependencies', () => {
       const deps = resolver.getModuleDependencies('020_schema');
-      
+
       expect(deps).toEqual(['010_auth']);
     });
 
     it('should return module dependents', () => {
       const dependents = resolver.getModuleDependents('000_admin');
-      
+
       expect(dependents).toEqual(['010_auth']);
     });
 
@@ -225,7 +233,7 @@ describe('DependencyResolver', () => {
 
     it('should return resolution result', () => {
       const result = resolver.getResolutionResult(['010_auth']);
-      
+
       expect(result.executionOrder).toEqual(['000_admin', '010_auth']);
       expect(result.dependencyGraph.size).toBe(3);
       expect(result.dependencyGraph.get('010_auth')?.dependencies).toEqual(['000_admin']);
@@ -237,8 +245,8 @@ describe('DependencyResolver', () => {
       MockConfigLoader.loadConfig.mockResolvedValue({
         modules: {
           '010_auth': { name: 'Auth', dependencies: ['020_schema'] },
-          '020_schema': { name: 'Schema', dependencies: ['010_auth'] }
-        }
+          '020_schema': { name: 'Schema', dependencies: ['010_auth'] },
+        },
       });
 
       await resolver.initialize();
@@ -251,8 +259,8 @@ describe('DependencyResolver', () => {
     it('should create and initialize resolver', async () => {
       MockConfigLoader.loadConfig.mockResolvedValue({
         modules: {
-          '000_admin': { name: 'Admin', dependencies: [] }
-        }
+          '000_admin': { name: 'Admin', dependencies: [] },
+        },
       });
 
       const resolver = await DependencyResolver.createResolver(testBasePath, 'config.json');

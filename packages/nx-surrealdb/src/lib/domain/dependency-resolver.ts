@@ -27,12 +27,12 @@ export class DependencyResolver {
 
   async initialize(configPath?: string): Promise<void> {
     this.config = await ConfigLoader.loadConfig(this.basePath, configPath);
-    
+
     if (!this.config) {
       // Auto-discover modules if no config exists
       await this.autoDiscoverModules();
     }
-    
+
     this.buildDependencyGraph();
   }
 
@@ -61,14 +61,14 @@ export class DependencyResolver {
     if (!this.config) return;
 
     this.dependencyGraph.clear();
-    
+
     // First pass: create all nodes
     for (const [moduleId, moduleConfig] of Object.entries(this.config.modules)) {
       this.dependencyGraph.set(moduleId, {
         moduleId,
         config: moduleConfig,
         dependencies: [...moduleConfig.dependencies],
-        dependents: []
+        dependents: [],
       });
     }
 
@@ -131,7 +131,7 @@ export class DependencyResolver {
       return {
         canRollback: false,
         blockedBy: [],
-        reason: `Module ${moduleId} not found in dependency graph`
+        reason: `Module ${moduleId} not found in dependency graph`,
       };
     }
 
@@ -146,13 +146,15 @@ export class DependencyResolver {
       return {
         canRollback: false,
         blockedBy: affectedDependents,
-        reason: `Cannot rollback ${moduleId} because it has active dependents: ${affectedDependents.join(', ')}`
+        reason: `Cannot rollback ${moduleId} because it has active dependents: ${affectedDependents.join(
+          ', '
+        )}`,
       };
     }
 
     return {
       canRollback: true,
-      blockedBy: []
+      blockedBy: [],
     };
   }
 
@@ -177,7 +179,7 @@ export class DependencyResolver {
   getResolutionResult(targetModules?: string[]): ResolutionResult {
     return {
       executionOrder: this.getExecutionOrder(targetModules),
-      dependencyGraph: new Map(this.dependencyGraph)
+      dependencyGraph: new Map(this.dependencyGraph),
     };
   }
 

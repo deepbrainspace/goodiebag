@@ -1,22 +1,30 @@
 # CLAUDE.md
 
 ## Repository Overview
-DeepBrain NX Plugins monorepo. Primary plugin: `@deepbrainspace/nx-surrealdb` for SurrealDB migration management.
+
+DeepBrain NX Plugins monorepo. Primary plugin: `@deepbrainspace/nx-surrealdb`
+for SurrealDB migration management.
 
 ## Key Commands
+
 - **Build**: `nx build nx-surrealdb`
-- **Test**: `nx test nx-surrealdb` 
+- **Test**: `nx test nx-surrealdb`
 - **Lint**: `nx lint nx-surrealdb`
 - **Release**: `nx release` or `nx release --dry-run`
 
 ## Package Manager Preference
+
 **IMPORTANT**: Always use NX commands first, then pnpm. NEVER use npm.
+
 - ✅ `nx build`, `nx test`, `nx lint`, `nx release`
 - ✅ `pnpm install`
 - ❌ `npm install`, `npm publish` (NEVER use)
 
 ## NX Command Preference
-**PREFER AFFECTED OPERATIONS**: Use `nx affected` for efficiency in CI/CD and development.
+
+**PREFER AFFECTED OPERATIONS**: Use `nx affected` for efficiency in CI/CD and
+development.
+
 - ✅ `nx affected --target=build` (only builds changed packages)
 - ✅ `nx affected --target=test` (only tests affected packages)
 - ✅ `nx affected --target=lint` (only lints changed code)
@@ -24,14 +32,29 @@ DeepBrain NX Plugins monorepo. Primary plugin: `@deepbrainspace/nx-surrealdb` fo
 - ❌ Individual package commands (defeats monorepo benefits)
 
 ## Critical Rule: NEVER Skip Tests or Lints
+
 **MANDATORY**: All tests and lints MUST pass before any publish or release.
+
 - ❌ NEVER skip tests or lints
 - ❌ NEVER publish with failing tests
 - ✅ Always fix the root cause of test/lint failures
 
+## TypeScript Code Quality Rules
+
+**MANDATORY**: Always use proper TypeScript typing to avoid runtime errors.
+
+- ❌ NEVER use `any` type (causes type system bypass and runtime errors)
+- ✅ Use specific types: `string`, `number`, `object`, `unknown`, etc.
+- ✅ Use `Parameters<typeof func>[0]` pattern for library parameter types
+- ✅ Use `as const` for literal types instead of `as any`
+- ✅ Use proper type assertions: `value as SpecificType` not `value as any`
+
 ## Release Process
+
 **Manual Release (Primary)**:
-1. **Development**: Make changes with conventional commits (feat:, fix:, chore:, etc.)
+
+1. **Development**: Make changes with conventional commits (feat:, fix:, chore:,
+   etc.)
 2. **CI**: Every PR runs lint/test/build validation
 3. **Release**: Run manually when ready:
    ```bash
@@ -41,10 +64,12 @@ DeepBrain NX Plugins monorepo. Primary plugin: `@deepbrainspace/nx-surrealdb` fo
    ```
 
 **Optional CI Release**:
+
 - Use GitHub Actions "Manual Release" workflow for CI-based releases
 - Available in Actions tab with optional version override
 
 ### Automatic Release Features:
+
 - ✅ **Version Determination**: Automatic based on conventional commits
   - `fix:` → patch (0.1.0 → 0.1.1)
   - `feat:` → minor (0.1.0 → 0.2.0)
@@ -55,25 +80,31 @@ DeepBrain NX Plugins monorepo. Primary plugin: `@deepbrainspace/nx-surrealdb` fo
 - ✅ **GitHub Releases**: Auto-created with changelog
 
 ## Architecture Rules
+
 **Repository Pattern**: MigrationService → MigrationRepository → Database
+
 - NEVER bypass repository layer
 - Keep business logic in Service, data operations in Repository
 - Always rebuild after changes: `nx build nx-surrealdb`
 
 **Rust Workspace Rules**:
-- ⚠️ **NEVER run cargo commands from repository root** (creates root target/ folder)
+
+- ⚠️ **NEVER run cargo commands from repository root** (creates root target/
+  folder)
 - ✅ Always use NX commands: `nx build claude-code`, `nx test claude-code`
-- ✅ If using cargo directly, always `cd packages/claude-code` first
+- ✅ If using cargo directly, always `cd packages/claude-code-toolkit` first
 - Keep build artifacts in package directories only
 
 ## Conventional Commits
-**REQUIRED**: Use conventional commit format for automatic version determination:
+
+**REQUIRED**: Use conventional commit format for automatic version
+determination:
 
 ```bash
 # Patch release
 git commit -m "fix: resolve connection timeout issue"
 
-# Minor release  
+# Minor release
 git commit -m "feat: add new migration rollback functionality"
 
 # Major release
@@ -83,6 +114,7 @@ BREAKING CHANGE: Migration interface has changed"
 ```
 
 ### Commit Types:
+
 - `fix:` → Bug fixes (patch release)
 - `feat:` → New features (minor release)
 - `chore:` → Maintenance (no release)

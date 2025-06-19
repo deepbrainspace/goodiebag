@@ -23,9 +23,9 @@ describe('rust generator', () => {
     const cargoToml = appTree.read('./test_name/Cargo.toml')?.toString() ?? '';
     expect(cargoToml.length).toBeGreaterThan(0);
     expect(TOML.parse(cargoToml)).toMatchInlineSnapshot(`
-      Object {
-        "dependencies": Object {},
-        "package": Object {
+      {
+        "dependencies": {},
+        "package": {
           "edition": "2021",
           "name": "test_name",
           "version": "0.1.0",
@@ -38,9 +38,9 @@ describe('rust generator', () => {
     await generator(appTree, { ...options, edition: '2018' });
     const cargoToml = appTree.read('./test_name/Cargo.toml')?.toString() ?? '';
     expect(TOML.parse(cargoToml)).toMatchInlineSnapshot(`
-      Object {
-        "dependencies": Object {},
-        "package": Object {
+      {
+        "dependencies": {},
+        "package": {
           "edition": "2018",
           "name": "test_name",
           "version": "0.1.0",
@@ -53,14 +53,14 @@ describe('rust generator', () => {
     await generator(appTree, options);
     const cargoToml = appTree.read('Cargo.toml')?.toString() ?? '';
     expect(TOML.parse(cargoToml)).toMatchInlineSnapshot(`
-      Object {
-        "profile": Object {
-          "release": Object {
+      {
+        "profile": {
+          "release": {
             "lto": true,
           },
         },
-        "workspace": Object {
-          "members": Array [
+        "workspace": {
+          "members": [
             "test_name",
           ],
           "resolver": "2",
@@ -71,12 +71,11 @@ describe('rust generator', () => {
 
   it('should generate into a directory', async () => {
     await generator(appTree, { ...options, directory: 'test-dir' });
-    const cargoToml =
-      appTree.read('./test_dir/test_name/Cargo.toml')?.toString() ?? '';
+    const cargoToml = appTree.read('./test_dir/test_name/Cargo.toml')?.toString() ?? '';
     expect(TOML.parse(cargoToml)).toMatchInlineSnapshot(`
-      Object {
-        "dependencies": Object {},
-        "package": Object {
+      {
+        "dependencies": {},
+        "package": {
           "edition": "2021",
           "name": "test_dir_test_name",
           "version": "0.1.0",

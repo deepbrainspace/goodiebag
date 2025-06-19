@@ -28,6 +28,7 @@
     "jest-environment-node": "^29.7.0",
     "nx": "^21.2.0",
     "nx-cloud": "latest",
+    "picocolors": "^1.1.1",
     "prettier": "^2.8.8",
     "ts-jest": "^29.1.0",
     "ts-node": "10.9.1",

@@ -7,9 +7,9 @@ repos:
     hooks:
       # Prevent large files from being committed
       - id: check-added-large-files
-        args: ['--maxkb=5120']  # 5MB limit
-        
-      # Basic file health checks  
+        args: ['--maxkb=5120'] # 5MB limit
+
+      # Basic file health checks
       - id: check-yaml
       - id: check-json
       - id: check-toml
@@ -35,9 +35,9 @@ repos:
         entry: bash -c 'if git diff --cached --name-only | grep -E "(^target/|\.rlib$|\.rmeta$|\.so$|incremental/|deps/)"; then echo "❌ Rust build artifacts detected! Use .gitignore and run from package directory."; exit 1; fi'
         language: system
         pass_filenames: false
-        
+
       - id: prevent-nx-cache
-        name: Prevent NX cache artifacts  
+        name: Prevent NX cache artifacts
         entry: bash -c 'if git diff --cached --name-only | grep -E "^\.nx/cache/"; then echo "❌ NX cache artifacts detected! These should be gitignored."; exit 1; fi'
         language: system
         pass_filenames: false

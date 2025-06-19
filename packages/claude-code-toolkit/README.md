@@ -3,16 +3,23 @@
 [![Rust](https://img.shields.io/badge/rust-2024-orange.svg)](https://www.rust-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Claude Code management tool for automatic credential synchronization to GitHub, session monitoring, and more.
+Claude Code management tool for automatic credential synchronization to GitHub,
+session monitoring, and more.
 
 ## Features
 
-- **🔄 Automatic Credential Sync**: Syncs Claude Code credentials to GitHub organization/repository secrets
-- **⏰ Smart Scheduling**: Monitors token expiry and syncs 1 minute after new token is generated
-- **🎯 Multi-Target Support**: Sync to multiple GitHub organizations and repositories simultaneously
-- **📊 Session Monitoring**: Real-time session timer and status tracking with desktop notifications
-- **🔧 Systemd User Service Integration**: Runs as a background daemon with automatic startup and monitoring
-- **🚀 High Performance**: Written in Rust for minimal resource usage and maximum reliability
+- **🔄 Automatic Credential Sync**: Syncs Claude Code credentials to GitHub
+  organization/repository secrets
+- **⏰ Smart Scheduling**: Monitors token expiry and syncs 1 minute after new
+  token is generated
+- **🎯 Multi-Target Support**: Sync to multiple GitHub organizations and
+  repositories simultaneously
+- **📊 Session Monitoring**: Real-time session timer and status tracking with
+  desktop notifications
+- **🔧 Systemd User Service Integration**: Runs as a background daemon with
+  automatic startup and monitoring
+- **🚀 High Performance**: Written in Rust for minimal resource usage and
+  maximum reliability
 
 ## Installation
 
@@ -29,14 +36,15 @@ source ~/.bashrc
 
 ### Option 2: Pre-built Binary (Coming Soon)
 
-Download the latest release from [GitHub Releases](https://github.com/deepbrainspace/goodiebag/releases).
+Download the latest release from
+[GitHub Releases](https://github.com/deepbrainspace/goodiebag/releases).
 
 ### Option 3: From Source (Development)
 
 ```bash
 # Clone the repository
 git clone https://github.com/deepbrainspace/goodiebag
-cd goodiebag/packages/claude-code
+cd goodiebag/packages/claude-code-toolkit
 
 # Build and install to ~/.cargo/bin
 cargo build --release
@@ -53,7 +61,9 @@ nx build claude-code
 nx run claude-code:install
 ```
 
-**Important**: The binary must remain in a stable location for the daemon service to work. If you move the binary after installing the service, run `claude-code service install` again.
+**Important**: The binary must remain in a stable location for the daemon
+service to work. If you move the binary after installing the service, run
+`claude-code service install` again.
 
 ## Prerequisites
 
@@ -65,6 +75,7 @@ nx run claude-code:install
 ## Quick Start
 
 1. **Install and Configure**:
+
 ```bash
 # Add GitHub organization
 claude-code org add your-org-name
@@ -77,11 +88,13 @@ claude-code service install
 ```
 
 2. **Check Status**:
+
 ```bash
 claude-code status
 ```
 
 3. **Real-time Session Timer**:
+
 ```bash
 claude-code timer
 ```
@@ -89,32 +102,38 @@ claude-code timer
 ## Commands
 
 ### Session Management
+
 - `claude-code status` - Show comprehensive session and sync status
 - `claude-code timer` - Real-time session timer with progress bar
 
 ### Organization Management
+
 - `claude-code org add <name> [--secret-name NAME]` - Add GitHub organization
 - `claude-code org remove <name>` - Remove organization
 - `claude-code org list` - List configured organizations with availability
 
 ### Repository Management
+
 - `claude-code repo add <owner/repo> [--secret-name NAME]` - Add repository
 - `claude-code repo remove <owner/repo>` - Remove repository
 - `claude-code repo list` - List configured repositories
 
 ### Sync Operations
+
 - `claude-code sync now` - Force immediate credential sync
 - `claude-code sync status` - Show detailed sync status for all targets
 - `claude-code sync logs [--lines N]` - View daemon logs
 
 ### Service Management
+
 - `claude-code service install` - Install and start systemd user daemon
 - `claude-code service uninstall [--keep-config]` - Uninstall daemon
 - `claude-code service start/stop/restart` - Control daemon
 - `claude-code service enable/disable` - Control auto-start on login
 
 ### Configuration
-- `claude-code configure` - Interactive configuration wizard *(coming soon)*
+
+- `claude-code configure` - Interactive configuration wizard _(coming soon)_
 
 ## Configuration
 
@@ -123,7 +142,7 @@ Configuration is stored in `~/.goodiebag/claude-code/config.yml`:
 ```yaml
 daemon:
   log_level: info
-  sync_delay_after_expiry: 60  # seconds after token expiry
+  sync_delay_after_expiry: 60 # seconds after token expiry
 
 github:
   organizations:
@@ -131,13 +150,13 @@ github:
       secret_name: CLAUDE_CODE_TOKEN
     - name: another-org
       secret_name: CLAUDE_ACCESS_TOKEN
-  
+
   repositories:
     - repo: user/special-repo
       secret_name: CUSTOM_CLAUDE_TOKEN
 
 notifications:
-  session_warnings: [30, 15, 5]  # minutes before expiry
+  session_warnings: [30, 15, 5] # minutes before expiry
   sync_failures: true
 ```
 
@@ -145,15 +164,17 @@ notifications:
 
 The `claude-code service install` command:
 
-1. **Creates Systemd Service**: Installs `~/.config/systemd/user/claude-code-sync.service`
-2. **References Current Binary**: Uses the exact path of the currently running binary (no copying)
+1. **Creates Systemd Service**: Installs
+   `~/.config/systemd/user/claude-code-sync.service`
+2. **References Current Binary**: Uses the exact path of the currently running
+   binary (no copying)
 3. **User Service**: Runs as a user service (no root privileges required)
 4. **Auto-Start**: Enables automatic startup on user login
 5. **Security Sandboxing**: Runs with restricted file system access
 
 **Service Location**: `~/.config/systemd/user/claude-code-sync.service`
-**Service Command**: `{binary_path} daemon`
-**Service Type**: User service (systemctl --user)
+**Service Command**: `{binary_path} daemon` **Service Type**: User service
+(systemctl --user)
 
 ### Manual Service Management
 
@@ -176,11 +197,16 @@ systemctl --user daemon-reload
 
 ## How It Works
 
-1. **Credential Monitoring**: Daemon monitors `~/.claude/.credentials.json` for changes
-2. **Smart Timing**: When token expires, waits 60 seconds for Claude Code to refresh it
-3. **Automatic Sync**: Detects new token and syncs to all configured GitHub targets
-4. **Startup Recovery**: Performs reconciliation check on startup to catch missed syncs
-5. **Status Tracking**: Maintains detailed sync status and error information per target
+1. **Credential Monitoring**: Daemon monitors `~/.claude/.credentials.json` for
+   changes
+2. **Smart Timing**: When token expires, waits 60 seconds for Claude Code to
+   refresh it
+3. **Automatic Sync**: Detects new token and syncs to all configured GitHub
+   targets
+4. **Startup Recovery**: Performs reconciliation check on startup to catch
+   missed syncs
+5. **Status Tracking**: Maintains detailed sync status and error information per
+   target
 
 ## Architecture
 
@@ -254,23 +280,27 @@ cargo fmt --check
 ## Troubleshooting
 
 ### Check Daemon Status
+
 ```bash
 claude-code status
 systemctl --user status claude-code-sync
 ```
 
 ### View Detailed Logs
+
 ```bash
 claude-code sync logs --lines 100
 journalctl --user -u claude-code-sync -f
 ```
 
 ### Manual Sync
+
 ```bash
 claude-code sync now
 ```
 
 ### Reset Configuration
+
 ```bash
 claude-code service uninstall
 rm -rf ~/.goodiebag/claude-code
@@ -307,6 +337,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/deepbrainspace/goodiebag/issues)
+- **Issues**:
+  [GitHub Issues](https://github.com/deepbrainspace/goodiebag/issues)
 - **Documentation**: This README and inline code documentation
 - **Community**: Discussions in the repository

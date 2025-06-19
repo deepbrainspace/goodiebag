@@ -8,7 +8,7 @@ import {
   output,
   workspaceRoot,
 } from '@nx/devkit';
-import chalk from 'chalk';
+import pc = require('picocolors');
 import { execSync } from 'node:child_process';
 import { relative } from 'node:path';
 import { IMPLICIT_DEFAULT_RELEASE_GROUP } from 'nx/src/command-line/release/config/config';
@@ -20,17 +20,12 @@ import {
   resolveSemverSpecifierFromConventionalCommits,
   resolveSemverSpecifierFromPrompt,
 } from 'nx/src/command-line/release/utils/resolve-semver-specifier';
-import { 
+import {
   isValidSemverSpecifier,
   deriveNewSemverVersion,
 } from 'nx/src/command-line/release/utils/semver';
-import {
-  VersionData,
-} from 'nx/src/command-line/release/utils/shared';
-import {
-  NxReleaseVersionResult,
-  validReleaseVersionPrefixes,
-} from 'nx/src/command-line/release/version';
+import { VersionData } from 'nx/src/command-line/release/utils/shared';
+import { validReleaseVersionPrefixes } from 'nx/src/command-line/release/version';
 import { interpolate } from 'nx/src/tasks-runner/utils';
 import { prerelease } from 'semver';
 import {
@@ -43,7 +38,10 @@ import { ReleaseVersionGeneratorSchema } from './schema';
 
 export interface ReleaseVersionGeneratorResult {
   data: VersionData;
-  callback: (tree: Tree, opts: any) => Promise<string[]>;
+  callback: (
+    tree: Tree,
+    opts: { generatorOptions?: { skipLockFileUpdate?: boolean }; dryRun?: boolean }
+  ) => Promise<string[]>;
 }
 
 export async function releaseVersionGenerator(
@@ -69,13 +67,9 @@ export async function releaseVersionGenerator(
       validReleaseVersionPrefixes.indexOf(options.versionPrefix) === -1
     ) {
       throw new Error(
-        `Invalid value for version.generatorOptions.versionPrefix: "${
-          options.versionPrefix
-        }"
+        `Invalid value for version.generatorOptions.versionPrefix: "${options.versionPrefix}"
 
-Valid values are: ${validReleaseVersionPrefixes
-          .map((s) => `"${s}"`)
-          .join(', ')}`
+Valid values are: ${validReleaseVersionPrefixes.map(s => `"${s}"`).join(', ')}`
       );
     }
 
@@ -86,15 +80,19 @@ Valid values are: ${validReleaseVersionPrefixes
 
     const projects = options.projects;
 
+    if (process.env.NX_VERBOSE_LOGGING === 'true') {
+      console.log(
+        `[release-version] Processing ${projects.length} projects:`,
+        projects.map(p => p.name)
+      );
+    }
+
     const resolvePackageRoot = createResolvePackageRoot(options.packageRoot);
 
     // Resolve any custom package roots for each project upfront as they will need to be reused during dependency resolution
     const projectNameToPackageRootMap = new Map<string, string>();
     for (const project of projects) {
-      projectNameToPackageRootMap.set(
-        project.name,
-        resolvePackageRoot(project)
-      );
+      projectNameToPackageRootMap.set(project.name, resolvePackageRoot(project));
     }
 
     let currentVersion: string | undefined = undefined;
@@ -102,18 +100,14 @@ Valid values are: ${validReleaseVersionPrefixes
 
     // only used for options.currentVersionResolver === 'git-tag', but
     // must be declared here in order to reuse it for additional projects
-    let latestMatchingGitTag:
-      | { tag: string; extractedVersion: string }
-      | null
-      | undefined = undefined;
+    let latestMatchingGitTag: { tag: string; extractedVersion: string } | null | undefined =
+      undefined;
 
     // if specifier is undefined, then we haven't resolved it yet
     // if specifier is null, then it has been resolved and no changes are necessary
-    let specifier: string | null | undefined = options.specifier
-      ? options.specifier
-      : undefined;
+    let specifier: string | null | undefined = options.specifier ? options.specifier : undefined;
 
-    for (const project of projects) {
+    for (const project of [...projects]) {
       const projectName = project.name;
       const packageRoot = projectNameToPackageRootMap.get(projectName);
       if (!packageRoot) {
@@ -123,10 +117,7 @@ Valid values are: ${validReleaseVersionPrefixes
       }
 
       const cargoTomlPath = joinPathFragments(packageRoot, 'Cargo.toml');
-      const workspaceRelativeCargoTomlPath = relative(
-        workspaceRoot,
-        cargoTomlPath
-      );
+      const workspaceRelativeCargoTomlPath = relative(workspaceRoot, cargoTomlPath);
 
       const color = getColor(projectName);
       const log = (msg: string) => {
@@ -142,18 +133,14 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
       }
 
       output.logSingleLine(
-        `Running release version for project: ${color.instance.bold(
-          project.name
-        )}`
+        `Running release version for project: ${color.instance.bold(project.name)}`
       );
 
       const cargoTomlContents = tree.read(cargoTomlPath)!.toString('utf-8');
       const data = parseCargoToml(cargoTomlContents);
       const pkg = data.package;
 
-      log(
-        `🔍 Reading data for crate "${pkg.name}" from ${workspaceRelativeCargoTomlPath}`
-      );
+      log(`🔍 Reading data for crate "${pkg.name}" from ${workspaceRelativeCargoTomlPath}`);
 
       const packageName = pkg.name;
       const currentVersionFromDisk = pkg.version;
@@ -165,9 +152,7 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
         // case 'registry': {}
         case 'disk':
           currentVersion = currentVersionFromDisk;
-          log(
-            `📄 Resolved the current version as ${currentVersion} from ${cargoTomlPath}`
-          );
+          log(`📄 Resolved the current version as ${currentVersion} from ${cargoTomlPath}`);
           break;
         case 'git-tag': {
           if (
@@ -176,12 +161,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
             options.releaseGroup.projectsRelationship === 'independent'
           ) {
             const releaseTagPattern = options.releaseGroup.releaseTagPattern;
-            latestMatchingGitTag = await getLatestGitTagForPattern(
-              releaseTagPattern,
-              {
-                projectName: project.name,
-              }
-            );
+            latestMatchingGitTag = await getLatestGitTagForPattern(releaseTagPattern, {
+              projectName: project.name,
+            });
             if (!latestMatchingGitTag) {
               if (options.fallbackCurrentVersionResolver === 'disk') {
                 log(
@@ -238,8 +220,7 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
        */
       if (
         specifier === undefined ||
-        (options.releaseGroup.projectsRelationship === 'independent' &&
-          !options.specifier)
+        (options.releaseGroup.projectsRelationship === 'independent' && !options.specifier)
       ) {
         const specifierSource = options.specifierSource;
         switch (specifierSource) {
@@ -305,9 +286,7 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           case 'prompt': {
             // Only add the release group name to the log if it is one set by the user, otherwise it is useless noise
             const maybeLogReleaseGroup = (log: string): string => {
-              if (
-                options.releaseGroup.name === IMPLICIT_DEFAULT_RELEASE_GROUP
-              ) {
+              if (options.releaseGroup.name === IMPLICIT_DEFAULT_RELEASE_GROUP) {
                 return log;
               }
               return `${log} within release group "${options.releaseGroup.name}"`;
@@ -317,9 +296,7 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
                 `${maybeLogReleaseGroup(
                   `What kind of change is this for project "${projectName}"`
                 )}?`,
-                `${maybeLogReleaseGroup(
-                  `What is the exact version for project "${projectName}"`
-                )}?`
+                `${maybeLogReleaseGroup(`What is the exact version for project "${projectName}"`)}?`
               );
             } else {
               specifier = await resolveSemverSpecifierFromPrompt(
@@ -353,7 +330,7 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
 
       const dependentProjects = Object.values(localPackageDependencies)
         .flat()
-        .filter((localPackageDependency) => {
+        .filter(localPackageDependency => {
           return localPackageDependency.target === project.name;
         });
 
@@ -370,42 +347,28 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
       };
 
       if (!specifier) {
-        log(
-          `🚫 Skipping versioning "${packageName}" as no changes were detected.`
-        );
+        log(`🚫 Skipping versioning "${packageName}" as no changes were detected.`);
         continue;
       }
 
-      const newVersion = deriveNewSemverVersion(
-        currentVersion,
-        specifier,
-        options.preid
-      );
+      const newVersion = deriveNewSemverVersion(currentVersion, specifier, options.preid);
       versionData[projectName].newVersion = newVersion;
 
       pkg.version = newVersion;
       tree.write(cargoTomlPath, stringifyCargoToml(data));
 
-      log(
-        `✍️  New version ${newVersion} written to ${workspaceRelativeCargoTomlPath}`
-      );
+      log(`✍️  New version ${newVersion} written to ${workspaceRelativeCargoTomlPath}`);
 
       if (dependentProjects.length > 0) {
         log(
-          `✍️  Applying new version ${newVersion} to ${
-            dependentProjects.length
-          } ${
-            dependentProjects.length > 1
-              ? 'packages which depend'
-              : 'package which depends'
+          `✍️  Applying new version ${newVersion} to ${dependentProjects.length} ${
+            dependentProjects.length > 1 ? 'packages which depend' : 'package which depends'
           } on ${project.name}`
         );
       }
 
       for (const dependentProject of dependentProjects) {
-        const dependentPackageRoot = projectNameToPackageRootMap.get(
-          dependentProject.source
-        );
+        const dependentPackageRoot = projectNameToPackageRootMap.get(dependentProject.source);
         if (!dependentPackageRoot) {
           throw new Error(
             `The dependent project "${dependentProject.source}" does not have a packageRoot available. Please report this issue on https://github.com/nrwl/nx`
@@ -434,9 +397,7 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
 
             if (currentVersion) {
               const dependencyVersion =
-                typeof dependencyData === 'string'
-                  ? dependencyData
-                  : dependencyData.version;
+                typeof dependencyData === 'string' ? dependencyData : dependencyData.version;
               const prefixMatch = dependencyVersion?.match(/^[~^=]/);
               if (prefixMatch) {
                 versionPrefix = prefixMatch[0];
@@ -464,10 +425,7 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           break;
         }
 
-        const cargoTomlToUpdate = joinPathFragments(
-          dependentPackageRoot,
-          'Cargo.toml'
-        );
+        const cargoTomlToUpdate = joinPathFragments(dependentPackageRoot, 'Cargo.toml');
 
         modifyCargoTable(
           dependentPkg,
@@ -493,9 +451,7 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
         output.logSingleLine(`Updating Cargo.lock file`);
         if (opts.generatorOptions?.skipLockFileUpdate) {
           if (process.env.NX_VERBOSE_LOGGING === 'true') {
-            console.log(
-              '\nSkipped lock file update because skipLockFileUpdate was set.'
-            );
+            console.log('\nSkipped lock file update because skipLockFileUpdate was set.');
           }
           return [];
         }
@@ -515,16 +471,17 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
         return hasGitDiff('Cargo.lock') ? ['Cargo.lock'] : [];
       },
     };
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const errorMessage = e instanceof Error ? e.message : String(e);
     if (process.env.NX_VERBOSE_LOGGING === 'true') {
       output.error({
-        title: e.message,
+        title: errorMessage,
       });
       // Dump the full stack trace in verbose mode
       console.error(e);
     } else {
       output.error({
-        title: e.message,
+        title: errorMessage,
       });
     }
     process.exit(1);
@@ -548,16 +505,16 @@ function createResolvePackageRoot(customPackageRoot?: string) {
 }
 
 const colors = [
-  { instance: chalk.green, spinnerColor: 'green' },
-  { instance: chalk.greenBright, spinnerColor: 'green' },
-  { instance: chalk.red, spinnerColor: 'red' },
-  { instance: chalk.redBright, spinnerColor: 'red' },
-  { instance: chalk.cyan, spinnerColor: 'cyan' },
-  { instance: chalk.cyanBright, spinnerColor: 'cyan' },
-  { instance: chalk.yellow, spinnerColor: 'yellow' },
-  { instance: chalk.yellowBright, spinnerColor: 'yellow' },
-  { instance: chalk.magenta, spinnerColor: 'magenta' },
-  { instance: chalk.magentaBright, spinnerColor: 'magenta' },
+  { instance: { bold: (s: string) => pc.bold(pc.green(s)) }, spinnerColor: 'green' },
+  { instance: { bold: (s: string) => pc.bold(pc.green(s)) }, spinnerColor: 'green' },
+  { instance: { bold: (s: string) => pc.bold(pc.red(s)) }, spinnerColor: 'red' },
+  { instance: { bold: (s: string) => pc.bold(pc.red(s)) }, spinnerColor: 'red' },
+  { instance: { bold: (s: string) => pc.bold(pc.cyan(s)) }, spinnerColor: 'cyan' },
+  { instance: { bold: (s: string) => pc.bold(pc.cyan(s)) }, spinnerColor: 'cyan' },
+  { instance: { bold: (s: string) => pc.bold(pc.yellow(s)) }, spinnerColor: 'yellow' },
+  { instance: { bold: (s: string) => pc.bold(pc.yellow(s)) }, spinnerColor: 'yellow' },
+  { instance: { bold: (s: string) => pc.bold(pc.magenta(s)) }, spinnerColor: 'magenta' },
+  { instance: { bold: (s: string) => pc.bold(pc.magenta(s)) }, spinnerColor: 'magenta' },
 ] as const;
 
 function getColor(projectName: string) {
@@ -603,32 +560,30 @@ function resolveLocalPackageDependencies(
   const localPackageDependencies: Record<string, LocalPackageDependency[]> = {};
   const filteredProjectsSet = new Set<string>();
 
+  // Use a global visited set to prevent infinite recursion
+  const globalSeen = new Set<string>();
+
   // Recursively retrieves all dependents for a given project
-  function addDeps(projectName: string, seen: Set<string>) {
-    if (seen.has(projectName)) return;
-    seen.add(projectName);
+  function addDeps(projectName: string) {
+    if (globalSeen.has(projectName)) return;
+    globalSeen.add(projectName);
+    filteredProjectsSet.add(projectName);
     Object.values(projectGraph.dependencies)
-      .filter((deps) => deps.some((d) => d.target === projectName))
-      .flatMap((deps) => deps.map((d) => d.source))
-      .forEach((d) => addDeps(d, seen));
+      .filter(deps => deps.some(d => d.target === projectName))
+      .flatMap(deps => deps.map(d => d.source))
+      .forEach(d => addDeps(d));
   }
 
-  filteredProjects.forEach((p) => addDeps(p.name, filteredProjectsSet));
+  filteredProjects.forEach(p => addDeps(p.name));
 
   const projects = includeDependents
-    ? [...filteredProjectsSet]
-        .map((dep) => projectGraph.nodes[dep])
-        .filter(Boolean)
+    ? [...filteredProjectsSet].map(dep => projectGraph.nodes[dep]).filter(Boolean)
     : filteredProjects;
 
   for (const projectNode of projects) {
     // Ensure that the packageRoot is resolved for the project and added to the map for later use
     if (includeDependents) {
-      fillPackageRootMap(
-        projectNameToPackageRootMap,
-        projectNode,
-        resolvePackageRoot
-      );
+      fillPackageRootMap(projectNameToPackageRootMap, projectNode, resolvePackageRoot);
     }
     const projectDeps = projectGraph.dependencies[projectNode.name];
     if (!projectDeps) {
@@ -641,11 +596,7 @@ function resolveLocalPackageDependencies(
         continue;
       }
       // Ensure that the packageRoot is resolved for the dependent project and added to the map for later use
-      fillPackageRootMap(
-        projectNameToPackageRootMap,
-        depProject,
-        resolvePackageRoot
-      );
+      fillPackageRootMap(projectNameToPackageRootMap, depProject, resolvePackageRoot);
       const depProjectRoot = projectNameToPackageRootMap.get(dep.target);
       if (!depProjectRoot) {
         throw new Error(
@@ -659,23 +610,21 @@ function resolveLocalPackageDependencies(
       );
       const dependencies = cargoToml.dependencies ?? {};
       const devDependencies = cargoToml['dev-dependencies'] ?? {};
-      const dependencyCollection: 'dependencies' | 'dev-dependencies' | null =
-        dependencies[depProject.name]
-          ? 'dependencies'
-          : devDependencies[depProject.name]
-          ? 'dev-dependencies'
-          : null;
+      const dependencyCollection: 'dependencies' | 'dev-dependencies' | null = dependencies[
+        depProject.name
+      ]
+        ? 'dependencies'
+        : devDependencies[depProject.name]
+        ? 'dev-dependencies'
+        : null;
       if (!dependencyCollection) {
         throw new Error(
           `The project "${projectNode.name}" does not have a local dependency on "${depProject.name}" in its Cargo.toml`
         );
       }
       const depData = dependencies[depProject.name] || devDependencies[depProject.name];
-      const rawVersionSpec = 
-        typeof depData === 'string' 
-          ? depData 
-          : depData?.version || '';
-      
+      const rawVersionSpec = typeof depData === 'string' ? depData : depData?.version || '';
+
       localPackageDepsForProject.push({
         ...dep,
         dependencyCollection,
@@ -695,6 +644,13 @@ function hasGitDiff(filePath: string) {
     return result.trim() === filePath;
   } catch (error) {
     // Assuming any error means no diff or a problem executing git command
+    if (process.env.NX_VERBOSE_LOGGING === 'true') {
+      console.warn(
+        `[nx-rust] Git diff check failed for ${filePath}: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
     return false;
   }
 }

@@ -40,14 +40,14 @@ export function buildCommand(
   }
 
   // Only add -p flag if we're in a Cargo workspace (has root Cargo.toml)
-  if (!args.includes("--package") && hasWorkspaceCargoToml()) {
-    args.push("-p", context.projectName);
+  if (!args.includes('--package') && hasWorkspaceCargoToml()) {
+    args.push('-p', context.projectName);
   }
 
   if (options.args && Array.isArray(options.args)) {
-    args.push("--", ...options.args);
+    args.push('--', ...options.args);
   } else if (options.args && !Array.isArray(options.args)) {
-    args.push("--", options.args);
+    args.push('--', options.args);
   }
 
   return args;

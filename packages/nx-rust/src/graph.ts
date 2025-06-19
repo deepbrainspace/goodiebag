@@ -10,10 +10,7 @@ import {
   type ProjectConfiguration,
   type RawProjectGraphDependency,
 } from '@nx/devkit';
-import {
-  DependencyType,
-  ProjectGraphExternalNode,
-} from 'nx/src/config/project-graph';
+import { DependencyType, ProjectGraphExternalNode } from 'nx/src/config/project-graph';
 import { dirname, relative } from 'path';
 import type { Package } from './models/cargo-metadata';
 import { cargoMetadata, isExternal } from './utils/cargo';
@@ -26,10 +23,44 @@ export const createNodesV2: CreateNodesV2 = [
     const result = processCargoMetadata(context);
 
     return await createNodesFromFiles(
-      async (configFile, options, context) => {
+      async (configFile, options, context, idx) => {
+        // Use context for logging when verbose mode is enabled
+        if (process.env.NX_VERBOSE_LOGGING === 'true') {
+          console.log(
+            `[nx-rust] Processing Cargo.toml (${idx + 1}/${configFilePaths.length}): ${relative(
+              context.workspaceRoot,
+              configFile
+            )}`
+          );
+        }
+
         const projects = filterProject(result.projects, configFile);
         if (!projects) {
+          if (process.env.NX_VERBOSE_LOGGING === 'true') {
+            console.log(
+              `[nx-rust] No projects found for ${relative(context.workspaceRoot, configFile)}`
+            );
+          }
           return { projects: {}, externalNodes: {} };
+        }
+
+        // Use options for configuration if provided
+        if (options && typeof options === 'object' && 'excludeProjects' in options) {
+          const excludeProjects = (options as { excludeProjects?: string[] }).excludeProjects;
+          if (excludeProjects && Array.isArray(excludeProjects)) {
+            for (const excludeProject of excludeProjects) {
+              if (projects[excludeProject]) {
+                delete projects[excludeProject];
+                if (process.env.NX_VERBOSE_LOGGING === 'true') {
+                  console.log(`[nx-rust] Excluded project: ${excludeProject}`);
+                }
+              }
+            }
+          }
+        }
+
+        if (process.env.NX_VERBOSE_LOGGING === 'true') {
+          console.log(`[nx-rust] Found projects: ${Object.keys(projects).join(', ')}`);
         }
 
         return { projects, externalNodes: result.externalNodes };
@@ -78,9 +109,7 @@ function processCargoMetadata(ctx: CreateNodesContext | CreateNodesContextV2): {
 
   for (const pkg of cargoPackages) {
     if (!isExternal(pkg, ctx.workspaceRoot)) {
-      const root = normalizePath(
-        dirname(relative(ctx.workspaceRoot, pkg.manifest_path))
-      );
+      const root = normalizePath(dirname(relative(ctx.workspaceRoot, pkg.manifest_path)));
 
       // TODO(cammisuli): provide defaults for non-project.json workspaces
       const targets: ProjectConfiguration['targets'] = {};
@@ -111,8 +140,8 @@ function processCargoMetadata(ctx: CreateNodesContext | CreateNodesContextV2): {
         const externalDepName = `cargo:${dep.name}`;
         if (!externalNodes?.[externalDepName]) {
           externalNodes[externalDepName] = {
-            type: 'cargo' as any,
-            name: externalDepName as any,
+            type: 'cargo' as const,
+            name: externalDepName,
             data: {
               packageName: dep.name,
               version: cargoPackageMap.get(dep.name)?.version ?? '0.0.0',
@@ -142,10 +171,7 @@ function filterProject(
   return null;
 }
 
-export const createDependencies: CreateDependencies = (
-  _,
-  { projects, externalNodes }
-) => {
+export const createDependencies: CreateDependencies = (_, { projects, externalNodes }) => {
   const metadata = cargoMetadata();
   if (!metadata) {
     return [];
@@ -160,15 +186,11 @@ export const createDependencies: CreateDependencies = (
       for (const deps of pkg.dependencies) {
         // if the dependency is listed in nx projects, it's not an external dependency
         if (projects[deps.name]) {
-          dependencies.push(
-            createDependency(pkg, deps.name, DependencyType.static)
-          );
+          dependencies.push(createDependency(pkg, deps.name, DependencyType.static));
         } else {
           const externalDepName = `cargo:${deps.name}`;
           if (externalDepName in (externalNodes ?? {})) {
-            dependencies.push(
-              createDependency(pkg, externalDepName, DependencyType.static)
-            );
+            dependencies.push(createDependency(pkg, externalDepName, DependencyType.static));
           }
         }
       }

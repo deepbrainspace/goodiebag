@@ -1,18 +1,16 @@
 const originalExit = process.exit;
 let stubProcessExit = false;
 
-const processExitSpy = jest
-  .spyOn(process, 'exit')
-  .mockImplementation((...args) => {
-    if (stubProcessExit) {
-      return undefined as never;
-    }
-    return originalExit(...args);
-  });
+const processExitSpy = jest.spyOn(process, 'exit').mockImplementation((...args) => {
+  if (stubProcessExit) {
+    return undefined as never;
+  }
+  return originalExit(...args);
+});
 
 import { ProjectGraph, Tree, output } from '@nx/devkit';
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
-import enquirer from 'enquirer';
+import * as enquirer from 'enquirer';
 import { ReleaseGroupWithName } from 'nx/src/command-line/release/config/filter-release-groups';
 import { parseCargoTomlWithTree } from '../../utils/toml';
 import { releaseVersionGenerator } from './release-version';
@@ -87,20 +85,22 @@ describe('release-version', () => {
         releaseGroup: createReleaseGroup('fixed'),
       })
     ).toMatchInlineSnapshot(`
-      Object {
+      {
         "callback": [Function],
-        "data": Object {
-          "my-lib": Object {
+        "data": {
+          "my-lib": {
             "currentVersion": "0.0.1",
-            "dependentProjects": Array [
-              Object {
+            "dependentProjects": [
+              {
                 "dependencyCollection": "dependencies",
+                "rawVersionSpec": "0.0.1",
                 "source": "project-with-dependency-on-my-pkg",
                 "target": "my-lib",
                 "type": "static",
               },
-              Object {
+              {
                 "dependencyCollection": "dev-dependencies",
+                "rawVersionSpec": "0.0.1",
                 "source": "project-with-devDependency-on-my-pkg",
                 "target": "my-lib",
                 "type": "static",
@@ -108,14 +108,14 @@ describe('release-version', () => {
             ],
             "newVersion": "1.0.0",
           },
-          "project-with-dependency-on-my-pkg": Object {
+          "project-with-dependency-on-my-pkg": {
             "currentVersion": "0.0.1",
-            "dependentProjects": Array [],
+            "dependentProjects": [],
             "newVersion": "1.0.0",
           },
-          "project-with-devDependency-on-my-pkg": Object {
+          "project-with-devDependency-on-my-pkg": {
             "currentVersion": "0.0.1",
-            "dependentProjects": Array [],
+            "dependentProjects": [],
             "newVersion": "1.0.0",
           },
         },
@@ -131,11 +131,9 @@ describe('release-version', () => {
     it(`should exit with code one and print guidance when not all of the given projects are appropriate for Rust versioning`, async () => {
       stubProcessExit = true;
 
-      const outputSpy = jest
-        .spyOn(output, 'error')
-        .mockImplementationOnce(() => {
-          return undefined as never;
-        });
+      const outputSpy = jest.spyOn(output, 'error').mockImplementationOnce(() => {
+        return undefined as never;
+      });
 
       await releaseVersionGenerator(tree, {
         projects: Object.values(projectGraph.nodes), // version all projects
@@ -160,9 +158,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
 
   describe('fixed release group', () => {
     it(`should work with semver keywords and exact semver versions`, async () => {
-      expect(
-        parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version
-      ).toEqual('0.0.1');
+      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version).toEqual(
+        '0.0.1'
+      );
       await releaseVersionGenerator(tree, {
         projects: Object.values(projectGraph.nodes), // version all projects
         projectGraph,
@@ -170,9 +168,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
         currentVersionResolver: 'disk',
         releaseGroup: createReleaseGroup('fixed'),
       });
-      expect(
-        parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version
-      ).toEqual('1.0.0');
+      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version).toEqual(
+        '1.0.0'
+      );
 
       await releaseVersionGenerator(tree, {
         projects: Object.values(projectGraph.nodes), // version all projects
@@ -181,9 +179,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
         currentVersionResolver: 'disk',
         releaseGroup: createReleaseGroup('fixed'),
       });
-      expect(
-        parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version
-      ).toEqual('1.1.0');
+      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version).toEqual(
+        '1.1.0'
+      );
 
       await releaseVersionGenerator(tree, {
         projects: Object.values(projectGraph.nodes), // version all projects
@@ -192,9 +190,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
         currentVersionResolver: 'disk',
         releaseGroup: createReleaseGroup('fixed'),
       });
-      expect(
-        parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version
-      ).toEqual('1.1.1');
+      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version).toEqual(
+        '1.1.1'
+      );
 
       await releaseVersionGenerator(tree, {
         projects: Object.values(projectGraph.nodes), // version all projects
@@ -203,9 +201,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
         currentVersionResolver: 'disk',
         releaseGroup: createReleaseGroup('fixed'),
       });
-      expect(
-        parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version
-      ).toEqual('1.2.3');
+      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version).toEqual(
+        '1.2.3'
+      );
     });
 
     it(`should apply the updated version to the projects, including updating dependents`, async () => {
@@ -217,10 +215,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
         releaseGroup: createReleaseGroup('fixed'),
       });
 
-      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib'))
-        .toMatchInlineSnapshot(`
-        Object {
-          "package": Object {
+      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib')).toMatchInlineSnapshot(`
+        {
+          "package": {
             "name": "my-lib",
             "version": "1.0.0",
           },
@@ -233,13 +230,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'project-with-dependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dependencies": Object {
-            "my-lib": Object {
+        {
+          "dependencies": {
+            "my-lib": {
               "version": "1.0.0",
             },
           },
-          "package": Object {
+          "package": {
             "name": "project-with-dependency-on-my-pkg",
             "version": "1.0.0",
           },
@@ -252,13 +249,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'project-with-devDependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dev-dependencies": Object {
-            "my-lib": Object {
+        {
+          "dev-dependencies": {
+            "my-lib": {
               "version": "1.0.0",
             },
           },
-          "package": Object {
+          "package": {
             "name": "project-with-devDependency-on-my-pkg",
             "version": "1.0.0",
           },
@@ -270,7 +267,7 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
   describe('independent release group', () => {
     describe('specifierSource: prompt', () => {
       it(`should appropriately prompt for each project independently and apply the version updates across all Cargo.toml files`, async () => {
-        enquirer.prompt = jest
+        (enquirer as unknown as { prompt: jest.Mock }).prompt = jest
           .fn()
           // First project will be minor
           .mockReturnValueOnce(Promise.resolve({ specifier: 'minor' }))
@@ -280,9 +277,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           .mockReturnValueOnce(Promise.resolve({ specifier: 'custom' }))
           .mockReturnValueOnce(Promise.resolve({ specifier: '1.2.3' }));
 
-        expect(
-          parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version
-        ).toEqual('0.0.1');
+        expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version).toEqual(
+          '0.0.1'
+        );
         expect(
           parseCargoTomlWithTree(
             tree,
@@ -307,10 +304,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           releaseGroup: createReleaseGroup('independent'),
         });
 
-        expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib'))
-          .toMatchInlineSnapshot(`
-          Object {
-            "package": Object {
+        expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib')).toMatchInlineSnapshot(`
+          {
+            "package": {
               "name": "my-lib",
               "version": "0.1.0",
             },
@@ -323,13 +319,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
             'project-with-dependency-on-my-pkg'
           )
         ).toMatchInlineSnapshot(`
-          Object {
-            "dependencies": Object {
-              "my-lib": Object {
+          {
+            "dependencies": {
+              "my-lib": {
                 "version": "0.1.0",
               },
             },
-            "package": Object {
+            "package": {
               "name": "project-with-dependency-on-my-pkg",
               "version": "0.0.2",
             },
@@ -342,13 +338,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
             'project-with-devDependency-on-my-pkg'
           )
         ).toMatchInlineSnapshot(`
-          Object {
-            "dev-dependencies": Object {
-              "my-lib": Object {
+          {
+            "dev-dependencies": {
+              "my-lib": {
                 "version": "0.1.0",
               },
             },
-            "package": Object {
+            "package": {
               "name": "project-with-devDependency-on-my-pkg",
               "version": "1.2.3",
             },
@@ -357,9 +353,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
       });
 
       it(`should respect an explicit user CLI specifier for all, even when projects are independent, and apply the version updates across all Cargo.toml files`, async () => {
-        expect(
-          parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version
-        ).toEqual('0.0.1');
+        expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version).toEqual(
+          '0.0.1'
+        );
         expect(
           parseCargoTomlWithTree(
             tree,
@@ -384,10 +380,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           releaseGroup: createReleaseGroup('independent'),
         });
 
-        expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib'))
-          .toMatchInlineSnapshot(`
-          Object {
-            "package": Object {
+        expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib')).toMatchInlineSnapshot(`
+          {
+            "package": {
               "name": "my-lib",
               "version": "4.5.6",
             },
@@ -401,13 +396,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
             'project-with-dependency-on-my-pkg'
           )
         ).toMatchInlineSnapshot(`
-          Object {
-            "dependencies": Object {
-              "my-lib": Object {
+          {
+            "dependencies": {
+              "my-lib": {
                 "version": "4.5.6",
               },
             },
-            "package": Object {
+            "package": {
               "name": "project-with-dependency-on-my-pkg",
               "version": "4.5.6",
             },
@@ -420,13 +415,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
             'project-with-devDependency-on-my-pkg'
           )
         ).toMatchInlineSnapshot(`
-          Object {
-            "dev-dependencies": Object {
-              "my-lib": Object {
+          {
+            "dev-dependencies": {
+              "my-lib": {
                 "version": "4.5.6",
               },
             },
-            "package": Object {
+            "package": {
               "name": "project-with-devDependency-on-my-pkg",
               "version": "4.5.6",
             },
@@ -435,9 +430,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
       });
 
       it(`should update dependents even when filtering to a subset of projects which do not include those dependents`, async () => {
-        expect(
-          parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version
-        ).toEqual('0.0.1');
+        expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version).toEqual(
+          '0.0.1'
+        );
         expect(
           parseCargoTomlWithTree(
             tree,
@@ -445,13 +440,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
             'project-with-dependency-on-my-pkg'
           )
         ).toMatchInlineSnapshot(`
-          Object {
-            "dependencies": Object {
-              "my-lib": Object {
+          {
+            "dependencies": {
+              "my-lib": {
                 "version": "0.0.1",
               },
             },
-            "package": Object {
+            "package": {
               "name": "project-with-dependency-on-my-pkg",
               "version": "0.0.1",
             },
@@ -464,13 +459,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
             'project-with-devDependency-on-my-pkg'
           )
         ).toMatchInlineSnapshot(`
-          Object {
-            "dev-dependencies": Object {
-              "my-lib": Object {
+          {
+            "dev-dependencies": {
+              "my-lib": {
                 "version": "0.0.1",
               },
             },
-            "package": Object {
+            "package": {
               "name": "project-with-devDependency-on-my-pkg",
               "version": "0.0.1",
             },
@@ -486,10 +481,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           releaseGroup: createReleaseGroup('independent'),
         });
 
-        expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib'))
-          .toMatchInlineSnapshot(`
-          Object {
-            "package": Object {
+        expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib')).toMatchInlineSnapshot(`
+          {
+            "package": {
               "name": "my-lib",
               "version": "9.9.9",
             },
@@ -502,13 +496,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
             'project-with-dependency-on-my-pkg'
           )
         ).toMatchInlineSnapshot(`
-          Object {
-            "dependencies": Object {
-              "my-lib": Object {
+          {
+            "dependencies": {
+              "my-lib": {
                 "version": "9.9.9",
               },
             },
-            "package": Object {
+            "package": {
               "name": "project-with-dependency-on-my-pkg",
               "version": "0.0.1",
             },
@@ -521,13 +515,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
             'project-with-devDependency-on-my-pkg'
           )
         ).toMatchInlineSnapshot(`
-          Object {
-            "dev-dependencies": Object {
-              "my-lib": Object {
+          {
+            "dev-dependencies": {
+              "my-lib": {
                 "version": "9.9.9",
               },
             },
-            "package": Object {
+            "package": {
               "name": "project-with-devDependency-on-my-pkg",
               "version": "0.0.1",
             },
@@ -566,10 +560,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           releaseGroup: createReleaseGroup('independent'),
         });
 
-        expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib'))
-          .toMatchInlineSnapshot(`
-          Object {
-            "package": Object {
+        expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib')).toMatchInlineSnapshot(`
+          {
+            "package": {
               "name": "my-lib",
               "version": "9.9.9",
             },
@@ -581,9 +574,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
 
   describe('leading v in version', () => {
     it(`should strip a leading v from the provided specifier`, async () => {
-      expect(
-        parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version
-      ).toEqual('0.0.1');
+      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version).toEqual(
+        '0.0.1'
+      );
 
       await releaseVersionGenerator(tree, {
         projects: Object.values(projectGraph.nodes), // version all projects
@@ -593,10 +586,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
         releaseGroup: createReleaseGroup('fixed'),
       });
 
-      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib'))
-        .toMatchInlineSnapshot(`
-        Object {
-          "package": Object {
+      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib')).toMatchInlineSnapshot(`
+        {
+          "package": {
             "name": "my-lib",
             "version": "8.8.8",
           },
@@ -610,13 +602,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'project-with-dependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dependencies": Object {
-            "my-lib": Object {
+        {
+          "dependencies": {
+            "my-lib": {
               "version": "8.8.8",
             },
           },
-          "package": Object {
+          "package": {
             "name": "project-with-dependency-on-my-pkg",
             "version": "8.8.8",
           },
@@ -630,13 +622,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'project-with-devDependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dev-dependencies": Object {
-            "my-lib": Object {
+        {
+          "dev-dependencies": {
+            "my-lib": {
               "version": "8.8.8",
             },
           },
-          "package": Object {
+          "package": {
             "name": "project-with-devDependency-on-my-pkg",
             "version": "8.8.8",
           },
@@ -685,8 +677,7 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           projectRoot: 'libs/another-project-with-devDependency-on-my-pkg',
           packageName: 'another-project-with-devDependency-on-my-pkg',
           version: '0.0.1',
-          cargoTomlPath:
-            'libs/another-project-with-devDependency-on-my-pkg/Cargo.toml',
+          cargoTomlPath: 'libs/another-project-with-devDependency-on-my-pkg/Cargo.toml',
           localDependencies: [
             {
               projectName: 'my-lib',
@@ -702,9 +693,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
     });
 
     it('should work with an empty prefix', async () => {
-      expect(
-        parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version
-      ).toEqual('0.0.1');
+      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version).toEqual(
+        '0.0.1'
+      );
       await releaseVersionGenerator(tree, {
         projects: Object.values(projectGraph.nodes), // version all projects
         projectGraph,
@@ -713,10 +704,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
         releaseGroup: createReleaseGroup('fixed'),
         versionPrefix: '',
       });
-      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib'))
-        .toMatchInlineSnapshot(`
-        Object {
-          "package": Object {
+      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib')).toMatchInlineSnapshot(`
+        {
+          "package": {
             "name": "my-lib",
             "version": "9.9.9",
           },
@@ -730,13 +720,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'project-with-dependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dependencies": Object {
-            "my-lib": Object {
+        {
+          "dependencies": {
+            "my-lib": {
               "version": "9.9.9",
             },
           },
-          "package": Object {
+          "package": {
             "name": "project-with-dependency-on-my-pkg",
             "version": "9.9.9",
           },
@@ -750,13 +740,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'project-with-devDependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dev-dependencies": Object {
-            "my-lib": Object {
+        {
+          "dev-dependencies": {
+            "my-lib": {
               "version": "9.9.9",
             },
           },
-          "package": Object {
+          "package": {
             "name": "project-with-devDependency-on-my-pkg",
             "version": "9.9.9",
           },
@@ -770,13 +760,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'another-project-with-devDependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dev-dependencies": Object {
-            "my-lib": Object {
+        {
+          "dev-dependencies": {
+            "my-lib": {
               "version": "9.9.9",
             },
           },
-          "package": Object {
+          "package": {
             "name": "another-project-with-devDependency-on-my-pkg",
             "version": "9.9.9",
           },
@@ -785,9 +775,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
     });
 
     it('should work with a ^ prefix', async () => {
-      expect(
-        parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version
-      ).toEqual('0.0.1');
+      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version).toEqual(
+        '0.0.1'
+      );
       await releaseVersionGenerator(tree, {
         projects: Object.values(projectGraph.nodes), // version all projects
         projectGraph,
@@ -796,10 +786,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
         releaseGroup: createReleaseGroup('fixed'),
         versionPrefix: '^',
       });
-      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib'))
-        .toMatchInlineSnapshot(`
-        Object {
-          "package": Object {
+      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib')).toMatchInlineSnapshot(`
+        {
+          "package": {
             "name": "my-lib",
             "version": "9.9.9",
           },
@@ -813,13 +802,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'project-with-dependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dependencies": Object {
-            "my-lib": Object {
+        {
+          "dependencies": {
+            "my-lib": {
               "version": "^9.9.9",
             },
           },
-          "package": Object {
+          "package": {
             "name": "project-with-dependency-on-my-pkg",
             "version": "9.9.9",
           },
@@ -832,13 +821,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'project-with-devDependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dev-dependencies": Object {
-            "my-lib": Object {
+        {
+          "dev-dependencies": {
+            "my-lib": {
               "version": "^9.9.9",
             },
           },
-          "package": Object {
+          "package": {
             "name": "project-with-devDependency-on-my-pkg",
             "version": "9.9.9",
           },
@@ -851,13 +840,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'another-project-with-devDependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dev-dependencies": Object {
-            "my-lib": Object {
+        {
+          "dev-dependencies": {
+            "my-lib": {
               "version": "^9.9.9",
             },
           },
-          "package": Object {
+          "package": {
             "name": "another-project-with-devDependency-on-my-pkg",
             "version": "9.9.9",
           },
@@ -866,9 +855,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
     });
 
     it('should work with a ~ prefix', async () => {
-      expect(
-        parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version
-      ).toEqual('0.0.1');
+      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version).toEqual(
+        '0.0.1'
+      );
       await releaseVersionGenerator(tree, {
         projects: Object.values(projectGraph.nodes), // version all projects
         projectGraph,
@@ -877,10 +866,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
         releaseGroup: createReleaseGroup('fixed'),
         versionPrefix: '~',
       });
-      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib'))
-        .toMatchInlineSnapshot(`
-        Object {
-          "package": Object {
+      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib')).toMatchInlineSnapshot(`
+        {
+          "package": {
             "name": "my-lib",
             "version": "9.9.9",
           },
@@ -894,13 +882,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'project-with-dependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dependencies": Object {
-            "my-lib": Object {
+        {
+          "dependencies": {
+            "my-lib": {
               "version": "~9.9.9",
             },
           },
-          "package": Object {
+          "package": {
             "name": "project-with-dependency-on-my-pkg",
             "version": "9.9.9",
           },
@@ -913,13 +901,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'project-with-devDependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dev-dependencies": Object {
-            "my-lib": Object {
+        {
+          "dev-dependencies": {
+            "my-lib": {
               "version": "~9.9.9",
             },
           },
-          "package": Object {
+          "package": {
             "name": "project-with-devDependency-on-my-pkg",
             "version": "9.9.9",
           },
@@ -932,13 +920,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'another-project-with-devDependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dev-dependencies": Object {
-            "my-lib": Object {
+        {
+          "dev-dependencies": {
+            "my-lib": {
               "version": "~9.9.9",
             },
           },
-          "package": Object {
+          "package": {
             "name": "another-project-with-devDependency-on-my-pkg",
             "version": "9.9.9",
           },
@@ -947,9 +935,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
     });
 
     it('should respect any existing prefix when set to "auto"', async () => {
-      expect(
-        parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version
-      ).toEqual('0.0.1');
+      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version).toEqual(
+        '0.0.1'
+      );
       await releaseVersionGenerator(tree, {
         projects: Object.values(projectGraph.nodes), // version all projects
         projectGraph,
@@ -958,10 +946,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
         releaseGroup: createReleaseGroup('fixed'),
         versionPrefix: 'auto',
       });
-      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib'))
-        .toMatchInlineSnapshot(`
-        Object {
-          "package": Object {
+      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib')).toMatchInlineSnapshot(`
+        {
+          "package": {
             "name": "my-lib",
             "version": "9.9.9",
           },
@@ -975,13 +962,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'project-with-dependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dependencies": Object {
-            "my-lib": Object {
+        {
+          "dependencies": {
+            "my-lib": {
               "version": "~9.9.9",
             },
           },
-          "package": Object {
+          "package": {
             "name": "project-with-dependency-on-my-pkg",
             "version": "9.9.9",
           },
@@ -994,13 +981,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'project-with-devDependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dev-dependencies": Object {
-            "my-lib": Object {
+        {
+          "dev-dependencies": {
+            "my-lib": {
               "version": "^9.9.9",
             },
           },
-          "package": Object {
+          "package": {
             "name": "project-with-devDependency-on-my-pkg",
             "version": "9.9.9",
           },
@@ -1013,13 +1000,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'another-project-with-devDependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dev-dependencies": Object {
-            "my-lib": Object {
+        {
+          "dev-dependencies": {
+            "my-lib": {
               "version": "9.9.9",
             },
           },
-          "package": Object {
+          "package": {
             "name": "another-project-with-devDependency-on-my-pkg",
             "version": "9.9.9",
           },
@@ -1028,9 +1015,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
     });
 
     it('should use the behavior of "auto" by default', async () => {
-      expect(
-        parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version
-      ).toEqual('0.0.1');
+      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib').package.version).toEqual(
+        '0.0.1'
+      );
       await releaseVersionGenerator(tree, {
         projects: Object.values(projectGraph.nodes), // version all projects
         projectGraph,
@@ -1039,10 +1026,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
         releaseGroup: createReleaseGroup('fixed'),
         versionPrefix: undefined,
       });
-      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib'))
-        .toMatchInlineSnapshot(`
-        Object {
-          "package": Object {
+      expect(parseCargoTomlWithTree(tree, 'libs/my-lib', 'my-lib')).toMatchInlineSnapshot(`
+        {
+          "package": {
             "name": "my-lib",
             "version": "9.9.9",
           },
@@ -1056,13 +1042,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'project-with-dependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dependencies": Object {
-            "my-lib": Object {
+        {
+          "dependencies": {
+            "my-lib": {
               "version": "~9.9.9",
             },
           },
-          "package": Object {
+          "package": {
             "name": "project-with-dependency-on-my-pkg",
             "version": "9.9.9",
           },
@@ -1075,13 +1061,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'project-with-devDependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dev-dependencies": Object {
-            "my-lib": Object {
+        {
+          "dev-dependencies": {
+            "my-lib": {
               "version": "^9.9.9",
             },
           },
-          "package": Object {
+          "package": {
             "name": "project-with-devDependency-on-my-pkg",
             "version": "9.9.9",
           },
@@ -1094,13 +1080,13 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
           'another-project-with-devDependency-on-my-pkg'
         )
       ).toMatchInlineSnapshot(`
-        Object {
-          "dev-dependencies": Object {
-            "my-lib": Object {
+        {
+          "dev-dependencies": {
+            "my-lib": {
               "version": "9.9.9",
             },
           },
-          "package": Object {
+          "package": {
             "name": "another-project-with-devDependency-on-my-pkg",
             "version": "9.9.9",
           },
@@ -1111,11 +1097,9 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
     it(`should exit with code one and print guidance for invalid prefix values`, async () => {
       stubProcessExit = true;
 
-      const outputSpy = jest
-        .spyOn(output, 'error')
-        .mockImplementationOnce(() => {
-          return undefined as never;
-        });
+      const outputSpy = jest.spyOn(output, 'error').mockImplementationOnce(() => {
+        return undefined as never;
+      });
 
       await releaseVersionGenerator(tree, {
         projects: Object.values(projectGraph.nodes), // version all projects
@@ -1123,7 +1107,7 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
         specifier: 'major',
         currentVersionResolver: 'disk',
         releaseGroup: createReleaseGroup('fixed'),
-        versionPrefix: '$' as any,
+        versionPrefix: '$' as 'auto',
       });
 
       expect(outputSpy).toHaveBeenCalledWith({

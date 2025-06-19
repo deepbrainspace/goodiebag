@@ -22,10 +22,7 @@ interface NormalizedSchema extends AddWasmGeneratorSchema {
   projectRoot: string;
 }
 
-function normalizeOptions(
-  tree: Tree,
-  options: AddWasmGeneratorSchema
-): NormalizedSchema {
+function normalizeOptions(tree: Tree, options: AddWasmGeneratorSchema): NormalizedSchema {
   const project = readProjectConfiguration(tree, options.project);
 
   const projectName = project.name ?? options.project ?? '';
@@ -48,26 +45,15 @@ function addFiles(tree: Tree, options: NormalizedSchema) {
     offsetFromRoot: offsetFromRoot(options.projectRoot),
     template: '',
   };
-  generateFiles(
-    tree,
-    path.join(__dirname, 'files'),
-    options.projectRoot,
-    templateOptions
-  );
+  generateFiles(tree, path.join(__dirname, 'files'), options.projectRoot, templateOptions);
 }
 
 function updateCargo(tree: Tree, options: NormalizedSchema) {
-  const cargoToml = parseCargoTomlWithTree(
-    tree,
-    options.projectRoot,
-    options.projectName
-  );
+  const cargoToml = parseCargoTomlWithTree(tree, options.projectRoot, options.projectName);
 
   modifyCargoTable(cargoToml, 'lib', 'crate-type', ['cdylib', 'rlib']);
 
-  modifyCargoTable(cargoToml, 'feature', 'default', [
-    'console_error_panic_hook',
-  ]);
+  modifyCargoTable(cargoToml, 'feature', 'default', ['console_error_panic_hook']);
 
   modifyCargoTable(cargoToml, 'dependencies', 'wasm-bindgen', '0.2');
 
@@ -92,15 +78,11 @@ function updateCargo(tree: Tree, options: NormalizedSchema) {
   modifyCargoTable(cargoToml, 'dev-dependencies', 'wasm-bindgen-test', '0.3');
 
   modifyCargoNestedTable(cargoToml, 'profile', 'release', {
-    [TOML.commentFor('opt-level')]:
-      'Tell `rustc` to optimize for small code size.',
+    [TOML.commentFor('opt-level')]: 'Tell `rustc` to optimize for small code size.',
     'opt-level': 's',
   });
 
-  tree.write(
-    options.projectRoot + '/Cargo.toml',
-    stringifyCargoToml(cargoToml)
-  );
+  tree.write(options.projectRoot + '/Cargo.toml', stringifyCargoToml(cargoToml));
 }
 
 function updateBuildTarget(tree: Tree, options: NormalizedSchema) {
@@ -114,10 +96,7 @@ function updateBuildTarget(tree: Tree, options: NormalizedSchema) {
   updateProjectConfiguration(tree, options.projectName, configuration);
 }
 
-export default async function wasmGenerator(
-  tree: Tree,
-  options: AddWasmGeneratorSchema
-) {
+export default async function wasmGenerator(tree: Tree, options: AddWasmGeneratorSchema) {
   const normalizedOptions = normalizeOptions(tree, options);
   addFiles(tree, normalizedOptions);
   updateCargo(tree, normalizedOptions);

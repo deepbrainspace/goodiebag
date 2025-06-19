@@ -7,11 +7,9 @@ export function runProcess(
   ...args: string[]
 ): { success: boolean } | PromiseLike<{ success: boolean }> {
   const metadata = cargoMetadata();
-  const targetDir =
-    metadata?.target_directory ??
-    joinPathFragments(workspaceRoot, 'dist', 'cargo');
+  const targetDir = metadata?.target_directory ?? joinPathFragments(workspaceRoot, 'dist', 'cargo');
 
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     if (process.env.VERCEL) {
       // Vercel doesnt have support for cargo atm, so auto success builds
       return resolve({ success: true });
