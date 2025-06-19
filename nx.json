@@ -135,9 +135,5 @@
         "targetName": "jest:test"
       }
     }
-  ],
-  "workspaceLayout": {
-    "projectNameAndRootFormat": "as-provided"
-  },
-  "defaultProject": "nx-surrealdb"
+  ]
 }
