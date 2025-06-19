@@ -4,7 +4,11 @@
   "description": "GoodieBag of tools and libraries for DeepBrain projects",
   "private": true,
   "type": "module",
-  "workspaces":["packages/*", "apps/*", "libs/*"],
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "libs/*"
+  ],
   "packageManager": "pnpm@9.0.0",
   "scripts": {
     "build": "nx run-many --target=build --all",
