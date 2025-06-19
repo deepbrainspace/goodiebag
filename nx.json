@@ -86,22 +86,15 @@
     "projectsRelationship": "independent",
     "version": {
       "conventionalCommits": true,
-      "fallbackCurrentVersionResolver": "disk",
-      "git": {
-        "commit": true,
-        "tag": true
-      }
+      "fallbackCurrentVersionResolver": "disk"
     },
     "changelog": {
-      "automaticFromRef": true,
-      "git": {
-        "commit": true,
-        "tag": true
-      }
+      "automaticFromRef": true
     },
     "groups": {
       "nx-plugins": {
         "projects": ["nx-*"],
+        "version": {},
         "changelog": {
           "projectChangelogs": {
             "createRelease": "github",

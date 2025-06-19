@@ -20,7 +20,7 @@
     "install": {
       "executor": "nx:run-commands",
       "outputs": [],
-      "cache": false,
+      "cache": true,
       "options": {
         "commands": [
           {
@@ -32,30 +32,27 @@
         "parallel": false
       }
     },
-    "build-ts": {
+    "build": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "dependsOn": ["install"],
-      "cache": false,
+      "cache": true,
       "options": {
-        "outputPath": "{workspaceRoot}/packages/nx-surrealdb/dist",
-        "main": "{workspaceRoot}/packages/nx-surrealdb/src/index.ts",
-        "tsConfig": "{workspaceRoot}/packages/nx-surrealdb/tsconfig.lib.json",
+        "outputPath": "{projectRoot}/dist",
+        "main": "{projectRoot}/src/index.ts",
+        "tsConfig": "{projectRoot}/tsconfig.lib.json",
         "assets": [
+          "{projectRoot}/*.json",
+          "{projectRoot}/*.md",
           {
-            "input": "packages/nx-surrealdb",
-            "glob": "{package.json,generators.json,executors.json,README.md,LICENSE.md,ARCHITECTURE.md}",
-            "output": "./"
-          },
-          {
-            "input": "packages/nx-surrealdb/src",
+            "input": "{projectRoot}/src",
             "glob": "**/schema.json",
             "output": "src"
           },
           {
-            "input": "packages/nx-surrealdb/src/schema",
-            "glob": "**/*",
-            "output": "src/schema"
+            "input": "{projectRoot}/src",
+            "glob": "**/files/**",
+            "output": "src"
           }
         ]
       },
@@ -63,42 +60,19 @@
         "production": {}
       }
     },
-    "build": {
-      "executor": "nx:run-commands",
-      "dependsOn": ["build-ts"],
-      "options": {
-        "commands": [
-          {
-            "command": "cp README.md ARCHITECTURE.md executors.json generators.json package.json pnpm-lock.yaml dist/",
-            "forwardAllArgs": false
-          },
-          {
-            "command": "cp -r src/generators/init/files dist/src/generators/init/",
-            "forwardAllArgs": false
-          },
-          {
-            "command": "cp -r src/generators/migration/files dist/src/generators/migration/",
-            "forwardAllArgs": false
-          }
-        ],
-        "cwd": "packages/nx-surrealdb",
-        "parallel": false
-      }
-    },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "dependsOn": ["format"],
       "options": {
         "lintFilePatterns": [
-          "packages/nx-surrealdb/src/**/*.ts",
-          "packages/nx-surrealdb/src/**/*.js"
+          "{projectRoot}/src/**/*.ts",
+          "{projectRoot}/src/**/*.js"
         ]
       }
     },
     "test": {
       "executor": "nx:run-commands",
       "dependsOn": ["install"],
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": ["{projectRoot}/coverage"],
       "cache": false,
       "options": {
         "commands": [
@@ -107,7 +81,33 @@
             "forwardAllArgs": false
           }
         ],
-        "cwd": "packages/nx-surrealdb",
+        "cwd": "{projectRoot}",
+        "parallel": false
+      }
+    },
+    "version": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx release version --projects=nx-surrealdb",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "changelog": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx release changelog --projects=nx-surrealdb",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "release": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx release version --projects=nx-surrealdb",
+          "nx release changelog --projects=nx-surrealdb",
+          "nx release publish --projects=nx-surrealdb"
+        ],
+        "cwd": "{workspaceRoot}",
         "parallel": false
       }
     }

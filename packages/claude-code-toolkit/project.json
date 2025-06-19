@@ -1,7 +1,7 @@
 {
   "name": "claude-code-toolkit",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/claude-code-toolkit/src",
+  "sourceRoot": "{projectRoot}/src",
   "projectType": "application",
   "tags": [
     "type:cli-tool",
@@ -58,7 +58,7 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "cargo run --",
-        "cwd": "packages/claude-code-toolkit"
+        "cwd": "{projectRoot}"
       }
     },
     "install": {
@@ -81,7 +81,7 @@
           "echo '  3. Install daemon service: claude-code-toolkit service install'",
           "echo '  4. Check status: claude-code-toolkit status'"
         ],
-        "cwd": "packages/claude-code-toolkit",
+        "cwd": "{projectRoot}",
         "parallel": false
       }
     },
@@ -91,7 +91,7 @@
       "outputs": ["{projectRoot}/target/package"],
       "options": {
         "command": "cargo package --target-dir {projectRoot}/target",
-        "cwd": "packages/claude-code-toolkit"
+        "cwd": "{projectRoot}"
       }
     },
     "nx-release-publish": {
@@ -119,7 +119,7 @@
       "dependsOn": ["fmt", "lint", "test"],
       "options": {
         "command": "echo '✅ All quality checks passed'",
-        "cwd": "packages/claude-code-toolkit"
+        "cwd": "{projectRoot}"
       }
     },
     "ci": {
@@ -127,7 +127,7 @@
       "dependsOn": ["quality", "build"],
       "options": {
         "command": "echo '🚀 CI pipeline completed successfully'",
-        "cwd": "packages/claude-code-toolkit"
+        "cwd": "{projectRoot}"
       }
     }
   }
