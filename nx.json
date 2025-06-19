@@ -94,8 +94,7 @@
     "groups": {
       "nx-plugins": {
         "projects": ["nx-*"],
-        "version": {
-        },
+        "version": {},
         "changelog": {
           "projectChangelogs": {
             "createRelease": "github",
