@@ -1,4 +1,4 @@
-use crate::{ error::*, providers::github::GitHubManager, config::manager::ConfigurationManager };
+use crate::{ config::manager::ConfigurationManager, error::*, providers::github::GitHubManager };
 use console::{ Emoji, style };
 
 static SUCCESS: Emoji<'_, '_> = Emoji("✅ ", "");

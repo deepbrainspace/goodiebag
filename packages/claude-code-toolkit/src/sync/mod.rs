@@ -1,9 +1,9 @@
 //! Credential synchronization service following Service Pattern
 
-use crate::config::{ manager::ConfigurationManager, credentials::CredentialsManager };
-use crate::traits::config::ConfigManager;
+use crate::config::{ credentials::CredentialsManager, manager::ConfigurationManager };
 use crate::error::Result;
 use crate::providers::registry::ProviderRegistry;
+use crate::traits::config::ConfigManager;
 use crate::traits::{ Credentials, SecretManager, SecretMapping, SyncResult };
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -66,11 +66,11 @@ impl SyncService {
     let oauth_obj = cred_value
       .get(&config.credentials.json_path)
       .and_then(|v| v.as_object())
-      .ok_or_else(||
+      .ok_or_else(|| {
         crate::error::ClaudeCodeError::InvalidCredentials(
           format!("Could not find '{}' in credentials file", config.credentials.json_path)
         )
-      )?;
+      })?;
 
     // Build credential data dynamically based on configured mappings
     let mut credential_data = HashMap::new();

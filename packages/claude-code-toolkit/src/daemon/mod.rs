@@ -1,8 +1,8 @@
 use crate::{
-  config::{ manager::ConfigurationManager, credentials::CredentialsManager },
-  traits::config::ConfigManager,
+  config::{ credentials::CredentialsManager, manager::ConfigurationManager },
   error::*,
   sync::SyncService,
+  traits::config::ConfigManager,
   utils::notifications,
 };
 use std::time::Duration;

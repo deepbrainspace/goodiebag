@@ -232,9 +232,7 @@ impl ConfigurationManager {
       return Err(ClaudeCodeError::Generic(format!("Organization '{}' already exists", name)));
     }
 
-    config.github.organizations.push(crate::types::GitHubOrganization {
-      name,
-    });
+    config.github.organizations.push(crate::types::GitHubOrganization { name });
 
     self.save_config(&config).await
   }
@@ -262,9 +260,7 @@ impl ConfigurationManager {
       return Err(ClaudeCodeError::Generic(format!("Repository '{}' already exists", repo)));
     }
 
-    config.github.repositories.push(crate::types::GitHubRepository {
-      repo,
-    });
+    config.github.repositories.push(crate::types::GitHubRepository { repo });
 
     self.save_config(&config).await
   }

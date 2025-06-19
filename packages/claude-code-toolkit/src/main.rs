@@ -28,13 +28,13 @@ async fn main() -> Result<()> {
     }
     Commands::Org(org_cmd) =>
       match org_cmd {
-        OrgCommands::Add { name } => { commands::org::handle_add_org(name).await }
+        OrgCommands::Add { name } => commands::org::handle_add_org(name).await,
         OrgCommands::Remove { name } => commands::org::handle_remove_org(name).await,
         OrgCommands::List => commands::org::handle_list_orgs().await,
       }
     Commands::Repo(repo_cmd) =>
       match repo_cmd {
-        RepoCommands::Add { repo } => { commands::repo::handle_add_repo(repo).await }
+        RepoCommands::Add { repo } => commands::repo::handle_add_repo(repo).await,
         RepoCommands::Remove { repo } => commands::repo::handle_remove_repo(repo).await,
         RepoCommands::List => commands::repo::handle_list_repos().await,
       }

@@ -20,7 +20,9 @@ impl CredentialsManager {
   }
 
   pub fn with_path(path: PathBuf) -> Self {
-    Self { credentials_path: path }
+    Self {
+      credentials_path: path,
+    }
   }
 
   pub async fn read_credentials(&self) -> Result<ClaudeCredentials> {

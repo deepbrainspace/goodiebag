@@ -1,4 +1,4 @@
-use crate::{ error::*, providers::github::GitHubManager, config::manager::ConfigurationManager };
+use crate::{ config::manager::ConfigurationManager, error::*, providers::github::GitHubManager };
 use console::{ Term, style };
 use std::io::{ self, Write };
 

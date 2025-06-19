@@ -1,5 +1,5 @@
 use crate::{
-  config::{ manager::ConfigurationManager, credentials::CredentialsManager },
+  config::{ credentials::CredentialsManager, manager::ConfigurationManager },
   error::*,
   utils::systemd::SystemdManager,
 };

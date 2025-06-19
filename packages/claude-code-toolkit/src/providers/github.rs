@@ -46,7 +46,7 @@ impl GitHubManager {
     let output = Command::new("gh")
       .args(["api", "user/orgs", "--jq", ".[].login"])
       .output().await
-      .map_err(|e| ClaudeCodeError::Process(format!("Failed to list organizations: {}", e)))?;
+      .map_err(|e| { ClaudeCodeError::Process(format!("Failed to list organizations: {}", e)) })?;
 
     if !output.status.success() {
       return Err(ClaudeCodeError::Process("Failed to fetch organizations from GitHub".to_string()));
