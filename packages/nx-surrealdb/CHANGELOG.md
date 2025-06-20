@@ -1,3 +1,13 @@
+## 0.2.2 (2025-06-20)
+
+### 🩹 Fixes
+
+- ensure .surql schema files are copied to dist during build ([#22](https://github.com/deepbrainspace/goodiebag/pull/22))
+
+### ❤️ Thank You
+
+- nayeem.ai @wizardsupreme
+
 ## 0.2.1 (2025-06-20)
 
 ### 🚀 Features
