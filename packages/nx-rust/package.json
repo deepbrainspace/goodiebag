@@ -1,13 +1,20 @@
 {
   "name": "@goodiebag/nx-rust",
-  "version": "3.0.0",
+  "version": "3.0.0-alpha.0",
   "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./release": "./src/release/index.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/deepbrainspace/goodiebag.git"
   },
   "license": "MIT",
   "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "generators": "./generators.json",
   "executors": "./executors.json",
   "dependencies": {

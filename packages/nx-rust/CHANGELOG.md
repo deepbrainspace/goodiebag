@@ -1,3 +1,18 @@
+## 3.0.0-alpha.0 (2025-06-20)
+
+### 🚀 Features
+
+- enhance release workflow and prepare nx-rust v3.0.0 ([#24](https://github.com/deepbrainspace/goodiebag/pull/24))
+
+### 🩹 Fixes
+
+- configure proper version resolvers for release groups ([34abfe3](https://github.com/deepbrainspace/goodiebag/commit/34abfe3))
+
+### ❤️ Thank You
+
+- nayeem.ai @wizardsupreme
+- wizard supreme @wizardsupreme
+
 ## [3.0.0] - 2024-12-20
 
 ### Added
