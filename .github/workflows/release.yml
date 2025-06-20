@@ -4,10 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version bump type (leave empty for automatic based on commits)'
+        description: 'Version bump type'
         required: false
         type: choice
+        default: 'auto'
         options:
+          - auto
           - patch
           - minor
           - major
@@ -37,12 +39,12 @@ jobs:
           echo "🚀 Starting release process..."
 
           # Determine version command
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            VERSION_CMD="nx release ${{ github.event.inputs.version }} --yes"
-            echo "📋 Using manual version bump: ${{ github.event.inputs.version }}"
-          else
-            VERSION_CMD="nx affected -t release --yes"
+          if [ "${{ github.event.inputs.version }}" = "auto" ] || [ -z "${{ github.event.inputs.version }}" ]; then
+            VERSION_CMD="nx affected -t release --parallel=5 --yes"
             echo "📋 Using automatic version determination from conventional commits"
+          else
+            VERSION_CMD="nx release ${{ github.event.inputs.version }} --parallel=5 --yes"
+            echo "📋 Using manual version bump: ${{ github.event.inputs.version }}"
           fi
 
           echo "🎯 Executing: $VERSION_CMD"
