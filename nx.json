@@ -89,21 +89,11 @@
       "fallbackCurrentVersionResolver": "disk"
     },
     "changelog": {
-      "automaticFromRef": true
+      "automaticFromRef": true,
+      "projectChangelogs": true,
+      "workspaceChangelog": true
     },
     "groups": {
-      "monorepo-root": {
-        "projects": ["."],
-        "version": {},
-        "changelog": {
-          "projectChangelogs": {
-            "createRelease": "github",
-            "file": true
-          }
-        },
-        "releaseTagPattern": "goodiebag-v{version}",
-        "projectsRelationship": "independent"
-      },
       "nx-plugins": {
         "projects": ["nx-*"],
         "version": {},
