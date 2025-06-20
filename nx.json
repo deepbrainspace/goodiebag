@@ -92,6 +92,18 @@
       "automaticFromRef": true
     },
     "groups": {
+      "monorepo-root": {
+        "projects": ["."],
+        "version": {},
+        "changelog": {
+          "projectChangelogs": {
+            "createRelease": "github",
+            "file": true
+          }
+        },
+        "releaseTagPattern": "goodiebag-v{version}",
+        "projectsRelationship": "independent"
+      },
       "nx-plugins": {
         "projects": ["nx-*"],
         "version": {},
