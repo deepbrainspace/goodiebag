@@ -45,7 +45,8 @@ git checkout -b feat/new-feature
 # ... make changes to packages/nx-surrealdb/ and .github/workflows/ ...
 
 # When ready for release, use Claude to generate changelog and commit
-claude release-commit
+claude
+/project:release-commit
 
 # Claude will:
 # 1. Detect affected packages via nx affected
@@ -60,7 +61,7 @@ claude release-commit
 # - changelog-rc.md (goodiebag 1.1.0-rc.1703123456)
 ```
 
-**Alternative**: Use `claude changelog` to generate changelog-rc.md without committing for review first.
+**Alternative**: Use `/project:changelog` to generate changelog-rc.md without committing for review first.
 
 ### 2. CI Workflow (PR Validation)
 
@@ -102,7 +103,8 @@ When you create a PR, the **CI workflow** validates code quality:
 
 ```bash
 # After PR is merged to main
-claude release-publish
+claude
+/project:release-publish
 
 # Claude will:
 # 1. Find packages and root project with changelog-rc.md files  
@@ -210,14 +212,17 @@ Result: "No packages affected" notification
 ### Claude Commands for Release Management
 
 ```bash
+# Start Claude and use project commands:
+claude
+
 # Generate changelog without committing (for review)
-claude changelog
+/project:changelog
 
 # Generate changelog and commit (ready for PR)
-claude release-commit
+/project:release-commit
 
 # Publish packages with changelog-rc.md files
-claude release-publish
+/project:release-publish
 ```
 
 ### Testing and Validation
