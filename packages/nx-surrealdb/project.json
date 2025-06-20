@@ -53,6 +53,11 @@
             "input": "{projectRoot}/src",
             "glob": "**/files/**",
             "output": "src"
+          },
+          {
+            "input": "{projectRoot}/src",
+            "glob": "**/*.surql",
+            "output": "src"
           }
         ]
       },
