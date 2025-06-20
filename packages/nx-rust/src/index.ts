@@ -8,4 +8,8 @@ const nxPlugin: NxPlugin = {
   createNodesV2,
 };
 
-export = nxPlugin;
+// Default export for NX plugin
+export default nxPlugin;
+
+// Export release functionality for NX Release system
+export * from './release';

@@ -8,9 +8,10 @@ const processExitSpy = jest.spyOn(process, 'exit').mockImplementation((...args) 
   return originalExit(...args);
 });
 
-import { ProjectGraph, Tree, output } from '@nx/devkit';
+import { ProjectGraph, Tree, output, joinPathFragments, workspaceRoot } from '@nx/devkit';
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import * as enquirer from 'enquirer';
+import { relative } from 'node:path';
 import { ReleaseGroupWithName } from 'nx/src/command-line/release/config/filter-release-groups';
 import { parseCargoTomlWithTree } from '../../utils/toml';
 import { releaseVersionGenerator } from './release-version';
@@ -138,7 +139,8 @@ describe('release-version', () => {
       // Get the project node to calculate the expected path dynamically
       const myLibProject = projectGraph.nodes['my-lib'];
       const packageRoot = myLibProject.data.root; // This is 'libs/my-lib'
-      const cargoTomlPath = `${packageRoot}/Cargo.toml`;
+      const cargoTomlPath = joinPathFragments(packageRoot, 'Cargo.toml');
+      const workspaceRelativeCargoTomlPath = relative(workspaceRoot, cargoTomlPath);
 
       await releaseVersionGenerator(tree, {
         projects: Object.values(projectGraph.nodes), // version all projects
@@ -149,7 +151,7 @@ describe('release-version', () => {
       });
 
       expect(outputSpy).toHaveBeenCalledWith({
-        title: `The project "my-lib" does not have a Cargo.toml available at ${cargoTomlPath}.
+        title: `The project "my-lib" does not have a Cargo.toml available at ${workspaceRelativeCargoTomlPath}.
 
 To fix this you will either need to add a Cargo.toml file at that location, or configure "release" within your nx.json to exclude "my-lib" from the current release group, or amend the packageRoot configuration to point to where the Cargo.toml should be.`,
       });

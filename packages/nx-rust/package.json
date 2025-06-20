@@ -1,10 +1,10 @@
 {
   "name": "@goodiebag/nx-rust",
-  "version": "3.0.0-alpha.0",
-  "main": "./src/index.js",
+  "version": "3.0.0-alpha.1",
+  "main": "./dist/src/index.js",
   "exports": {
-    ".": "./src/index.js",
-    "./release": "./src/release/index.js"
+    ".": "./dist/src/index.js",
+    "./release": "./dist/src/release/index.js"
   },
   "repository": {
     "type": "git",
@@ -18,8 +18,8 @@
   "generators": "./generators.json",
   "executors": "./executors.json",
   "dependencies": {
-    "@nx/devkit": ">= 19 < 21",
     "@ltd/j-toml": "1.38.0",
+    "@nx/devkit": ">= 19 < 21",
     "npm-run-path": "^4.0.1",
     "picocolors": "^1.1.1",
     "semver": "7.5.4",
@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",
+    "@goodiebag/nx-rust": "3.0.0-alpha",
     "@nx/eslint": "^21.2.0",
     "@nx/jest": "^21.2.0",
     "@nx/plugin": "^21.2.0",
