@@ -1,3 +1,13 @@
+## 3.0.0-alpha.1 (2025-06-20)
+
+### 🩹 Fixes
+
+- resolve workspace path issue in nx-rust release-version tests ([c008093](https://github.com/deepbrainspace/goodiebag/commit/c008093))
+
+### ❤️ Thank You
+
+- wizard supreme @wizardsupreme
+
 ## 3.0.0-alpha.0 (2025-06-20)
 
 ### 🚀 Features
