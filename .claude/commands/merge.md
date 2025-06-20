@@ -1,7 +1,7 @@
 # merge Command
 
 - add the following to the TODO and proceed:
-- check if the current code has a diff, if so add the TODOs from the `commitpr` command first.
+- check if the current code has a diff with main OR uncommitted change, if so add the TODOs from the `commitpr` command first.
 - **only upon successful finish** of `commitpr` step proceed further with the following steps.
 - if the build did not pass:
   - ask the user if we should fix the build or an explanation of why we are merging on a failed build.
