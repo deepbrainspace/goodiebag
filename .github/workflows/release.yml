@@ -41,7 +41,7 @@ jobs:
             VERSION_CMD="nx release ${{ github.event.inputs.version }} --yes"
             echo "📋 Using manual version bump: ${{ github.event.inputs.version }}"
           else
-            VERSION_CMD="nx release --yes"
+            VERSION_CMD="nx affected -t release --yes"
             echo "📋 Using automatic version determination from conventional commits"
           fi
 

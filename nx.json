@@ -89,7 +89,9 @@
       "fallbackCurrentVersionResolver": "disk"
     },
     "changelog": {
-      "automaticFromRef": true
+      "automaticFromRef": true,
+      "projectChangelogs": true,
+      "workspaceChangelog": true
     },
     "groups": {
       "nx-plugins": {
