@@ -39,6 +39,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Build affected packages
+        if: steps.detect.outputs.has-packages == 'true'
+        run: |
+          echo "🔨 Building affected packages before release..."
+          PACKAGES=$(echo '${{ steps.detect.outputs.packages }}' | jq -r '.[]' | tr '\n' ',' | sed 's/,$//')
+          echo "📦 Building packages: $PACKAGES"
+          nx run-many --target=build --projects=$PACKAGES --parallel=5
+
       - name: Release packages
         if: steps.detect.outputs.has-packages == 'true'
         run: |
