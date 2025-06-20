@@ -6,3 +6,6 @@ https://github.com/conikeec/mcpr
 https://github.com/disler/quick-data-mcp/tree/main
 https://llm.datasette.io/en/stable/index.html
 
+https://github.com/JamesIves/github-pages-deploy-action
+
+https://github.com/squidfunk/mkdocs-material - make documentatiovns
