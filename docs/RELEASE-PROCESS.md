@@ -1,47 +1,38 @@
 # Release Process
 
-This document explains the revolutionary AI-assisted release process for the Goodie-Bag monorepo, featuring a unique pre-commit changelog generation system that provides zero-friction releases.
+This document describes the release process for the Goodie-Bag monorepo, which uses pre-commit changelog generation to streamline releases.
 
 ## Overview
 
-Our release process uses a **three-part architecture** with AI-assisted changelog generation:
+The release process consists of three workflows:
 
-1. **Pre-commit Hook** - AI generates changelog-rc.md files for affected packages
-2. **CI Workflow** - Validates code quality (lint → test → build)
-3. **Release Workflow** - Publishes packages using pre-generated changelogs
+1. **Workflow 1: Pre-commit (Husky)** - Generates changelog-rc.md files for affected packages
+2. **Workflow 2: Post-PR CI** - Validates code quality (lint → test → build)
+3. **Workflow 3: Post-merge Release** - Publishes packages using pre-generated changelogs
 
-## 🎨 Three-Part Release Architecture
+## Workflow Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                     AI-ASSISTED CONTINUOUS CHANGELOG SYSTEM                      │
-└─────────────────────────────────────────────────────────────────────────────────┘
-
-    👨‍💻 Development               🤖 Pre-commit (Husky)           ✅ CI (PR)              🚀 Release (Manual)
-    
-┌─────────────────┐         ┌─────────────────────┐      ┌─────────────────┐      ┌─────────────────┐
-│                 │         │                     │      │                 │      │                 │
-│  Code Changes   │────────▶│  AI Changelog Gen   │─────▶│  Code Quality   │─────▶│  Publishing     │
-│                 │ commit  │                     │  PR  │                 │merge │                 │
-│ • feat: new API │         │ • nx affected       │      │ • Lint          │      │ • Find RC files │
-│ • fix: bug      │         │ • Version calc      │      │ • Test          │      │ • Strip RC      │
-│ • docs: update  │         │ • changelog-rc.md   │      │ • Build         │      │ • Publish npm   │
-│                 │         │   0.2.1-rc.{ts}     │      │ • Cache builds  │      │ • Git tag       │
-└─────────────────┘         └─────────────────────┘      └─────────────────┘      └─────────────────┘
-                                       │                          │                          │
-                                       ▼                          ▼                          ▼
-                               packages/nx-surrealdb/      CI validates all       packages published
-                               changelog-rc.md             code & builds         with final versions
+ Development         Pre-commit         CI (PR)           Release
+     │                  │                │                 │
+     ▼                  ▼                ▼                 ▼
+┌─────────┐       ┌──────────┐     ┌──────────┐     ┌──────────┐
+│ Code    │──────▶│ Generate │────▶│ Validate │────▶│ Publish  │
+│ Changes │commit │ Changelog│ PR  │ & Build  │merge│ Packages │
+└─────────┘       └──────────┘     └──────────┘     └──────────┘
+                        │                │                 │
+                        ▼                ▼                 ▼
+                  changelog-rc.md   cached builds    npm packages
 ```
 
-### Key Innovation: Pre-commit Changelog Generation
+### Pre-commit Changelog Generation
 
-**No other monorepo has this!** Our system generates reviewable changelogs BEFORE the PR is created:
+The system generates changelogs during the commit process:
 
-1. **Zero Developer Overhead**: Changelogs generated automatically on commit
-2. **PR Reviewability**: See exactly what will be released before merge
-3. **AI-Assisted**: Intelligent version calculation from conventional commits
-4. **Release Signal**: `changelog-rc.md` indicates package is ready for release
+1. **Automatic Detection**: Uses nx affected to find changed packages
+2. **Version Calculation**: Determines version from conventional commits
+3. **Changelog Creation**: Generates changelog-rc.md with RC version
+4. **Release Indicator**: Presence of changelog-rc.md signals readiness for release
 
 ## 🔄 Complete Release Flow
 
@@ -106,9 +97,9 @@ When you create a PR, the **CI workflow** validates code quality:
 
 **Note**: The changelog-rc.md file is already in the PR for review!
 
-### 3. Release Workflow (Manual Trigger)
+### 3. Release Workflow (Post-merge)
 
-**Triggered manually** via GitHub Actions when ready to release:
+**Triggered manually** via GitHub Actions when ready to release (automatic triggers planned):
 
 #### **Release Flow for Packages with changelog-rc.md:**
 ```
@@ -184,6 +175,12 @@ When you create a PR, the **CI workflow** validates code quality:
 - **Determination**: Strip RC suffix from changelog-rc.md
 - **npm tag**: `latest`
 - **GitHub**: Tagged as `{package}-v{version}`
+
+### Automatic Release Triggers (TODO)
+- **Trigger**: Merge to main with changelog-rc.md present
+- **Timing**: Immediate or batched (configurable)
+- **Safety**: Require approval for major versions
+- **Notification**: Slack/Discord webhook on release
 
 ```bash
 # Version calculation from commits:
@@ -350,25 +347,19 @@ pnpm whoami
 npm config set //registry.npmjs.org/:_authToken=$NPM_TOKEN
 ```
 
-## 🎨 System Benefits
-
-### Unique Innovation
-- ✅ **First-of-its-kind** - No other monorepo has AI-assisted pre-commit changelogs
-- ✅ **Zero-friction releases** - Changelog ready before PR is even created
-- ✅ **Full transparency** - Reviewers see exact release notes in PR
-- ✅ **AI-powered** - Leverages Claude Code for intelligent changelog generation
+## System Benefits
 
 ### Developer Experience
-- ✅ **Zero manual work** - Changelogs generated automatically on commit
-- ✅ **No version guessing** - AI calculates from conventional commits
-- ✅ **Skip when needed** - Easy override with --no-verify or [skip-changelog]
-- ✅ **Review before release** - See changelog in PR before merge
+- **Automated changelog generation** - Created during commit process
+- **Version calculation** - Based on conventional commits
+- **Skip capability** - Use --no-verify or [skip-changelog] when needed
+- **PR visibility** - Changelog visible for review before merge
 
-### Release Reliability
-- ✅ **Predictable releases** - changelog-rc.md acts as release signal
-- ✅ **Independent packages** - Each package releases on its own schedule
-- ✅ **Cached builds** - No rebuilding between CI and release
-- ✅ **Clean git history** - Release commits marked with [skip-changelog]
+### Release Process
+- **Clear release signals** - changelog-rc.md indicates readiness
+- **Independent packages** - Each package maintains own release cycle
+- **Build caching** - Reuses CI artifacts during release
+- **Clean commits** - Release commits marked with [skip-changelog]
 
 ## 🚀 Implementation Roadmap
 
@@ -395,6 +386,12 @@ npm config set //registry.npmjs.org/:_authToken=$NPM_TOKEN
 2. Enable for claude-code-toolkit
 3. Monitor and optimize performance
 4. Add caching for faster pre-commits
+
+### Phase 5: Automatic Release Triggers (Future)
+1. Detect merge to main with changelog-rc.md
+2. Auto-trigger release workflow for affected packages
+3. Configure release cadence (immediate vs batched)
+4. Add safety checks and notifications
 
 ## 🔗 Related Documentation
 
