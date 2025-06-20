@@ -1,10 +1,3 @@
-export interface SurrealDBConfig {
-  url?: string;
-  namespace?: string;
-  database?: string;
-  username?: string;
-  password?: string;
-}
 
 export interface ModuleConfig {
   name: string;
@@ -35,6 +28,14 @@ export interface ApplicationConfig {
       namespace: string;
     };
   };
+}
+
+export interface SurrealDBConfig {
+  url?: string;
+  namespace?: string;
+  database?: string;
+  username?: string;
+  password?: string;
 }
 
 export interface Migration {
