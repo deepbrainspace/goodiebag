@@ -114,7 +114,7 @@
       "rust-packages": {
         "projects": ["claude-code-toolkit"],
         "version": {
-          "generator": "@goodiebag/nx-rust:release-version",
+          "versionActions": "@goodiebag/nx-rust/release",
           "generatorOptions": {
             "currentVersionResolver": "git-tag",
             "fallbackCurrentVersionResolver": "disk"
