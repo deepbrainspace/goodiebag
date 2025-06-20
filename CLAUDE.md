@@ -1,16 +1,10 @@
 # CLAUDE.md
 
-## Repository Overview
+## Environment
+- we are running on WSL, so avoid trying to open GUI browsers. Use headless browsers for any browsing needs.
 
-DeepBrain NX Plugins monorepo. Primary plugin: `@deepbrainspace/nx-surrealdb`
-for SurrealDB migration management.
-
-## Key Commands
-
-- **Build**: `nx build nx-surrealdb`
-- **Test**: `nx test nx-surrealdb`
-- **Lint**: `nx lint nx-surrealdb`
-- **Release**: `nx release` or `nx release --dry-run`
+## Git Strategy
+- dont add 'Co-Authored-By: Claude noreply@anthropic.com' to commits or PR messages.
 
 ## Package Manager Preference
 
