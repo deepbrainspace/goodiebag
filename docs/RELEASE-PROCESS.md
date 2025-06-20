@@ -1,294 +1,200 @@
 # Release Process
 
-This document explains the automated release process for the Goodie-Bag monorepo, which uses an enhanced parallel CI/CD pipeline powered by GitHub Actions and NX.
+This document explains the revolutionary AI-assisted release process for the Goodie-Bag monorepo, featuring a unique pre-commit changelog generation system that provides zero-friction releases.
 
 ## Overview
 
-Our release process is fully automated and uses **AI-driven semantic versioning**:
+Our release process uses a **three-part architecture** with AI-assisted changelog generation:
 
-1. **CI Workflow** - Analyzes code changes to determine semantic versions (patch/minor/major)
-2. **Release Workflow** - Uses AI-determined versions to publish packages when merged to main
+1. **Pre-commit Hook** - AI generates changelog-rc.md files for affected packages
+2. **CI Workflow** - Validates code quality (lint → test → build)
+3. **Release Workflow** - Publishes packages using pre-generated changelogs
 
-## 🎨 Complete Pipeline Architecture
+## 🎨 Three-Part Release Architecture
 
 ```
-                             📋 GOODIE-BAG ENHANCED PARALLEL PIPELINE
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                     AI-ASSISTED CONTINUOUS CHANGELOG SYSTEM                      │
+└─────────────────────────────────────────────────────────────────────────────────┘
 
-┌─────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                        🔄 DEVELOPMENT FLOW                                                │
-└─────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-
-    👨‍💻 Developer                    🤖 CI Workflow (PR)                     🚀 Release Workflow (Main)
+    👨‍💻 Development               🤖 Pre-commit (Husky)           ✅ CI (PR)              🚀 Release (Manual)
     
-┌─────────────────┐           ┌─────────────────────────────────┐           ┌─────────────────────────────────┐
-│                 │           │                                 │           │                                 │
-│  Feature Work   │──────────▶│         PARALLEL MATRIX         │           │       PARALLEL SHIPPING         │
-│                 │   PR      │                                 │           │                                 │
-│ • Code changes  │           │  ┌─────────────────────────────┐ │           │  ┌─────────────────────────────┐ │
-│ • Git commit    │           │  │     🔍 NX Affected         │ │           │  │     🔍 NX Affected         │ │
-│ • Push branch   │           │  │   ┌─────────────────────┐   │ │           │  │   ┌─────────────────────┐   │ │
-│                 │           │  │   │ nx-surrealdb       │   │ │           │  │   │ nx-surrealdb       │   │ │
-└─────────────────┘           │  │   │ mcp-server-claude  │   │ │           │  │   │ mcp-server-claude  │   │ │
-                               │  │   └─────────────────────┘   │ │           │  │   └─────────────────────┘   │ │
-                               │  └─────────────────────────────┘ │           │  └─────────────────────────────┘ │
-                               │              │                  │           │              │                  │
-                               │              ▼                  │           │              ▼                  │
-                               │  ┌─────────────────────────────┐ │           │  ┌─────────────────────────────┐ │
-                               │  │    ⚡ PARALLEL VALIDATION   │ │           │  │     📦 PARALLEL PUBLISH     │ │
-                               │  │                             │ │           │  │                             │ │
-                               │  │ ┌────────┐  ┌────────────┐  │ │           │  │ ┌────────┐  ┌────────────┐  │ │
-                               │  │ │ lint   │  │ lint       │  │ │           │  │ │publish │  │ publish    │  │ │
-                               │  │ │ pkg-A  │  │ pkg-B      │  │ │           │  │ │ pkg-A  │  │ pkg-B      │  │ │
-                               │  │ │   ✅   │  │    ✅      │  │ │           │  │ │v1.2.0  │  │ v0.3.0     │  │ │
-                               │  │ └────────┘  └────────────┘  │ │           │  │ └────────┘  └────────────┘  │ │
-                               │  │                             │ │           │  │      │            │        │ │
-                               │  │ ┌────────┐  ┌────────────┐  │ │           │  │      ▼            ▼        │ │
-                               │  │ │ test   │  │ test       │  │ │           │  │ ┌────────┐  ┌────────────┐  │ │
-                               │  │ │ pkg-A  │  │ pkg-B      │  │ │           │  │ │release │  │ release    │  │ │
-                               │  │ │   ✅   │  │    ✅      │  │ │           │  │ │ pkg-A  │  │ pkg-B      │  │ │
-                               │  │ └────────┘  └────────────┘  │ │           │  │ │   ✅   │  │    ✅      │  │ │
-                               │  │                             │ │           │  │ └────────┘  └────────────┘  │ │
-                               │  │ ┌────────┐  ┌────────────┐  │ │  CACHED   │  │              │              │ │
-                               │  │ │ build  │  │ build      │  │ │ ARTIFACTS │  │              ▼              │ │
-                               │  │ │ pkg-A  │  │ pkg-B      │  │ │ ────────▶ │  │ ┌─────────────────────────┐  │ │
-                               │  │ │   ✅   │  │    ✅      │  │ │           │  │ │    🔄 FINALIZE          │  │ │
-                               │  │ └────────┘  └────────────┘  │ │           │  │ │                         │  │ │
-                               │  │              │              │ │           │  │ │ • Update package.json   │  │ │
-                               │  │              ▼              │ │           │  │ │ • Commit to main        │  │ │
-                               │  │ ┌─────────────────────────┐  │ │           │  │ │ • Push version updates  │  │ │
-                               │  │ │   🧠 AI ANALYSIS        │  │ │           │  │ │                         │  │ │
-                               │  │ │                         │  │ │           │  │ └─────────────────────────┘  │ │
-                               │  │ │ ┌─────────┐ ┌─────────┐ │  │ │           │  └─────────────────────────────┘ │
-                               │  │ │ │analyze  │ │analyze  │ │  │ │           │                                 │
-                               │  │ │ │ pkg-A   │ │ pkg-B   │ │  │ │           └─────────────────────────────────┘
-                               │  │ │ │patch ✅ │ │minor ✅ │ │  │ │           
-                               │  │ │ └─────────┘ └─────────┘ │  │ │           ┌─────────────────────────────────┐
-                               │  │ └─────────────────────────┘  │ │           │          📊 RESULTS             │
-                               │  │              │              │ │           │                                 │
-                               │  │              ▼              │ │           │ 📦 npm packages:               │
-                               │  │ ┌─────────────────────────┐  │ │           │ • pkg-A@v1.2.0 (next)          │
-                               │  │ │   📝 RELEASE PREVIEW    │  │ │           │ • pkg-B@sha.def456 (next)      │
-                               │  │ │                         │ │ │           │                                 │
-                               │  │ │ ┌─────────┐ ┌─────────┐ │  │ │           │ 🏷️ GitHub releases:            │
-                               │  │ │ │preview  │ │preview  │ │  │ │           │ • nx-surrealdb-v1.2.0           │
-                               │  │ │ │ pkg-A   │ │ pkg-B   │ │  │ │           │ • mcp-server-claude-sha.def456  │
-                               │  │ │ │   ✅    │ │   ✅    │ │  │ │           │                                 │
-                               │  │ │ └─────────┘ └─────────┘ │  │ │           │ 🔄 Version commits:             │
-                               │  │ └─────────────────────────┘  │ │           │ • package.json updated         │
-                               │  │              │              │ │           │ • Changes pushed to main       │
-                               │  │              ▼              │ │           │                                 │
-                               │  │ ┌─────────────────────────┐  │ │           └─────────────────────────────────┘
-                               │  │ │     💬 PR COMMENT      │  │ │           
-                               │  │ │                         │  │ │           
-                               │  │ │ 🚀 Release Preview      │  │ │           
-                               │  │ │                         │  │ │           
-                               │  │ │ Affected Packages: 2    │  │ │           
-                               │  │ │ • nx-surrealdb (patch)  │  │ │           
-                               │  │ │ • mcp-server (minor)    │  │ │           
-                               │  │ │                         │  │ │           
-                               │  │ │ Ready for review! ✅    │  │ │           
-                               │  │ └─────────────────────────┘  │ │           
-                               │  └─────────────────────────────┘ │           
-                               └─────────────────────────────────┘           
-
-┌─────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                       ⚡ KEY FEATURES                                                    │
-└─────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-
-🎯 MATRIX PARALLELIZATION              📊 INTELLIGENT ANALYSIS               🚀 AUTOMATED SHIPPING
-• Each package = separate runner        • AI-powered semantic versioning      • Semantic version publishing
-• True parallel execution              • Git diff analysis                    • npm + GitHub releases
-• Independent failure isolation        • Automated release notes             • Version commit automation
-• Scales linearly with packages        • PR preview transparency             • Cache reuse efficiency
-
-🔄 DEVELOPER EXPERIENCE                📈 PERFORMANCE BENEFITS               🛡️ RELIABILITY FEATURES
-• Zero manual release work             • ~50% faster than sequential         • Granular failure isolation
-• Clear PR release previews            • Cached builds between workflows     • Individual job retry capability
-• Beautiful parallel UI visualization  • Affected-only operations            • Comprehensive per-package logs
-• One-click merge = automatic ship     • Efficient resource utilization      • Rollback-friendly version commits
+┌─────────────────┐         ┌─────────────────────┐      ┌─────────────────┐      ┌─────────────────┐
+│                 │         │                     │      │                 │      │                 │
+│  Code Changes   │────────▶│  AI Changelog Gen   │─────▶│  Code Quality   │─────▶│  Publishing     │
+│                 │ commit  │                     │  PR  │                 │merge │                 │
+│ • feat: new API │         │ • nx affected       │      │ • Lint          │      │ • Find RC files │
+│ • fix: bug      │         │ • Version calc      │      │ • Test          │      │ • Strip RC      │
+│ • docs: update  │         │ • changelog-rc.md   │      │ • Build         │      │ • Publish npm   │
+│                 │         │   0.2.1-rc.{ts}     │      │ • Cache builds  │      │ • Git tag       │
+└─────────────────┘         └─────────────────────┘      └─────────────────┘      └─────────────────┘
+                                       │                          │                          │
+                                       ▼                          ▼                          ▼
+                               packages/nx-surrealdb/      CI validates all       packages published
+                               changelog-rc.md             code & builds         with final versions
 ```
+
+### Key Innovation: Pre-commit Changelog Generation
+
+**No other monorepo has this!** Our system generates reviewable changelogs BEFORE the PR is created:
+
+1. **Zero Developer Overhead**: Changelogs generated automatically on commit
+2. **PR Reviewability**: See exactly what will be released before merge
+3. **AI-Assisted**: Intelligent version calculation from conventional commits
+4. **Release Signal**: `changelog-rc.md` indicates package is ready for release
 
 ## 🔄 Complete Release Flow
 
-### 1. Development & PR Creation
+### 1. Development with Auto-Changelog (Pre-commit Hook)
 
 ```bash
 # Make changes to packages
 git checkout -b feat/new-feature
 # ... make changes to packages/nx-surrealdb/ ...
+
+# On commit, Husky pre-commit hook automatically:
+# 1. Detects affected packages via nx affected
+# 2. Calculates version from conventional commits
+# 3. Generates changelog-rc.md with RC version
 git commit -m "feat: add new migration feature"
+
+# Result: packages/nx-surrealdb/changelog-rc.md created
+# Content: Version 0.2.1-rc.1703123456789 with changelog
+
+# Push includes the changelog-rc.md file
 git push origin feat/new-feature
 ```
 
 ### 2. CI Workflow (PR Validation)
 
-When you create a PR, the **CI workflow** automatically:
+When you create a PR, the **CI workflow** validates code quality:
 
-#### **Parallel Matrix Execution:**
-```
-        ┌─────────────┐
-        │   detect    │ ← Finds affected packages using NX
-        │     ✅      │
-        └─────────────┘
-               │
-    ┌──────────┼──────────┐
-    │          │          │
-┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐
-│ lint  │ │ lint  │ │ test  │ │ test  │  ← Parallel per package
-│ pkg-A │ │ pkg-B │ │ pkg-A │ │ pkg-B │
-│  ✅   │ │  ✅   │ │  ✅   │ │  ✅   │
-└───────┘ └───────┘ └───────┘ └───────┘
-    │         │         │         │
-    └─────────┼─────────┼─────────┘
-              │         │
-         ┌────────┐ ┌────────┐
-         │ build  │ │ build  │             ← Parallel builds
-         │ pkg-A  │ │ pkg-B  │
-         │   ✅   │ │   ✅   │
-         └────────┘ └────────┘
-              │         │
-         ┌────────┐ ┌────────┐
-         │analyze │ │analyze │             ← AI semantic analysis
-         │ pkg-A  │ │ pkg-B  │
-         │   ✅   │ │   ✅   │
-         └────────┘ └────────┘
-              │         │
-         ┌────────┐ ┌────────┐
-         │preview │ │preview │             ← Generate release notes
-         │ pkg-A  │ │ pkg-B  │
-         │   ✅   │ │   ✅   │
-         └────────┘ └────────┘
-              │         │
-              └────┬────┘
-                   │
-            ┌─────────────┐
-            │   comment   │               ← Post to PR
-            │     ✅      │
-            └─────────────┘
-```
-
-#### **What Happens:**
-
-1. **🔍 Detection**: NX finds affected packages with publish targets
-2. **⚡ Parallel Validation**: Each package gets dedicated runners for:
-   - Linting
-   - Testing  
-   - Building
-3. **🧠 AI Analysis**: Analyzes git diff to determine version bump (patch/minor/major)
-4. **📝 Release Preview**: Generates release notes and posts PR comment
-
-#### **Example PR Comment:**
-```markdown
-# 🚀 Release Preview
-
-**Affected Packages:** 2
-
-### 📋 What happens on merge:
-1. ✅ Version bumps applied automatically
-2. 📦 Packages published to npm with `next` tag
-3. 🏷️ GitHub releases created  
-4. 🔄 Version commits pushed back to repository
-
----
-
-## 📦 `@deepbrainspace/nx-surrealdb` 0.1.3 → 0.1.4 (patch)
-
-**Why patch?** Detected from commit analysis
-
-### Changes:
-- fix: resolve migration rollback issue
-- docs: update API documentation
-
-### Files Modified:
-- `packages/nx-surrealdb/src/lib/migration-service.ts`
-- `packages/nx-surrealdb/README.md`
-
----
-
-*🤖 Generated by AI Release Assistant - Enhanced Parallel Pipeline*
-```
-
-### 3. Release Workflow (Main Branch)
-
-When the PR is **merged to main**, the **Release workflow** automatically:
-
-#### **Simplified Release Flow:**
+#### **Parallel Execution Per Package:**
 ```
 ┌─────────────┐
-│   detect    │ ← Find affected packages
+│   detect    │ ← Finds affected packages using NX
 │     ✅      │
 └─────────────┘
        │
    ┌───┴───┐
    │       │
 ┌──────┐ ┌──────┐
-│publish│ │publish│  ← Parallel publishing
-│pkg-A │ │pkg-B │    (uses CI build cache)
-│  ✅  │ │  ✅  │
-└──────┘ └──────┘
-   │       │
-┌──────┐ ┌──────┐
-│release│ │release│  ← Parallel GitHub releases
+│ lint │ │ lint │  ← Parallel linting
 │pkg-A │ │pkg-B │
 │  ✅  │ │  ✅  │
 └──────┘ └──────┘
    │       │
-   └───┬───┘
-       │
-┌─────────────┐
-│  finalize   │      ← Commit versions back
-│     ✅      │
-└─────────────┘
+┌──────┐ ┌──────┐
+│ test │ │ test │  ← Parallel testing
+│pkg-A │ │pkg-B │
+│  ✅  │ │  ✅  │
+└──────┘ └──────┘
+   │       │
+┌──────┐ ┌──────┐
+│build │ │build │  ← Parallel building (cached)
+│pkg-A │ │pkg-B │
+│  ✅  │ │  ✅  │
+└──────┘ └──────┘
 ```
 
 #### **What Happens:**
 
-1. **📦 Publishing** (parallel per package):
-   - Uses **cached builds** from CI (no rebuilding!)
-   - Applies **semantic versions** from AI analysis: `1.2.0`, `0.3.0`
-   - Publishes to **npm** with `next` tag
-   - Creates **tarballs** for GitHub releases
+1. **🔍 Detection**: NX finds affected packages
+2. **⚡ Parallel Validation**: Each package validated independently
+3. **📦 Build Caching**: Build artifacts cached for release
+4. **📝 Changelog Validation**: Ensures changelog-rc.md is valid
 
-2. **🏷️ GitHub Releases** (parallel per package):
-   - Creates GitHub releases with tarballs
-   - Uses semantic versions from AI analysis
-   - Proper release types (Major/Minor/Patch Release)
+**Note**: The changelog-rc.md file is already in the PR for review!
 
-3. **🔄 Finalization**:
-   - Updates `package.json` files with semantic versions
-   - Commits changes back to main branch
-   - Pushes version commit with AI analysis attribution
+### 3. Release Workflow (Manual Trigger)
+
+**Triggered manually** via GitHub Actions when ready to release:
+
+#### **Release Flow for Packages with changelog-rc.md:**
+```
+┌─────────────┐
+│   detect    │ ← Find packages with changelog-rc.md
+│     ✅      │
+└─────────────┘
+       │
+   ┌───┴───┐
+   │       │
+┌──────────┐ ┌──────────┐
+│ process  │ │ process  │  ← Process RC changelogs
+│  pkg-A   │ │  pkg-B   │
+│ 0.2.1-rc │ │ 1.0.0-rc │
+│    ↓     │ │    ↓     │
+│  0.2.1   │ │  1.0.0   │
+└──────────┘ └──────────┘
+       │           │
+┌──────────┐ ┌──────────┐
+│ publish  │ │ publish  │  ← Publish to npm
+│  pkg-A   │ │  pkg-B   │    (uses cached builds)
+│    ✅    │ │    ✅    │
+└──────────┘ └──────────┘
+       │           │
+┌──────────┐ ┌──────────┐
+│   tag    │ │   tag    │  ← Git tags & GitHub releases
+│ pkg-A-   │ │ pkg-B-   │
+│ v0.2.1   │ │ v1.0.0   │
+└──────────┘ └──────────┘
+       │           │
+       └─────┬─────┘
+             │
+      ┌─────────────┐
+      │  finalize   │  ← Commit versions & cleanup
+      │     ✅      │
+      └─────────────┘
+```
+
+#### **What Happens:**
+
+1. **🔍 Detection**: Find packages with `changelog-rc.md` files
+
+2. **📝 Changelog Processing** (per package):
+   - Strip `-rc.{timestamp}` from version
+   - Merge `changelog-rc.md` → `CHANGELOG.md`
+   - Update `package.json` with final version
+
+3. **📦 Publishing** (parallel per package):
+   - Use **cached builds** from CI
+   - Publish to npm with pnpm
+   - Apply appropriate npm tags
+
+4. **🏷️ Git Operations**:
+   - Create release commit: `chore(release): {package}@{version} [skip-changelog]`
+   - Tag: `{package}-v{version}`
+   - Create GitHub release
+   - Delete `changelog-rc.md`
+
+5. **🔄 Finalization**:
+   - Push all commits and tags
+   - Cleanup RC files
 
 ## 📋 Version Strategy
 
-### Development Releases (Main Branch)
-- **Format**: `1.2.3` (semantic versioning)
-- **AI Analysis**: Automatically determines patch/minor/major
-- **npm tag**: `latest` (major), `next` (minor/patch)
-- **GitHub**: Proper release type
-- **Purpose**: Production-ready semantic versions
+### Pre-commit RC Versions
+- **Format**: `x.y.z-rc.{timestamp}` (e.g., `0.2.1-rc.1703123456789`)
+- **Location**: `packages/{package}/changelog-rc.md`
+- **Purpose**: Preview version for PR review
+- **Calculation**: Based on conventional commits since last release
+
+### Release Versions
+- **Format**: `x.y.z` (semantic versioning)
+- **Determination**: Strip RC suffix from changelog-rc.md
+- **npm tag**: `latest`
+- **GitHub**: Tagged as `{package}-v{version}`
 
 ```bash
-# AI determines versions automatically:
-# fix: → patch (1.0.0 → 1.0.1)
-# feat: → minor (1.0.0 → 1.1.0) 
-# BREAKING: → major (1.0.0 → 2.0.0)
+# Version calculation from commits:
+# fix: → patch (0.2.0 → 0.2.1)
+# feat: → minor (0.2.0 → 0.3.0) 
+# feat!: or BREAKING CHANGE: → major (0.2.0 → 1.0.0)
 
-# Install latest semantic version
-npm install @deepbrainspace/nx-surrealdb@latest
+# Install released version
+pnpm add @deepbrainspace/nx-surrealdb@latest
 # or specific version
-npm install @deepbrainspace/nx-surrealdb@1.2.0
-```
-
-### Development Branches
-- **Format**: `1.2.3-dev.sha123`
-- **npm tag**: `dev`
-- **GitHub**: Development preview
-- **Purpose**: Feature branch testing
-
-```bash
-# Install development version
-npm install @deepbrainspace/nx-surrealdb@dev
+pnpm add @deepbrainspace/nx-surrealdb@0.2.1
 ```
 
 ## 🎯 Multi-Package Scenarios
@@ -315,139 +221,184 @@ PR affects: README.md, docs/
 Result: "No packages affected" notification
 ```
 
-## 🛠️ Manual Release Process
+## 🛠️ Manual Testing & Override Options
 
-For emergency releases or production versions:
+### Testing the Release Process Locally
 
-### Option 1: Standard pnpm Commands
 ```bash
-# Navigate to package
-cd packages/nx-surrealdb
+# Test nx release commands
+nx release --dry-run
+nx release --projects=nx-surrealdb --dry-run
 
-# Version bump  
-pnpm version patch  # 0.1.3 → 0.1.4
-pnpm version minor  # 0.1.3 → 0.2.0  
-pnpm version major  # 0.1.3 → 1.0.0
+# Test changelog generation
+nx release changelog --projects=nx-surrealdb --dry-run
 
-# Publish
-pnpm publish
-
-# Push changes
-git push --follow-tags
+# Test publishing
+nx release publish --projects=nx-surrealdb --dry-run
 ```
 
-### Option 2: NX-Powered Multi-Package Releases
+### Manual Changelog Generation
+
+If pre-commit hook doesn't run or you need to manually create:
+
 ```bash
-# From repository root
+# Generate changelog-rc.md manually
+nx release version --projects=nx-surrealdb
+# This creates the version and changelog
 
-# Version affected packages
-pnpm version:patch    # Patch bump for affected
-pnpm version:minor    # Minor bump for affected
-pnpm version:major    # Major bump for affected
-
-# Publish affected packages
-pnpm publish:affected
-
-# Or combine both
-pnpm release:patch    # Version + publish in one command
+# Or use custom version
+echo "0.2.1-rc.$(date +%s)" > packages/nx-surrealdb/changelog-rc.md
+# Then add your changelog content
 ```
 
-### Option 3: AI-Driven Automatic Release
-```bash
-# Simply merge to main - AI handles everything:
-# 1. Analyzes git diff for semantic changes
-# 2. Determines appropriate version bump
-# 3. Updates package.json automatically
-# 4. Publishes to npm with correct tags
-# 5. Creates GitHub release
-# 6. Commits version changes back
+### Skipping Pre-commit Hook
 
-# No manual tagging needed!
-git checkout main
-git merge feature-branch
-# AI automatically handles the rest
+```bash
+# Skip Husky hooks
+git commit --no-verify -m "chore: skip changelog generation"
+
+# Or with environment variable
+HUSKY=0 git commit -m "chore: skip hooks"
+
+# Release commits automatically skip via [skip-changelog] pattern
+git commit -m "chore(release): nx-surrealdb@0.2.1 [skip-changelog]"
 ```
 
-## 🔍 Monitoring Releases
+## 🔍 Monitoring & Debugging
 
-### GitHub Actions UI
-- **CI Tab**: See parallel matrix execution
-- **Individual Job Logs**: Click specific package jobs
-- **Real-time Progress**: Watch parallel execution
+### Pre-commit Hook Debugging
+```bash
+# Check if Husky is installed
+ls -la .husky/
 
-### npm Registry
+# Test hook manually
+.husky/pre-commit
+
+# Check affected packages
+nx show projects --affected
+
+# Verify changelog-rc.md generation
+find packages -name "changelog-rc.md"
+```
+
+### CI Pipeline Monitoring
+- **GitHub Actions**: View parallel lint/test/build execution
+- **Build Cache**: Verify artifacts are cached for release
+- **Affected Detection**: Check which packages are detected
+
+### Release Process Monitoring
 ```bash
 # Check published versions
-npm view @deepbrainspace/nx-surrealdb versions --json
+pnpm view @deepbrainspace/nx-surrealdb versions --json
 
-# Check specific tags
-npm view @deepbrainspace/nx-surrealdb dist-tags
+# Verify git tags
+git tag | grep nx-surrealdb
+
+# Check GitHub releases
+gh release list --repo deepbrainspace/goodiebag
 ```
-
-### GitHub Releases
-- **Semantic Releases**: Tagged as `nx-surrealdb-v1.2.0`
-- **AI-Generated Release Notes**: Automatically generated from commit analysis
-- **Tarballs**: Available for direct download
 
 ## 🚨 Troubleshooting
 
-### CI Pipeline Issues
-```bash
-# Check NX affected detection
-pnpm nx show projects --affected --with-target=publish
+### Pre-commit Issues
 
-# Manually trigger affected operations
-pnpm nx affected --target=lint
-pnpm nx affected --target=test  
-pnpm nx affected --target=build
+**Hook not running:**
+```bash
+# Reinstall Husky
+pnpm add -D husky
+pnpm exec husky install
+
+# Add pre-commit hook
+pnpm exec husky add .husky/pre-commit "pnpm run pre-commit"
 ```
 
-### Release Pipeline Issues
+**Changelog not generated:**
 ```bash
-# Check npm authentication
-npm whoami
+# Check if package has changes
+nx show projects --affected
 
-# Verify package.json publish config
-cat packages/nx-surrealdb/package.json | jq .publishConfig
-
-# Test local publishing
-cd packages/nx-surrealdb  
-npm pack  # Creates tarball locally
+# Manually run changelog generation
+pnpm run generate-changelog nx-surrealdb
 ```
 
-### Version Conflicts
-```bash
-# Check current npm versions
-npm view @deepbrainspace/nx-surrealdb versions
+### Release Issues
 
-# Check current git tags
-git tag --sort=-version:refname | grep nx-surrealdb
+**Can't find changelog-rc.md:**
+```bash
+# Verify file exists
+ls packages/*/changelog-rc.md
+
+# Check file content
+cat packages/nx-surrealdb/changelog-rc.md
 ```
 
-## 🎨 Pipeline Benefits
+**Version already exists:**
+```bash
+# Check npm versions
+pnpm view @deepbrainspace/nx-surrealdb versions
+
+# Force republish (careful!)
+pnpm publish --force --no-git-checks
+```
+
+**Authentication issues:**
+```bash
+# Check npm auth
+pnpm whoami
+
+# Set npm token
+npm config set //registry.npmjs.org/:_authToken=$NPM_TOKEN
+```
+
+## 🎨 System Benefits
+
+### Unique Innovation
+- ✅ **First-of-its-kind** - No other monorepo has AI-assisted pre-commit changelogs
+- ✅ **Zero-friction releases** - Changelog ready before PR is even created
+- ✅ **Full transparency** - Reviewers see exact release notes in PR
+- ✅ **AI-powered** - Leverages Claude Code for intelligent changelog generation
 
 ### Developer Experience
-- ✅ **Zero manual release work** - AI handles everything
-- ✅ **Intelligent version detection** - semantic analysis of changes
-- ✅ **Clear release previews** - see exactly what versions will ship
-- ✅ **Parallel execution** - faster than sequential builds
-- ✅ **Individual job visibility** - debug specific package issues
+- ✅ **Zero manual work** - Changelogs generated automatically on commit
+- ✅ **No version guessing** - AI calculates from conventional commits
+- ✅ **Skip when needed** - Easy override with --no-verify or [skip-changelog]
+- ✅ **Review before release** - See changelog in PR before merge
 
-### Scalability  
-- ✅ **Infinite packages** - each gets dedicated runner
-- ✅ **Smart caching** - CI builds reused in release
-- ✅ **Affected-only** - only changed packages processed
-- ✅ **Matrix strategy** - linear scaling with package count
+### Release Reliability
+- ✅ **Predictable releases** - changelog-rc.md acts as release signal
+- ✅ **Independent packages** - Each package releases on its own schedule
+- ✅ **Cached builds** - No rebuilding between CI and release
+- ✅ **Clean git history** - Release commits marked with [skip-changelog]
 
-### Reliability
-- ✅ **Granular failure isolation** - one package failure doesn't block others
-- ✅ **Retry capabilities** - individual jobs can be retried
-- ✅ **Comprehensive logging** - detailed per-package logs
-- ✅ **Automated rollback** - version commits can be reverted
+## 🚀 Implementation Roadmap
+
+### Phase 1: Husky Setup (Immediate)
+1. Install Husky: `pnpm add -D husky`
+2. Initialize: `pnpm exec husky install`
+3. Create TypeScript pre-commit script
+4. Test with nx-surrealdb package
+
+### Phase 2: Pre-commit Script Development
+1. Implement nx affected detection
+2. Add conventional commit parsing
+3. Generate changelog-rc.md with timestamp
+4. Handle skip conditions ([skip-changelog])
+
+### Phase 3: Release Workflow Update
+1. Update release.yml to find changelog-rc.md
+2. Implement RC stripping and publishing
+3. Add [skip-changelog] to release commits
+4. Test end-to-end with nx-surrealdb
+
+### Phase 4: Rollout to All Packages
+1. Enable for nx-rust
+2. Enable for claude-code-toolkit
+3. Monitor and optimize performance
+4. Add caching for faster pre-commits
 
 ## 🔗 Related Documentation
 
+- [Husky Documentation](https://typicode.github.io/husky/)
 - [NX Affected Documentation](https://nx.dev/ci/features/affected)
-- [GitHub Actions Matrix Strategy](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs)
-- [Semantic Versioning](https://semver.org/)
-- [npm Tags](https://docs.npmjs.com/adding-dist-tags-to-packages)
+- [Conventional Commits](https://www.conventionalcommits.org/)
+- [pnpm Workspaces](https://pnpm.io/workspaces)
