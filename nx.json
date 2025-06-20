@@ -81,7 +81,7 @@
       }
     }
   },
-  "parallel": 3,
+  "parallel": 5,
   "release": {
     "projectsRelationship": "independent",
     "version": {
@@ -130,6 +130,7 @@
       "options": {
         "targetName": "jest:test"
       }
-    }
+    },
+    "@goodiebag/nx-rust"
   ]
 }

@@ -7,9 +7,9 @@ on:
         description: 'Version bump type'
         required: false
         type: choice
-        default: 'auto'
+        default: ''
         options:
-          - auto
+          - ''
           - patch
           - minor
           - major
@@ -29,26 +29,45 @@ jobs:
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
+      - name: Detect affected packages
+        id: detect
+        uses: ./.github/actions/detect-affected
+
       - name: Configure git
+        if: steps.detect.outputs.has-packages == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Release packages
+        if: steps.detect.outputs.has-packages == 'true'
         run: |
           echo "🚀 Starting release process..."
-
-          # Determine version command
-          if [ "${{ github.event.inputs.version }}" = "auto" ] || [ -z "${{ github.event.inputs.version }}" ]; then
-            VERSION_CMD="nx affected -t release --parallel=5 --nxBail=false"
+          echo "📦 Found ${{ steps.detect.outputs.package-count }} affected packages"
+          echo "📋 Packages: ${{ steps.detect.outputs.packages }}"
+          
+          # Convert JSON array to comma-separated list
+          PACKAGES=$(echo '${{ steps.detect.outputs.packages }}' | jq -r '.[]' | tr '\n' ',' | sed 's/,$//')
+          echo "🎯 Packages to release: $PACKAGES"
+          
+          # Build release command
+          VERSION_INPUT="${{ github.event.inputs.version }}"
+          if [ -z "$VERSION_INPUT" ]; then
             echo "📋 Using automatic version determination from conventional commits"
+            VERSION_CMD="nx release --projects=$PACKAGES"
           else
-            VERSION_CMD="nx release ${{ github.event.inputs.version }} --parallel=5 --nxBail=false"
-            echo "📋 Using manual version bump: ${{ github.event.inputs.version }}"
+            echo "📋 Using manual version bump: $VERSION_INPUT"
+            VERSION_CMD="nx release $VERSION_INPUT --projects=$PACKAGES"
           fi
 
           echo "🎯 Executing: $VERSION_CMD"
           $VERSION_CMD
+
+      - name: No packages affected
+        if: steps.detect.outputs.has-packages == 'false'
+        run: |
+          echo "ℹ️ No packages with publish targets were affected by recent changes."
+          echo "The changes appear to be documentation, configuration, or non-publishable code."
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
