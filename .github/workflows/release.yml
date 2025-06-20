@@ -40,10 +40,10 @@ jobs:
 
           # Determine version command
           if [ "${{ github.event.inputs.version }}" = "auto" ] || [ -z "${{ github.event.inputs.version }}" ]; then
-            VERSION_CMD="nx affected -t release --parallel=5 --yes"
+            VERSION_CMD="nx affected -t release --parallel=5 --nxBail=false"
             echo "📋 Using automatic version determination from conventional commits"
           else
-            VERSION_CMD="nx release ${{ github.event.inputs.version }} --parallel=5 --yes"
+            VERSION_CMD="nx release ${{ github.event.inputs.version }} --parallel=5 --nxBail=false"
             echo "📋 Using manual version bump: ${{ github.event.inputs.version }}"
           fi
 
