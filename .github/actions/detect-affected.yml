@@ -1,0 +1,68 @@
+name: 'Detect Affected Packages'
+description: 'Detect packages affected by changes using NX'
+
+outputs:
+  packages:
+    description: 'JSON array of affected packages'
+    value: ${{ steps.detect.outputs.packages }}
+  has-packages:
+    description: 'Whether any packages were affected'
+    value: ${{ steps.detect.outputs.has-packages }}
+  package-count:
+    description: 'Number of affected packages'
+    value: ${{ steps.detect.outputs.package-count }}
+  package-groups:
+    description: 'JSON object mapping packages to their groups'
+    value: ${{ steps.detect.outputs.package-groups }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Detect affected packages
+      id: detect
+      shell: bash
+      run: |
+        # Get affected projects with publish target
+        AFFECTED=$(nx show projects --affected --json || echo '[]')
+        echo "🔍 Affected packages detected: $AFFECTED"
+
+        if [ "$AFFECTED" = "[]" ] || [ -z "$AFFECTED" ]; then
+          echo "packages=[]" >> $GITHUB_OUTPUT
+          echo "has-packages=false" >> $GITHUB_OUTPUT
+          echo "package-count=0" >> $GITHUB_OUTPUT
+          echo "ℹ️ No affected packages found"
+        else
+          PACKAGE_COUNT=$(echo $AFFECTED | jq length)
+          echo "packages=$AFFECTED" >> $GITHUB_OUTPUT
+          echo "has-packages=true" >> $GITHUB_OUTPUT
+          echo "package-count=$PACKAGE_COUNT" >> $GITHUB_OUTPUT
+          
+          # Map packages to their groups from nx.json
+          PACKAGE_GROUPS=$(jq -n '{}')
+          
+          # Get all group names from nx.json
+          for group in $(jq -r '.release.groups | keys[]' nx.json); do
+            echo "🔍 Checking group: $group"
+            
+            # Get projects array for this group
+            projects=$(jq -r --arg grp "$group" '.release.groups[$grp].projects[]' nx.json)
+            
+            for project_pattern in $projects; do
+              echo "  📋 Pattern: $project_pattern"
+              
+              # Check each affected package against this pattern
+              for package in $(echo $AFFECTED | jq -r '.[]'); do
+                # Handle glob patterns (like nx-*) and exact matches
+                if [[ $package == $project_pattern ]]; then
+                  PACKAGE_GROUPS=$(echo $PACKAGE_GROUPS | jq --arg pkg "$package" --arg grp "$group" '. + {($pkg): $grp}')
+                  echo "    ✅ Package $package matches pattern $project_pattern → group: $group"
+                fi
+              done
+            done
+          done
+          
+          echo "package-groups=$PACKAGE_GROUPS" >> $GITHUB_OUTPUT
+          echo "🎯 Found $PACKAGE_COUNT affected packages"
+          echo "📋 Packages: $AFFECTED"
+          echo "🏷️ Package groups: $PACKAGE_GROUPS"
+        fi

@@ -1,0 +1,30 @@
+name: 'Setup Rust Caching'
+description: 'Setup Rust-specific caching and toolchain for Rust packages'
+
+inputs:
+  package-name:
+    description: 'Name of the Rust package to cache'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Cache Rust dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          packages/${{ inputs.package-name }}/target
+        key: rust-${{ runner.os }}-${{ inputs.package-name }}-${{ hashFiles(format('packages/{0}/Cargo.lock', inputs.package-name), format('packages/{0}/Cargo.toml', inputs.package-name)) }}
+        restore-keys: |
+          rust-${{ runner.os }}-${{ inputs.package-name }}-${{ hashFiles(format('packages/{0}/Cargo.lock', inputs.package-name)) }}
+          rust-${{ runner.os }}-${{ inputs.package-name }}-
+          rust-${{ runner.os }}-
+
+    - name: Setup Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true

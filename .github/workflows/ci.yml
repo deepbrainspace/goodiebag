@@ -27,6 +27,7 @@ jobs:
       packages: ${{ steps.detect.outputs.packages }}
       has-packages: ${{ steps.detect.outputs.has-packages }}
       package-count: ${{ steps.detect.outputs.package-count }}
+      package-groups: ${{ steps.detect.outputs.package-groups }}
 
     steps:
       - name: Checkout repository
@@ -35,11 +36,11 @@ jobs:
           fetch-depth: 0
 
       - name: Setup workspace
-        uses: ./.github/actions/setup-workspace
+        uses: ./.github/actions/setup-workspace.yml
 
       - name: Detect affected packages
         id: detect
-        uses: ./.github/actions/detect-affected
+        uses: ./.github/actions/detect-affected.yml
 
   # Phase 2: Validation (Parallel per Package)
   lint:
@@ -59,7 +60,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup workspace
-        uses: ./.github/actions/setup-workspace
+        uses: ./.github/actions/setup-workspace.yml
 
       - name: Run lint for ${{ matrix.package }}
         run: |
@@ -83,7 +84,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup workspace
-        uses: ./.github/actions/setup-workspace
+        uses: ./.github/actions/setup-workspace.yml
 
       - name: Run tests for ${{ matrix.package }}
         run: |
@@ -115,7 +116,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup workspace
-        uses: ./.github/actions/setup-workspace
+        uses: ./.github/actions/setup-workspace.yml
 
       - name: Build ${{ matrix.package }}
         run: |
