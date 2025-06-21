@@ -7,6 +7,17 @@
     "daisy-ui": {
       "command": "npx",
       "args": ["-y", "sitemcp", "https://daisyui.com", "-m", "/components/**"]
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ],
+      "alwaysAllow": [
+        "resolve-library-id",
+        "get-library-docs"
+      ]
     }
   }
 }
