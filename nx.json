@@ -94,7 +94,7 @@
     "changelog": {
       "automaticFromRef": true,
       "projectChangelogs": true,
-      "workspaceChangelog": true
+      "workspaceChangelog": false
     },
     "groups": {
       "nx-plugins": {
@@ -128,13 +128,19 @@
           }
         },
         "changelog": {
+          "automaticFromRef": true,
           "projectChangelogs": {
             "createRelease": "github",
             "file": true
           }
         },
         "releaseTagPattern": "{projectName}-v{version}",
-        "projectsRelationship": "independent"
+        "projectsRelationship": "independent",
+        "publish": {
+          "options": {
+            "packageRoot": "packages/{projectName}"
+          }
+        }
       }
     }
   },
