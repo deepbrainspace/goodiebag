@@ -112,7 +112,7 @@
         "releaseTagPattern": "{projectName}-v{version}"
       },
       "rust-packages": {
-        "projects": [],
+        "projects": ["claude-code-toolkit"],
         "version": {
           "versionActions": "@goodiebag/nx-rust/release",
           "generatorOptions": {
