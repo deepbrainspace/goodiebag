@@ -61,7 +61,7 @@ runs:
             done
           done
           
-          echo "package-groups=$PACKAGE_GROUPS" >> $GITHUB_OUTPUT
+          echo "package-groups=$(echo $PACKAGE_GROUPS | jq -c .)" >> $GITHUB_OUTPUT
           echo "🎯 Found $PACKAGE_COUNT affected packages"
           echo "📋 Packages: $AFFECTED"
           echo "🏷️ Package groups: $PACKAGE_GROUPS"
