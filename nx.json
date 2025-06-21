@@ -114,7 +114,10 @@
             "file": "{workspaceRoot}/CHANGELOG.md"
           }
         },
-        "releaseTagPattern": "goodiebag-v{version}"
+        "releaseTagPattern": "goodiebag-v{version}",
+        "publish": {
+          "registry": "https://registry.npmjs.org/"
+        }
       },
       "nx-plugins": {
         "projects": ["nx-*"],
