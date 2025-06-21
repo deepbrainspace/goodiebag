@@ -37,9 +37,6 @@ jobs:
 
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
-        with:
-          package-group: ${{ fromJSON(needs.detect-affected.outputs.package-groups)[matrix.package] }}
-          package-name: ${{ matrix.package }}
 
       - name: Detect affected packages
         id: detect
