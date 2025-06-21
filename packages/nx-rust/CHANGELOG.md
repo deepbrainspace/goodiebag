@@ -1,3 +1,13 @@
+## 3.0.0-alpha.3 (2025-06-21)
+
+### 🩹 Fixes
+
+- use workspace-level dist for nx plugins to resolve package structure issues ([#29](https://github.com/deepbrainspace/goodiebag/pull/29))
+
+### ❤️ Thank You
+
+- nayeem.ai @wizardsupreme
+
 ## 3.0.0-alpha.2 (2025-06-21)
 
 ### 🚀 Features
