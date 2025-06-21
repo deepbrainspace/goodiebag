@@ -16,14 +16,14 @@
       "executor": "@goodiebag/nx-rust:fmt",
       "options": {
         "toolchain": "stable",
-        "target-dir": "{projectRoot}/target"
+        "target-dir": "./target"
       }
     },
     "lint": {
       "executor": "@goodiebag/nx-rust:lint",
       "options": {
         "toolchain": "stable",
-        "target-dir": "{projectRoot}/target"
+        "target-dir": "./target"
       }
     },
     "test": {
@@ -31,7 +31,7 @@
       "dependsOn": ["lint"],
       "options": {
         "toolchain": "stable",
-        "target-dir": "{projectRoot}/target"
+        "target-dir": "./target"
       }
     },
     "build": {
@@ -41,7 +41,7 @@
       "options": {
         "toolchain": "stable",
         "release": true,
-        "target-dir": "{projectRoot}/target"
+        "target-dir": "./target"
       }
     },
     "build-dev": {
@@ -51,7 +51,7 @@
       "options": {
         "toolchain": "stable",
         "release": false,
-        "target-dir": "{projectRoot}/target"
+        "target-dir": "./target"
       }
     },
     "run": {
@@ -69,7 +69,7 @@
           "echo '🔧 Installing claude-code-toolkit binary...'",
           "echo 'Working directory: $(pwd)'",
           "mkdir -p ~/.cargo/bin",
-          "cp {projectRoot}/target/release/claude-code-toolkit ~/.cargo/bin/claude-code-toolkit",
+          "cp ./target/release/claude-code-toolkit ~/.cargo/bin/claude-code-toolkit",
           "chmod +x ~/.cargo/bin/claude-code-toolkit",
           "echo '🔍 Checking installation...'",
           "which claude-code-toolkit || echo 'WARNING: claude-code-toolkit not found in PATH'",
@@ -90,7 +90,7 @@
       "dependsOn": ["build"],
       "outputs": ["{projectRoot}/target/package"],
       "options": {
-        "command": "cargo package --target-dir {projectRoot}/target",
+        "command": "cargo package --target-dir ./target",
         "cwd": "{projectRoot}"
       }
     },
@@ -98,7 +98,8 @@
       "executor": "@goodiebag/nx-rust:release-publish",
       "dependsOn": ["build", "test", "lint"],
       "options": {
-        "toolchain": "stable"
+        "toolchain": "stable",
+        "packageRoot": "{projectRoot}"
       }
     },
     "check": {
@@ -111,7 +112,7 @@
       "executor": "@goodiebag/nx-rust:clean",
       "options": {
         "toolchain": "stable",
-        "target-dir": "{projectRoot}/target"
+        "target-dir": "./target"
       }
     },
     "quality": {

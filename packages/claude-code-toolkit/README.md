@@ -1,76 +1,95 @@
-# claude-code
+# claude-code-toolkit
 
+[![Crates.io](https://img.shields.io/crates/v/claude-code-toolkit.svg)](https://crates.io/crates/claude-code-toolkit)
 [![Rust](https://img.shields.io/badge/rust-2024-orange.svg)](https://www.rust-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Claude Code management tool for automatic credential synchronization to GitHub,
-session monitoring, and more.
+Claude Code management tool for automatic credential synchronization to GitHub, session monitoring, and daemon service management.
 
 ## Features
 
-- **🔄 Automatic Credential Sync**: Syncs Claude Code credentials to GitHub
-  organization/repository secrets
-- **⏰ Smart Scheduling**: Monitors token expiry and syncs 1 minute after new
-  token is generated
-- **🎯 Multi-Target Support**: Sync to multiple GitHub organizations and
-  repositories simultaneously
-- **📊 Session Monitoring**: Real-time session timer and status tracking with
-  desktop notifications
-- **🔧 Systemd User Service Integration**: Runs as a background daemon with
-  automatic startup and monitoring
-- **🚀 High Performance**: Written in Rust for minimal resource usage and
-  maximum reliability
+- **🔄 Automatic Credential Sync**: Syncs Claude Code credentials to GitHub organization/repository secrets
+- **⏰ Smart Scheduling**: Monitors token expiry and syncs 1 minute after new token generation
+- **🎯 Multi-Target Support**: Sync to multiple GitHub organizations and repositories simultaneously
+- **📊 Session Monitoring**: Real-time session timer and status tracking with desktop notifications
+- **🔧 Systemd User Service Integration**: Runs as a background daemon with automatic startup
+- **🚀 High Performance**: Written in Rust for minimal resource usage and maximum reliability
 
 ## Installation
 
-### Option 1: Cargo Install (Recommended for Users)
+### Option 1: Cargo Install (Recommended)
 
 ```bash
-# Install directly from source
-cargo install --git https://github.com/deepbrainspace/goodiebag --root ~/.local --bin claude-code
+# Install from crates.io
+cargo install claude-code-toolkit
 
-# Add to PATH if not already
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+# Ensure ~/.cargo/bin is in your PATH
+echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### Option 2: Pre-built Binary (Coming Soon)
-
-Download the latest release from
-[GitHub Releases](https://github.com/deepbrainspace/goodiebag/releases).
-
-### Option 3: From Source (Development)
+### Option 2: From Source
 
 ```bash
 # Clone the repository
 git clone https://github.com/deepbrainspace/goodiebag
 cd goodiebag/packages/claude-code-toolkit
 
-# Build and install to ~/.cargo/bin
-cargo build --release
+# Build and install
 cargo install --path .
-```
-
-### Option 4: Via NX (Contributors)
-
-```bash
-# From repository root
-nx build claude-code
-
-# Install to ~/.cargo/bin
-nx run claude-code:install
 ```
 
 **Important**: The binary must remain in a stable location for the daemon
 service to work. If you move the binary after installing the service, run
-`claude-code service install` again.
+`claude-code-toolkit service install` again.
 
 ## Prerequisites
 
 - **Rust 2024 Edition** (rustc 1.80+)
 - **GitHub CLI** (`gh`) installed and authenticated
+- **GitHub Personal Access Token** with appropriate permissions (see setup below)
 - **Claude Code** installed and authenticated
 - **Linux/macOS** with systemd (for daemon functionality)
+
+### GitHub Setup
+
+#### 1. Install GitHub CLI
+
+```bash
+# Ubuntu/Debian
+sudo apt install gh
+
+# macOS
+brew install gh
+
+# Or download from https://cli.github.com/
+```
+
+#### 2. Create GitHub Personal Access Token
+
+1. Go to [GitHub Settings > Developer Settings > Personal Access Tokens > Fine-grained tokens](https://github.com/settings/personal-access-tokens/new)
+2. Create a new token with these permissions:
+   - **Repository access**: Select specific repositories OR all repositories (depending on your needs)
+   - **Repository permissions**:
+     - `Secrets: Write` (required for updating repository secrets)
+     - `Metadata: Read` (required for basic repository access)
+   - **Organization permissions** (if syncing to organizations):
+     - `Organization secrets: Write` (required for updating organization secrets)
+     - `Members: Read` (required for organization access)
+
+#### 3. Authenticate GitHub CLI
+
+```bash
+# Login using your PAT
+gh auth login
+
+# Or set token directly
+export GITHUB_TOKEN="your_github_pat_here"
+gh auth login --with-token <<< "$GITHUB_TOKEN"
+
+# Verify authentication
+gh auth status
+```
 
 ## Quick Start
 
@@ -78,91 +97,119 @@ service to work. If you move the binary after installing the service, run
 
 ```bash
 # Add GitHub organization
-claude-code org add your-org-name
+claude-code-toolkit org add your-org-name
 
 # Add GitHub repository
-claude-code repo add owner/repository
+claude-code-toolkit repo add owner/repository
 
 # Install and start daemon
-claude-code service install
+claude-code-toolkit service install
 ```
 
 2. **Check Status**:
 
 ```bash
-claude-code status
+claude-code-toolkit status
 ```
 
 3. **Real-time Session Timer**:
 
 ```bash
-claude-code timer
+claude-code-toolkit timer
 ```
 
 ## Commands
 
 ### Session Management
 
-- `claude-code status` - Show comprehensive session and sync status
-- `claude-code timer` - Real-time session timer with progress bar
+- `claude-code-toolkit status` - Show comprehensive session and sync status
+- `claude-code-toolkit timer` - Real-time session timer with progress bar
 
 ### Organization Management
 
-- `claude-code org add <name> [--secret-name NAME]` - Add GitHub organization
-- `claude-code org remove <name>` - Remove organization
-- `claude-code org list` - List configured organizations with availability
+- `claude-code-toolkit org add <name> [--secret-name NAME]` - Add GitHub organization
+- `claude-code-toolkit org remove <name>` - Remove organization
+- `claude-code-toolkit org list` - List configured organizations with availability
 
 ### Repository Management
 
-- `claude-code repo add <owner/repo> [--secret-name NAME]` - Add repository
-- `claude-code repo remove <owner/repo>` - Remove repository
-- `claude-code repo list` - List configured repositories
+- `claude-code-toolkit repo add <owner/repo> [--secret-name NAME]` - Add repository
+- `claude-code-toolkit repo remove <owner/repo>` - Remove repository
+- `claude-code-toolkit repo list` - List configured repositories
 
 ### Sync Operations
 
-- `claude-code sync now` - Force immediate credential sync
-- `claude-code sync status` - Show detailed sync status for all targets
-- `claude-code sync logs [--lines N]` - View daemon logs
+- `claude-code-toolkit sync now` - Force immediate credential sync
+- `claude-code-toolkit sync status` - Show detailed sync status for all targets
+- `claude-code-toolkit sync logs [--lines N]` - View daemon logs
 
 ### Service Management
 
-- `claude-code service install` - Install and start systemd user daemon
-- `claude-code service uninstall [--keep-config]` - Uninstall daemon
-- `claude-code service start/stop/restart` - Control daemon
-- `claude-code service enable/disable` - Control auto-start on login
+- `claude-code-toolkit service install` - Install and start systemd user daemon
+- `claude-code-toolkit service uninstall [--keep-config]` - Uninstall daemon
+- `claude-code-toolkit service start/stop/restart` - Control daemon
+- `claude-code-toolkit service enable/disable` - Control auto-start on login
 
 ### Configuration
 
-- `claude-code configure` - Interactive configuration wizard _(coming soon)_
+- `claude-code-toolkit configure` - Interactive configuration wizard _(coming soon)_
 
 ## Configuration
 
-Configuration is stored in `~/.goodiebag/claude-code/config.yml`:
+### Command-Line Configuration
+
+You can configure targets using the CLI commands:
+
+```bash
+# Add organizations
+claude-code-toolkit org add my-org --secret-name CLAUDE_TOKEN
+claude-code-toolkit org add another-org --secret-name CUSTOM_CLAUDE_TOKEN
+
+# Add repositories  
+claude-code-toolkit repo add owner/repo --secret-name CLAUDE_CODE_TOKEN
+claude-code-toolkit repo add owner/special-repo --secret-name CUSTOM_TOKEN
+
+# List current configuration
+claude-code-toolkit org list
+claude-code-toolkit repo list
+```
+
+### Direct YAML Configuration
+
+**Alternative**: You can directly edit the configuration file at `~/.goodiebag/claude-code/config.yml`:
 
 ```yaml
 daemon:
-  log_level: info
-  sync_delay_after_expiry: 60 # seconds after token expiry
+  log_level: info                    # debug, info, warn, error
+  sync_delay_after_expiry: 60       # seconds to wait after token expiry
 
 github:
   organizations:
     - name: deepbrainspace
-      secret_name: CLAUDE_CODE_TOKEN
+      secret_name: CLAUDE_CODE_TOKEN  # Custom secret name (optional)
     - name: another-org
       secret_name: CLAUDE_ACCESS_TOKEN
+    - name: simple-org                # Uses default secret name
 
   repositories:
     - repo: user/special-repo
       secret_name: CUSTOM_CLAUDE_TOKEN
+    - repo: owner/another-repo        # Uses default secret name
 
 notifications:
-  session_warnings: [30, 15, 5] # minutes before expiry
-  sync_failures: true
+  session_warnings: [30, 15, 5]      # Warning times (minutes before expiry)
+  sync_failures: true                # Notify on sync failures
 ```
+
+**Configuration Notes**:
+- If `secret_name` is omitted, defaults to `CLAUDE_CODE_TOKEN`
+- Restart the daemon after editing YAML: `claude-code-toolkit service restart`
+- Validate configuration: `claude-code-toolkit status`
+- The CLI commands automatically update the YAML file
 
 ## Daemon Installation Details
 
-The `claude-code service install` command:
+The `claude-code-toolkit service install` command:
 
 1. **Creates Systemd Service**: Installs
    `~/.config/systemd/user/claude-code-sync.service`
@@ -240,9 +287,9 @@ cargo test
 cargo build --release
 
 # Run with NX
-nx build claude-code
-nx test claude-code
-nx lint claude-code
+nx build claude-code-toolkit
+nx test claude-code-toolkit
+nx lint claude-code-toolkit
 ```
 
 ### Testing
@@ -282,29 +329,29 @@ cargo fmt --check
 ### Check Daemon Status
 
 ```bash
-claude-code status
+claude-code-toolkit status
 systemctl --user status claude-code-sync
 ```
 
 ### View Detailed Logs
 
 ```bash
-claude-code sync logs --lines 100
+claude-code-toolkit sync logs --lines 100
 journalctl --user -u claude-code-sync -f
 ```
 
 ### Manual Sync
 
 ```bash
-claude-code sync now
+claude-code-toolkit sync now
 ```
 
 ### Reset Configuration
 
 ```bash
-claude-code service uninstall
+claude-code-toolkit service uninstall
 rm -rf ~/.goodiebag/claude-code
-claude-code service install
+claude-code-toolkit service install
 ```
 
 ## Performance

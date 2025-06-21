@@ -14,6 +14,12 @@ inputs:
   token:
     description: 'GitHub token for checkout'
     default: ${{ github.token }}
+  package-group:
+    description: 'Package group for the current package being built'
+    default: ''
+  package-name:
+    description: 'Name of the current package being built'
+    default: ''
 
 runs:
   using: 'composite'
@@ -69,3 +75,9 @@ runs:
       uses: nrwl/nx-set-shas@v4
       with:
         main-branch-name: 'main'
+
+    - name: Setup Rust caching
+      if: inputs.package-group == 'rust-packages'
+      uses: ./.github/actions/setup-rust-cache
+      with:
+        package-name: ${{ inputs.package-name }}

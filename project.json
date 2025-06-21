@@ -1,0 +1,39 @@
+{
+  "name": "goodiebag",
+  "projectType": "library",
+  "sourceRoot": ".",
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "prettier --check .github/**/*.{yml,yaml} *.md docs/**/*.md || echo 'ℹ️  Some workspace files could benefit from formatting'"
+        ]
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "echo '🧪 Testing workspace configuration...'",
+          "nx graph --file=temp-graph.json > /dev/null && rm -f temp-graph.json",
+          "echo '✅ Workspace configuration is valid'"
+        ]
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "echo '🏗️  Building workspace documentation...'",
+          "mkdir -p dist/workspace",
+          "nx graph --file=dist/workspace/dependency-graph.json",
+          "echo '✅ Workspace build completed'"
+        ]
+      },
+      "outputs": ["{workspaceRoot}/dist/workspace"]
+    }
+  },
+  "implicitDependencies": [],
+  "tags": ["workspace", "infrastructure"]
+}

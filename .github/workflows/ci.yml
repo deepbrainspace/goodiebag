@@ -27,6 +27,7 @@ jobs:
       packages: ${{ steps.detect.outputs.packages }}
       has-packages: ${{ steps.detect.outputs.has-packages }}
       package-count: ${{ steps.detect.outputs.package-count }}
+      package-groups: ${{ steps.detect.outputs.package-groups }}
 
     steps:
       - name: Checkout repository
@@ -60,6 +61,9 @@ jobs:
 
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
+        with:
+          package-group: ${{ fromJSON(needs.detect-affected.outputs.package-groups)[matrix.package] }}
+          package-name: ${{ matrix.package }}
 
       - name: Run lint for ${{ matrix.package }}
         run: |
@@ -84,6 +88,9 @@ jobs:
 
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
+        with:
+          package-group: ${{ fromJSON(needs.detect-affected.outputs.package-groups)[matrix.package] }}
+          package-name: ${{ matrix.package }}
 
       - name: Run tests for ${{ matrix.package }}
         run: |
@@ -116,6 +123,9 @@ jobs:
 
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
+        with:
+          package-group: ${{ fromJSON(needs.detect-affected.outputs.package-groups)[matrix.package] }}
+          package-name: ${{ matrix.package }}
 
       - name: Build ${{ matrix.package }}
         run: |

@@ -27,7 +27,9 @@
       "!{projectRoot}/src/test-setup.[jt]s",
       "!{projectRoot}/test-setup.[jt]s"
     ],
-    "sharedGlobals": []
+    "sharedGlobals": [
+      "{workspaceRoot}/nx.json"
+    ]
   },
   "targetDefaults": {
     "build": {
@@ -94,9 +96,26 @@
     "changelog": {
       "automaticFromRef": true,
       "projectChangelogs": true,
-      "workspaceChangelog": true
+      "workspaceChangelog": false
     },
     "groups": {
+      "workspace": {
+        "projects": ["goodiebag"],
+        "version": {
+          "generatorOptions": {
+            "currentVersionResolver": "git-tag",
+            "fallbackCurrentVersionResolver": "disk"
+          }
+        },
+        "changelog": {
+          "automaticFromRef": true,
+          "projectChangelogs": {
+            "createRelease": "github",
+            "file": "{workspaceRoot}/CHANGELOG.md"
+          }
+        },
+        "releaseTagPattern": "goodiebag-v{version}"
+      },
       "nx-plugins": {
         "projects": ["nx-*"],
         "version": {
@@ -128,13 +147,19 @@
           }
         },
         "changelog": {
+          "automaticFromRef": true,
           "projectChangelogs": {
             "createRelease": "github",
             "file": true
           }
         },
         "releaseTagPattern": "{projectName}-v{version}",
-        "projectsRelationship": "independent"
+        "projectsRelationship": "independent",
+        "publish": {
+          "options": {
+            "packageRoot": "packages/{projectName}"
+          }
+        }
       }
     }
   },

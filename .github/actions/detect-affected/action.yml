@@ -11,6 +11,9 @@ outputs:
   package-count:
     description: 'Number of affected packages'
     value: ${{ steps.detect.outputs.package-count }}
+  package-groups:
+    description: 'JSON object mapping packages to their groups'
+    value: ${{ steps.detect.outputs.package-groups }}
 
 runs:
   using: 'composite'
@@ -33,6 +36,33 @@ runs:
           echo "packages=$AFFECTED" >> $GITHUB_OUTPUT
           echo "has-packages=true" >> $GITHUB_OUTPUT
           echo "package-count=$PACKAGE_COUNT" >> $GITHUB_OUTPUT
+          
+          # Map packages to their groups from nx.json
+          PACKAGE_GROUPS=$(jq -n '{}')
+          
+          # Get all group names from nx.json
+          for group in $(jq -r '.release.groups | keys[]' nx.json); do
+            echo "🔍 Checking group: $group"
+            
+            # Get projects array for this group
+            projects=$(jq -r --arg grp "$group" '.release.groups[$grp].projects[]' nx.json)
+            
+            for project_pattern in $projects; do
+              echo "  📋 Pattern: $project_pattern"
+              
+              # Check each affected package against this pattern
+              for package in $(echo $AFFECTED | jq -r '.[]'); do
+                # Handle glob patterns (like nx-*) and exact matches
+                if [[ $package == $project_pattern ]]; then
+                  PACKAGE_GROUPS=$(echo $PACKAGE_GROUPS | jq --arg pkg "$package" --arg grp "$group" '. + {($pkg): $grp}')
+                  echo "    ✅ Package $package matches pattern $project_pattern → group: $group"
+                fi
+              done
+            done
+          done
+          
+          echo "package-groups=$(echo $PACKAGE_GROUPS | jq -c .)" >> $GITHUB_OUTPUT
           echo "🎯 Found $PACKAGE_COUNT affected packages"
           echo "📋 Packages: $AFFECTED"
+          echo "🏷️ Package groups: $PACKAGE_GROUPS"
         fi
