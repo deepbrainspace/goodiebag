@@ -9,8 +9,8 @@ importers:
   .:
     devDependencies:
       '@goodiebag/nx-rust':
-        specifier: 3.0.0-alpha
-        version: 3.0.0-alpha(nx@21.2.0(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17)))
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2(nx@21.2.0(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17)))
       '@nx/esbuild':
         specifier: 21.2.0
         version: 21.2.0(@babel/traverse@7.27.4)(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17))(esbuild@0.19.12)(nx@21.2.0(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17)))
@@ -1019,6 +1019,9 @@ packages:
 
   '@goodiebag/nx-rust@3.0.0-alpha':
     resolution: {integrity: sha512-ZdEW5PtdgJxSbNsgWyIr01dVxX7mnaVE7DLHw8srDUri2i6n+znpCqD/+LpYnmgJC82k1ncjbc8jyJbGqyqkag==}
+
+  '@goodiebag/nx-rust@3.0.0-alpha.2':
+    resolution: {integrity: sha512-b4oaGbJHToDNGdW5lU7IkZvi6tGrfRIE5aL0Y9SLbgDjWSOQJQwmd5qQWYFcqXo9+6z8atvq5v5Z09bOns0cPg==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -4185,6 +4188,17 @@ snapshots:
     transitivePeerDependencies:
       - nx
 
+  '@goodiebag/nx-rust@3.0.0-alpha.2(nx@21.2.0(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17)))':
+    dependencies:
+      '@ltd/j-toml': 1.38.0
+      '@nx/devkit': 20.8.2(nx@21.2.0(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17)))
+      npm-run-path: 4.0.1
+      picocolors: 1.1.1
+      semver: 7.5.4
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - nx
+
   '@humanfs/core@0.19.1': {}
 
   '@humanfs/node@0.16.6':
@@ -6445,7 +6459,7 @@ snapshots:
     dependencies:
       hosted-git-info: 7.0.2
       proc-log: 3.0.0
-      semver: 7.7.2
+      semver: 7.5.4
       validate-npm-package-name: 5.0.1
 
   npm-run-path@4.0.1:
