@@ -98,18 +98,22 @@
 //!
 //! | Platform | CLI | Sync | Daemon | Notes |
 //! |----------|-----|------|--------|-------|
-//! | 🐧 Linux | ✅ | ✅ | ✅ | Full systemd integration |
+//! | 🐧 Linux | ✅ | ✅ | ✅ | Full support with systemd integration |
 //! | 🪟 Windows (WSL) | ✅ | ✅ | ✅ | Requires WSL with systemd enabled |
-//! | 🍎 macOS | ✅ | ✅ | ❌ | No systemd (uses launchd) |
-//! | 🪟 Windows (Native) | ✅ | ✅ | ❌ | No systemd support |
+//! | 🍎 macOS | ⚠️ | ❌ | ❌ | Credentials stored in Keychain (incompatible) |
+//! | 🪟 Windows (Native) | ⚠️ | ❌ | ❌ | Credentials storage incompatible |
 //!
 //! **Feature Details**:
 //! - **CLI**: All command-line operations (status, org/repo management, configure)
 //! - **Sync**: Manual credential synchronization to GitHub targets
 //! - **Daemon**: Background service for automatic synchronization
 //!
-//! **Notes**: Service management commands (`service install/start/stop`) will gracefully 
-//! fail on platforms without systemd support, while all other functionality remains available.
+//! **Important Notes**: 
+//! - This toolkit expects Claude Code credentials to be stored as **files**, not in system keychains
+//! - **Expected credential location**: `~/.claude/.credentials.json`
+//! - **Linux and WSL** store credentials as files at this location, making them compatible
+//! - **macOS and native Windows** store credentials in Keychain/Credential Manager respectively
+//! - On incompatible platforms, credential reading will fail and sync operations won't work
 
 pub mod cli;
 pub mod config;
