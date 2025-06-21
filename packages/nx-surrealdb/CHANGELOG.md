@@ -1,3 +1,13 @@
+## 0.3.0 (2025-06-21)
+
+### 🚀 Features
+
+- enhance release workflow and prepare nx-rust v3.0.0 ([#24](https://github.com/deepbrainspace/goodiebag/pull/24))
+
+### ❤️ Thank You
+
+- nayeem.ai @wizardsupreme
+
 ## 0.2.3 (2025-06-20)
 
 This was a version bump only for nx-surrealdb to align it with other projects, there were no code changes.

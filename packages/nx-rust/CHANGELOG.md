@@ -1,3 +1,17 @@
+## 3.0.0-alpha.2 (2025-06-21)
+
+### 🚀 Features
+
+- upgrade nx-rust for Nx 21 compatibility and enhance README ([27c2019](https://github.com/deepbrainspace/goodiebag/commit/27c2019))
+
+### 🩹 Fixes
+
+- correct package.json exports for published package structure ([a666fcc](https://github.com/deepbrainspace/goodiebag/commit/a666fcc))
+
+### ❤️ Thank You
+
+- wizard supreme @wizardsupreme
+
 ## 3.0.0-alpha.1 (2025-06-20)
 
 ### 🩹 Fixes
