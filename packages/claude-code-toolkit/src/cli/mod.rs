@@ -3,9 +3,9 @@ pub mod commands;
 use clap::{ Parser, Subcommand };
 
 #[derive(Parser)]
-#[command(name = "claude-code")]
-#[command(about = "Claude Code management tool for credential sync and session monitoring")]
-#[command(version = "0.1.0")]
+#[command(name = "claude-code-toolkit")]
+#[command(about = "Claude Code Toolkit for credential sync and session monitoring")]
+#[command(version = env!("CARGO_PKG_VERSION"))]
 pub struct Cli {
   #[command(subcommand)]
   pub command: Commands,
