@@ -36,14 +36,14 @@ jobs:
           fetch-depth: 0
 
       - name: Setup workspace
-        uses: ./.github/actions/setup-workspace.yml
+        uses: ./.github/actions/setup-workspace
         with:
           package-group: ${{ fromJSON(needs.detect-affected.outputs.package-groups)[matrix.package] }}
           package-name: ${{ matrix.package }}
 
       - name: Detect affected packages
         id: detect
-        uses: ./.github/actions/detect-affected.yml
+        uses: ./.github/actions/detect-affected
 
   # Phase 2: Validation (Parallel per Package)
   lint:
@@ -63,7 +63,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup workspace
-        uses: ./.github/actions/setup-workspace.yml
+        uses: ./.github/actions/setup-workspace
         with:
           package-group: ${{ fromJSON(needs.detect-affected.outputs.package-groups)[matrix.package] }}
           package-name: ${{ matrix.package }}
@@ -90,7 +90,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup workspace
-        uses: ./.github/actions/setup-workspace.yml
+        uses: ./.github/actions/setup-workspace
         with:
           package-group: ${{ fromJSON(needs.detect-affected.outputs.package-groups)[matrix.package] }}
           package-name: ${{ matrix.package }}
@@ -125,7 +125,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup workspace
-        uses: ./.github/actions/setup-workspace.yml
+        uses: ./.github/actions/setup-workspace
         with:
           package-group: ${{ fromJSON(needs.detect-affected.outputs.package-groups)[matrix.package] }}
           package-name: ${{ matrix.package }}
