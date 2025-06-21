@@ -6,8 +6,8 @@ edition = '2024'
 description = 'Claude Code management tool for credential sync, session monitoring, and GitHub integration'
 license = 'MIT'
 repository = 'https://github.com/deepbrainspace/goodiebag'
-homepage = 'https://github.com/deepbrainspace/goodiebag/tree/main/packages/claude-code'
-documentation = 'https://docs.rs/claude-code'
+homepage = 'https://github.com/deepbrainspace/goodiebag/tree/main/packages/claude-code-toolkit'
+documentation = 'https://docs.rs/claude-code-toolkit'
 readme = 'README.md'
 keywords = ['claude', 'ai', 'github', 'sync', 'daemon']
 categories = ['command-line-utilities', 'development-tools']
@@ -20,6 +20,11 @@ exclude = [
 	'*.log',
 	'Cargo.lock',
 ]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+targets = ["x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc", "x86_64-apple-darwin"]
 
 [lib]
 name = 'claude_code_toolkit'
