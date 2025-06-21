@@ -10,7 +10,7 @@
 //! - **Session Monitoring**: Real-time tracking of Claude Code sessions with timer functionality
 //! - **GitHub Integration**: Seamless sync with GitHub repositories and organizations
 //! - **Daemon Mode**: Background service for automatic credential synchronization
-//! - **Cross-Platform**: Works on Linux, macOS, and Windows with platform-specific integrations
+//! - **Cross-Platform**: Primary support for Linux, with WSL support for Windows users
 //! - **Systemd Integration**: Native systemd service support on Linux (optional feature)
 //! - **Desktop Notifications**: Optional desktop notification support
 //!
@@ -96,11 +96,20 @@
 //!
 //! ## Platform Support
 //!
-//! | Platform | Status | Notes |
-//! |----------|--------|-------|
-//! | Linux    | ✅ Full | Includes systemd integration |
-//! | macOS    | ✅ Full | Native macOS service support |
-//! | Windows  | ✅ Full | Windows service integration |
+//! | Platform | CLI | Sync | Daemon | Notes |
+//! |----------|-----|------|--------|-------|
+//! | 🐧 Linux | ✅ | ✅ | ✅ | Full systemd integration |
+//! | 🪟 Windows (WSL) | ✅ | ✅ | ✅ | Requires WSL with systemd enabled |
+//! | 🍎 macOS | ✅ | ✅ | ❌ | No systemd (uses launchd) |
+//! | 🪟 Windows (Native) | ✅ | ✅ | ❌ | No systemd support |
+//!
+//! **Feature Details**:
+//! - **CLI**: All command-line operations (status, org/repo management, configure)
+//! - **Sync**: Manual credential synchronization to GitHub targets
+//! - **Daemon**: Background service for automatic synchronization
+//!
+//! **Notes**: Service management commands (`service install/start/stop`) will gracefully 
+//! fail on platforms without systemd support, while all other functionality remains available.
 
 pub mod cli;
 pub mod config;

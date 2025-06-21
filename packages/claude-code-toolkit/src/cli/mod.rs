@@ -273,9 +273,11 @@ pub enum SyncCommands {
 pub enum ServiceCommands {
   /// Install and start the sync daemon
   ///
-  /// Installs the systemd service (Linux) or equivalent service (macOS/Windows)
-  /// and starts automatic background synchronization. Creates necessary
-  /// configuration files and sets up auto-start on system boot.
+  /// Installs the systemd service and starts automatic background synchronization.
+  /// Requires Linux or WSL with systemd enabled. Creates necessary configuration
+  /// files and sets up auto-start on system boot.
+  ///
+  /// **Platform Requirements**: Linux or WSL with systemd enabled
   Install,
 
   /// Stop and uninstall the sync daemon
