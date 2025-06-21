@@ -1,6 +1,6 @@
 {
   "name": "@goodiebag/nx-rust",
-  "version": "3.0.0-alpha.4",
+  "version": "3.0.2",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
@@ -14,8 +14,7 @@
   "license": "MIT",
   "private": false,
   "publishConfig": {
-    "access": "public",
-    "directory": "../../dist/packages/nx-rust"
+    "access": "public"
   },
   "generators": "./generators.json",
   "executors": "./executors.json",

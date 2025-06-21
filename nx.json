@@ -45,7 +45,10 @@
       "cache": true
     },
     "nx-release-publish": {
-      "dependsOn": ["build"]
+      "dependsOn": ["build"],
+      "options": {
+        "packageRoot": "dist/packages/{projectName}"
+      }
     },
     "check": {
       "inputs": ["default"],
@@ -109,7 +112,11 @@
             "file": true
           }
         },
-        "releaseTagPattern": "{projectName}-v{version}"
+        "releaseTagPattern": "{projectName}-v{version}",
+        "publish": {
+          "registry": "https://registry.npmjs.org/",
+          "tag": "alpha"
+        }
       },
       "rust-packages": {
         "projects": ["claude-code-toolkit"],
