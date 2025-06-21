@@ -1,7 +1,7 @@
 
 [package]
 name = 'claude-code-toolkit'
-version = '0.2.0'
+version = '0.2.1'
 edition = '2024'
 description = 'Claude Code management tool for credential sync, session monitoring, and GitHub integration'
 license = 'MIT'
