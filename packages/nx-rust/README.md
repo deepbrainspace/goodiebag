@@ -1,68 +1,77 @@
-# @monodon/rust
+<div align="center">
+  <img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="80" alt="Nx Logo">
+  <h1>@goodiebag/nx-rust</h1>
+</div>
 
-A Nx plugin that adds support for Cargo and Rust in your Nx workspace.
+<div align="center">
+
+[![MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
+[![npm version](https://img.shields.io/npm/v/@goodiebag/nx-rust.svg?style=flat-square)](https://www.npmjs.com/package/@goodiebag/nx-rust)
+[![npm downloads](https://img.shields.io/npm/dm/@goodiebag/nx-rust.svg?style=flat-square)](https://www.npmjs.com/package/@goodiebag/nx-rust)
+[![commitizen](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg?style=flat-square)](http://commitizen.github.io/cz-cli/)
+[![PRs](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
+[![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+
+</div>
+
+---
+
+A modern Nx plugin that adds comprehensive support for Cargo and Rust in your Nx workspace.
+
+> **Built upon the excellent foundation of [@monodon/rust](https://github.com/monodon/monodon) by the Monodon team.**  
+> This fork enhances the original plugin with additional features, improved reliability, and modern Nx compatibility while maintaining the core philosophy of seamless Rust integration.
 
 ## Compatibility Chart
 
-| @monodon/rust | nx       |
-| ------------- | -------- |
-| <=1.2.1       | <=17.1.0 |
-| >=1.3.0       | >=17.1.0 |
+| @goodiebag/nx-rust | nx       |
+| ------------------ | -------- |
+| >=3.0.0            | >=19.0.0 |
 
 ## Getting Started
 
 ### Prerequisites
 
 The following tools need to be installed on your system to take full advantage
-of `@monodon/rust`
+of `@goodiebag/nx-rust`
 
 - Node (LTS)
 - Rust / Cargo via [https://rustup.rs](https://rustup.rs)
 
-### Install with `npx create-nx-workspace` preset
+### Installation
 
-To bootstrap a new workspace with `@monodon/rust` installed and ready, run:
-
-```shell
-npx create-nx-workspace --preset=@monodon/rust
-```
-
-### Installation in already set up workspace
-
-Use your favourite package manager to install in your project:
+Install the plugin in your existing Nx workspace:
 
 ```shell
-yarn add -D @monodon/rust
-```
+# Using pnpm (recommended)
+pnpm add -D @goodiebag/nx-rust
 
-```shell
-npm install -D @monodon/rust
-```
+# Using npm
+npm install -D @goodiebag/nx-rust
 
-```shell
-pnpm add -D @monodon/rust
+# Using yarn
+yarn add -D @goodiebag/nx-rust
 ```
 
 #### Initialization
 
 After installing, you can run any of the project generators (binary, library) to
-have @monodon/rust set up Cargo in your workspace.
+have @goodiebag/nx-rust set up Cargo in your workspace.
 
 ## Generators
 
 Use Nx Console to see the full list of options for each generator.
 
-### `@monodon/rust:binary`
+### `@goodiebag/nx-rust:binary`
 
 Creates a Rust binary application to be run independently.
 
 > Create a new binary:
 >
 > ```shell
-> nx generate @monodon/rust:binary my-rust-app
+> nx generate @goodiebag/nx-rust:binary my-rust-app
 > ```
 
-### `@monodon/rust:library`
+### `@goodiebag/nx-rust:library`
 
 Creates a Rust library that can be used in binaries, or compiled to be used for
 napi.
@@ -70,13 +79,13 @@ napi.
 > Create a new library:
 >
 > ```shell
-> nx generate @monodon/rust:library my-rust-lib
+> nx generate @goodiebag/nx-rust:library my-rust-lib
 > ```
 
 > Create a new library with napi:
 >
 > ```shell
-> nx generate @monodon/rust:library my-rust-node-lib --napi
+> nx generate @goodiebag/nx-rust:library my-rust-node-lib --napi
 > ```
 
 #### Napi
@@ -102,26 +111,26 @@ All the executors support these additional properties:
   - [Arguments forwarding](https://nx.dev/nx-api/nx/executors/run-commands#args)
     to the executor.
 
-### `@monodon/rust:build`
+### `@goodiebag/nx-rust:build`
 
 Runs cargo to build the project
 
 > Not supported with napi
 
-### `@monodon/rust:lint`
+### `@goodiebag/nx-rust:lint`
 
 Runs cargo clippy to lint the project
 
-### `@monodon/rust:napi`
+### `@goodiebag/nx-rust:napi`
 
 Runs the napi cli to build the project
 
-### `@monodon/rust:run`
+### `@goodiebag/nx-rust:run`
 
 Runs `cargo run` for the project
 
 > Not supported with napi
 
-### `@monodon/rust:test`
+### `@goodiebag/nx-rust:test`
 
 Runs `cargo test` for the project
