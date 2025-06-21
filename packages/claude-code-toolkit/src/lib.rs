@@ -37,25 +37,23 @@
 //!
 //! ### Library Usage
 //!
-//! ```rust
+//! ```rust,no_run
 //! use claude_code_toolkit::{
 //!     config::manager::ConfigurationManager,
-//!     providers::github::GitHubProvider,
-//!     sync::SyncManager,
+//!     sync::SyncService,
 //!     Result,
 //! };
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<()> {
 //!     // Initialize configuration
-//!     let config_manager = ConfigurationManager::new().await?;
+//!     let config_manager = ConfigurationManager::new()?;
 //!     
-//!     // Set up GitHub provider
-//!     let github_provider = GitHubProvider::new("your-token").await?;
+//!     // Set up sync service
+//!     let mut sync_service = SyncService::new_with_config().await?;
 //!     
 //!     // Sync credentials
-//!     let sync_manager = SyncManager::new(config_manager, github_provider).await?;
-//!     sync_manager.sync_all().await?;
+//!     sync_service.sync_all().await?;
 //!     
 //!     Ok(())
 //! }

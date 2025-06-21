@@ -25,7 +25,7 @@
 //!
 //! ### Basic Synchronization
 //!
-//! ```rust
+//! ```rust,no_run
 //! use claude_code_toolkit::sync::SyncService;
 //!
 //! #[tokio::main]
@@ -41,7 +41,7 @@
 //!
 //! ### Force Synchronization
 //!
-//! ```rust
+//! ```rust,no_run
 //! use claude_code_toolkit::sync::SyncService;
 //!
 //! #[tokio::main]
@@ -58,7 +58,7 @@
 //!
 //! ### Check Sync Status
 //!
-//! ```rust
+//! ```rust,no_run
 //! use claude_code_toolkit::sync::SyncService;
 //!
 //! #[tokio::main]

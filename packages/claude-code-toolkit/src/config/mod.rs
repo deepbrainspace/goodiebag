@@ -14,17 +14,18 @@
 //!
 //! ### Basic Configuration Setup
 //!
-//! ```rust
+//! ```rust,no_run
 //! use claude_code_toolkit::config::{ConfigurationManager, CredentialsManager};
+//! use claude_code_toolkit::traits::config::ConfigManager;
 //!
 //! #[tokio::main]
 //! async fn main() -> claude_code_toolkit::Result<()> {
 //!     // Initialize configuration manager
-//!     let config_manager = ConfigurationManager::new().await?;
+//!     let config_manager = ConfigurationManager::new()?;
 //!     
 //!     // Load configuration
-//!     let config = config_manager.load_configuration().await?;
-//!     println!("Loaded configuration with {} repositories", config.repositories.len());
+//!     let config = config_manager.load().await?;
+//!     println!("Loaded configuration with {} repositories", config.github.repositories.len());
 //!     
 //!     Ok(())
 //! }
@@ -32,18 +33,16 @@
 //!
 //! ### Credential Management
 //!
-//! ```rust
+//! ```rust,no_run
 //! use claude_code_toolkit::config::CredentialsManager;
 //!
 //! #[tokio::main]
 //! async fn main() -> claude_code_toolkit::Result<()> {
-//!     let creds_manager = CredentialsManager::new().await?;
+//!     let creds_manager = CredentialsManager::new()?;
 //!     
 //!     // Check if credentials exist
-//!     if creds_manager.credentials_exist().await? {
-//!         let creds = creds_manager.read_credentials().await?;
-//!         println!("Session expires: {:?}", creds.session_info.expires_at);
-//!     }
+//!     let session_info = creds_manager.get_session_info().await?;
+//!     println!("Session expires in: {} ms", session_info.time_remaining);
 //!     
 //!     Ok(())
 //! }

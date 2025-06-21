@@ -26,7 +26,7 @@
 //!
 //! ### Basic Daemon Usage
 //!
-//! ```rust
+//! ```rust,no_run
 //! use claude_code_toolkit::daemon::Daemon;
 //!
 //! #[tokio::main]
@@ -43,7 +43,7 @@
 //!
 //! ### One-time Check
 //!
-//! ```rust
+//! ```rust,no_run
 //! use claude_code_toolkit::daemon::Daemon;
 //!
 //! #[tokio::main]

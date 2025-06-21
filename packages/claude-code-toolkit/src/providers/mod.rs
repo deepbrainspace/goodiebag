@@ -22,7 +22,7 @@
 //!
 //! ### Using the Provider Factory
 //!
-//! ```rust
+//! ```rust,no_run
 //! use claude_code_toolkit::providers::ProviderFactory;
 //! use std::collections::HashMap;
 //!
@@ -48,18 +48,18 @@
 //!
 //! ### Direct Provider Usage
 //!
-//! ```rust
+//! ```rust,no_run
 //! use claude_code_toolkit::providers::github::GitHubProvider;
+//! use std::collections::HashMap;
 //!
 //! #[tokio::main]
 //! async fn main() -> claude_code_toolkit::Result<()> {
-//!     let provider = GitHubProvider::new("your-token").await?;
+//!     let mut config = HashMap::new();
+//!     config.insert("token".to_string(), "your-token".to_string());
 //!     
-//!     // Sync credentials to organization
-//!     provider.sync_to_organization("my-org").await?;
+//!     let provider = GitHubProvider::new(config)?;
 //!     
-//!     // Sync to specific repository
-//!     provider.sync_to_repository("owner", "repo").await?;
+//!     // Use provider for operations...
 //!     
 //!     Ok(())
 //! }
