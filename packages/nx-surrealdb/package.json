@@ -1,19 +1,16 @@
 {
   "name": "@deepbrainspace/nx-surrealdb",
-  "version": "0.3.1",
+  "version": "0.3.3",
   "description": "NX plugin for SurrealDB migrations with modular architecture",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
+  "exports": {
+    ".": "./src/index.js",
+    "./package.json": "./package.json"
+  },
   "generators": "./generators.json",
   "executors": "./executors.json",
-  "files": [
-    "dist",
-    "generators.json",
-    "executors.json",
-    "README.md",
-    "ARCHITECTURE.md",
-    "pnpm-lock.yaml"
-  ],
+  "private": false,
   "keywords": [
     "nx",
     "plugin",
@@ -28,7 +25,8 @@
   },
   "license": "MIT",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "directory": "../../dist/packages/nx-surrealdb"
   },
   "dependencies": {
     "@nx/devkit": "^21.2.0",
@@ -58,5 +56,6 @@
     "build": "nx build nx-surrealdb",
     "test": "nx test nx-surrealdb",
     "lint": "nx lint nx-surrealdb"
-  }
+  },
+  "type": "commonjs"
 }
