@@ -35,7 +35,7 @@
     "build": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
-      "dependsOn": ["install"],
+      "dependsOn": ["test"],
       "cache": true,
       "options": {
         "outputPath": "{workspaceRoot}/dist/packages/{projectName}",
@@ -76,7 +76,7 @@
     },
     "test": {
       "executor": "nx:run-commands",
-      "dependsOn": ["install"],
+      "dependsOn": ["lint"],
       "outputs": ["{projectRoot}/coverage"],
       "cache": false,
       "options": {
