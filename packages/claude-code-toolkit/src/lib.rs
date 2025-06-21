@@ -98,15 +98,21 @@
 //!
 //! | Platform | CLI | Sync | Daemon | Notes |
 //! |----------|-----|------|--------|-------|
-//! | 🐧 Linux | ✅ | ✅ | ✅ | Full support with systemd integration |
+//! | 🐧 Linux | ✅ | ✅ | ✅ | Complete systemd integration |
 //! | 🪟 Windows (WSL) | ✅ | ✅ | ✅ | Requires WSL with systemd enabled |
-//! | 🍎 macOS | ⚠️ | ❌ | ❌ | Credentials stored in Keychain (incompatible) |
-//! | 🪟 Windows (Native) | ⚠️ | ❌ | ❌ | Credentials storage incompatible |
+//! | 🪟 Windows (Native) | ⚠️ | ❌ | ❌ | CLI only - credentials in system store |
+//! |  macOS | ⚠️ | ❌ | ❌ | CLI only - credentials in Keychain |
 //!
 //! **Feature Details**:
-//! - **CLI**: All command-line operations (status, org/repo management, configure)
-//! - **Sync**: Manual credential synchronization to GitHub targets
-//! - **Daemon**: Background service for automatic synchronization
+//! - **✅ Full**: Complete functionality as designed
+//! - **⚠️ Partial**: CLI commands work, but credential reading fails
+//! - **❌ No**: Feature unavailable due to platform limitations
+//!
+//! **Support Breakdown**:
+//! - **CLI Full**: All commands including org/repo management, configuration
+//! - **CLI Partial**: Commands work but `status`, `sync`, `timer` fail (no credential access)
+//! - **Sync**: Requires file-based credential storage at `~/.claude/.credentials.json`
+//! - **Daemon**: Requires systemd for background service functionality
 //!
 //! **Important Notes**: 
 //! - This toolkit expects Claude Code credentials to be stored as **files**, not in system keychains
