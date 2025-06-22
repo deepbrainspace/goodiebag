@@ -1,201 +1,179 @@
 # Release Process
 
-This document describes the release process for the Goodie-Bag monorepo, which
-uses Claude commands for intelligent changelog generation and publishing.
+This document describes the automated release process for the Goodie-Bag monorepo, which uses a 3-workflow GitHub Actions pipeline for continuous integration, changelog generation, and publishing.
 
 ## Overview
 
-The release process consists of three steps:
+The release process consists of three automated workflows:
 
-1. **Development & Claude Commands** - Generate changelog-rc.md files using AI
-2. **CI Validation** - Automated code quality checks (lint → test → build)
-3. **Release Publishing** - Publish packages using Claude commands
+1. **CI Workflow** - Automated code quality checks (lint → test → build) + artifact storage
+2. **Changelog Workflow** - Automated version bumping and release PR creation  
+3. **Release Workflow** - Automated tagging and publishing using CI artifacts
 
 ## Workflow Architecture
 
 ```
- Development      Claude Commands       CI (PR)         Release
-     │                  │                │                │
-     ▼                  ▼                ▼                ▼
-┌─────────┐       ┌──────────┐     ┌──────────┐     ┌─────────┐
-│ Code    │       │ release- │     │ Validate │     │ release-│
-│ Changes │──────▶│ commit   │────▶│ & Build  │────▶│ publish │
-│         │manual │          │ PR  │          │merge│         │
-└─────────┘       └──────────┘     └──────────┘     └─────────┘
-                        │                │               │
-                        ▼                ▼               ▼
-                  changelog-rc.md   cached builds   npm packages
+  Feature PR        CI Workflow        Changelog         Release PR        Release
+      │                 │             Workflow             │             Workflow
+      ▼                 ▼                 │                 ▼                 │
+┌───────────┐     ┌────────────┐     ┌───────────┐     ┌─────────┐     ┌─────────┐
+│ Developer │────▶│ Build +    │────▶│ Generate  │────▶│ Review  │────▶│ Tag +   │
+│ Opens PR  │     │ Test +     │     │ Changelog │     │ Release │     │ Publish │
+│           │     │ Store      │     │ + Version │     │ Changes │     │ to npm/ │
+│           │     │ Artifacts  │     │ Bump      │     │         │     │ cargo   │
+└───────────┘     └────────────┘     └───────────┘     └─────────┘     └─────────┘
+      │                 │                 │                 │                 │
+      ▼                 ▼                 ▼                 ▼                 ▼
+  Triggers CI       Tested Build      Release PR        Manual          Published
+  Validation        Artifacts         Created           Review          Packages
 ```
 
-### Claude Command Integration
+### 3-Workflow Pipeline Benefits
 
-Leverages Claude's AI directly for dual-level release management:
-
-1. **AI-Powered Analysis**: Claude analyzes conventional commits for both
-   packages and root project
-2. **Intelligent Changelog**: Generates professional changelog-rc.md with
-   categorized changes
-3. **Dual-Level Releases**: Handles both individual packages and monorepo
-   infrastructure
-4. **Developer Control**: Explicit command execution rather than automatic hooks
+1. **Zero Duplicate Builds**: CI artifacts are reused for publishing
+2. **Permission Compliant**: No direct pushes to main, everything via PRs  
+3. **Build Integrity**: Publishes exact same artifacts that passed CI tests
+4. **Flexible Control**: `do-not-release` label for batching changes
+5. **Manual Override**: Always available for selective releases
+6. **Clean Separation**: CI→validate, Changelog→prepare, Release→publish
 
 ## 🔄 Complete Release Flow
 
-### 1. Development with Claude Commands
+### 1. Feature Development
 
 ```bash
-# Make changes to packages and/or infrastructure
+# Create feature branch and make changes
 git checkout -b feat/new-feature
-# ... make changes to packages/nx-surrealdb/ and .github/workflows/ ...
+# ... make changes to packages/nx-surrealdb/ ...
+git add .
+git commit -m "feat(nx-surrealdb): add new migration functionality"
+git push origin feat/new-feature
 
-# When ready for release, use Claude to generate changelog and commit
-claude
-/project:release-commit
-
-# Claude will:
-# 1. Detect affected packages via nx affected
-# 2. Detect root project changes (CI/CD, docs, config)
-# 3. Analyze conventional commits since last release
-# 4. Calculate appropriate versions (patch/minor/major)
-# 5. Generate changelog-rc.md files with RC versions
-# 6. Commit and push changes
-
-# Results created:
-# - packages/nx-surrealdb/changelog-rc.md (0.2.1-rc.1703123456)
-# - changelog-rc.md (goodiebag 1.1.0-rc.1703123456)
+# Create PR
+gh pr create --title "feat: add new migration functionality" --body "Description..."
 ```
 
-**Alternative**: Use `/project:changelog` to generate changelog-rc.md without
-committing for review first.
+**What happens automatically:**
+- **CI Workflow** triggers on PR creation
+- Runs lint, test, build for affected packages
+- Stores build artifacts for later release use
+- Build artifacts cached for 7 days
 
-### 2. CI Workflow (PR Validation)
-
-When you create a PR, the **CI workflow** validates code quality:
-
-```
-┌─────────────┐
-│   detect    │ ← Finds affected packages using NX
-│     ✅      │
-└─────────────┘
-       │
-   ┌───┴───┐
-   │       │
-┌──────┐ ┌──────┐
-│ lint │ │ test │  ← Parallel validation
-│ ✅   │ │ ✅   │
-└──────┘ └──────┘
-       │
-   ┌───┴───┐
-   │       │
-┌──────┐ ┌──────┐
-│build │ │cache │  ← Build and cache artifacts
-│ ✅   │ │ ✅   │
-└──────┘ └──────┘
-```
-
-#### **What Happens:**
-
-1. **🔍 Detection**: NX finds affected packages
-2. **⚡ Parallel Validation**: Lint, test, and build each package
-3. **📦 Build Caching**: Artifacts cached for release step
-4. **📝 Changelog Review**: Team reviews changelog-rc.md in PR
-
-**Note**: The changelog-rc.md file is visible in the PR for team review!
-
-### 3. Release Workflow (Post-merge)
-
-**Use Claude commands** when ready to release:
+### 2. PR Merge & Changelog Generation
 
 ```bash
-# After PR is merged to main
-claude
-/project:release-publish
-
-# Claude will:
-# 1. Find packages and root project with changelog-rc.md files
-# 2. Strip RC suffix to get final versions
-# 3. Merge changelogs into CHANGELOG.md files
-# 4. Update package.json versions
-# 5. Publish packages to npm (root project gets GitHub release only)
-# 6. Create git tags: goodiebag-v1.1.0, nx-surrealdb-v0.2.1
-# 7. Create GitHub releases for both levels
-# 8. Clean up RC files and commit changes
+# Merge the feature PR
+gh pr merge --squash  # or merge via GitHub UI
 ```
+
+**What happens automatically:**
+- **Changelog Workflow** triggers on PR merge to main
+- Detects affected packages using NX
+- Runs `nx release --skip-publish` for version bump + changelog
+- Creates release branch: `release/nx-surrealdb@1.2.3`
+- Opens release PR with changelog and version changes
+
+**Control Options:**
+- Add `do-not-release` label to PR to skip automatic release
+- Use manual workflow dispatch for selective package releases
+
+```bash
+# Optional: Skip automatic release
+gh pr edit {pr-number} --add-label "do-not-release"
+
+# Optional: Manual release trigger
+gh workflow run changelog.yml -f package="nx-surrealdb" -f version="patch"
+```
+
+### 3. Release PR Review & Publish
+
+```bash
+# Review the generated release PR
+gh pr view {release-pr-number}  # Review changelog and version changes
+gh pr merge {release-pr-number} # Merge when ready to publish
+```
+
+**What happens automatically:**
+- **Release Workflow** triggers on release PR merge
+- Downloads CI build artifacts (from original feature PR)
+- Extracts package and version from branch name: `release/nx-surrealdb@1.2.3`
+- Creates git tag: `nx-surrealdb@1.2.3`
+- Publishes to npm/cargo using exact CI artifacts
+- Creates GitHub release with changelog
 
 #### **What Happens:**
 
-1. **🔍 Detection**: Find packages with `changelog-rc.md` files
+1. **🔍 Detection**: Detects release branch merge via PR event
 
-2. **📝 Changelog Processing**:
-
-   - Strip `-rc.{timestamp}` from version (e.g., `1.2.3-rc.1703123456` →
-     `1.2.3`)
-   - Merge `changelog-rc.md` content into main `CHANGELOG.md`
-   - Update `package.json` with final version
+2. **📦 Artifact Retrieval**:
+   - Downloads CI build artifacts using `dawidd6/action-download-artifact`
+   - Verifies artifacts exist before proceeding
+   - Uses exact same builds that passed CI tests
 
 3. **📦 Publishing**:
+   - Create git tag: `{package}@{version}` (e.g., `nx-surrealdb@1.2.3`)
+   - Push tag to GitHub
+   - Publish to npm: `nx run {package}:nx-release-publish`
+   - Create GitHub release with changelog content
 
-   - Use **cached builds** from CI
-   - Publish to npm with `pnpm publish`
-   - Create git tag: `{package}-v{version}`
-   - Create GitHub release with changelog
+4. **🔄 Artifact Flow**:
+   ```
+   Feature PR → CI Artifacts → Stored (7 days) → Release Workflow → Publish
+   ```
 
-4. **🔄 Finalization**:
-   - Delete `changelog-rc.md` files
-   - Commit version updates:
-     `chore(release): {package}@{version} [skip-changelog]`
-   - Push commits and tags
-
-**Safety**: Command includes authentication checks and build validation before
-publishing.
+**Safety**: 
+- Only publishes if CI artifacts are found
+- Uses branch-based triggers (not commit message parsing)
+- Every action documented via PR audit trail
 
 ## 📋 Version Strategy
 
-### Pre-commit RC Versions
+### Automatic Version Calculation
 
-**Packages:**
+**NX Conventional Commits:**
+- `fix:` → patch (0.2.0 → 0.2.1)
+- `feat:` → minor (0.2.0 → 0.3.0) 
+- `feat!:` or `BREAKING CHANGE:` → major (0.2.0 → 1.0.0)
 
-- **Format**: `x.y.z-rc.{timestamp}` (e.g., `0.2.1-rc.1703123456789`)
-- **Location**: `packages/{package}/changelog-rc.md`
-- **Purpose**: Preview version for PR review
+**Branch Naming:**
+- Release branches: `release/{package}@{version}` (e.g., `release/nx-surrealdb@1.2.3`)
+- Git tags: `{package}@{version}` (e.g., `nx-surrealdb@1.2.3`)
 
-**Root Project:**
-
-- **Format**: `1.y.z-rc.{timestamp}` (e.g., `1.1.0-rc.1703123456789`)
-- **Location**: `changelog-rc.md` (root directory)
-- **Tag Pattern**: `goodiebag-v{version}`
-
-### Release Versions
-
-**Packages:**
-
+**Package Versioning:**
 - **Format**: `x.y.z` (semantic versioning)
 - **npm tag**: `latest`
-- **GitHub**: Tagged as `{package}-v{version}`
+- **GitHub**: Tagged as `{package}@{version}`
+- **Independent**: Each package maintains own version cycle
 
 **Root Project:**
+- **No versioning**: Root project doesn't get published
+- **Tags**: Only packages get git tags
+- **Releases**: GitHub releases created for each package
 
-- **Format**: `1.y.z` (semantic versioning)
-- **GitHub**: Tagged as `goodiebag-v{version}`
-- **No npm**: Root project is private, GitHub release only
+### Control Mechanisms
 
-### Automatic Release Triggers (TODO)
+**Batching Changes:**
+```bash
+# Add label to skip automatic release
+gh pr edit {pr-number} --add-label "do-not-release"
 
-- **Trigger**: Merge to main with changelog-rc.md present
-- **Timing**: Immediate or batched (configurable)
-- **Safety**: Require approval for major versions
-- **Notification**: Slack/Discord webhook on release
+# Manual release when ready (accumulates all changes)
+gh workflow run changelog.yml
+```
+
+**Selective Releases:**
+```bash
+# Release specific package manually
+gh workflow run changelog.yml -f package="nx-surrealdb" -f version="minor"
+```
+
+### Installation
 
 ```bash
-# Version calculation from commits:
-# fix: → patch (0.2.0 → 0.2.1)
-# feat: → minor (0.2.0 → 0.3.0)
-# feat!: or BREAKING CHANGE: → major (0.2.0 → 1.0.0)
-
 # Install released version
 pnpm add @deepbrainspace/nx-surrealdb@latest
-# or specific version
-pnpm add @deepbrainspace/nx-surrealdb@0.2.1
+# or specific version  
+pnpm add @deepbrainspace/nx-surrealdb@1.2.3
 ```
 
 ## 🎯 Multi-Package Scenarios
@@ -227,20 +205,23 @@ Result: "No packages affected" notification
 
 ## 🛠️ Available Commands
 
-### Claude Commands for Release Management
+### GitHub Workflow Commands
 
 ```bash
-# Start Claude and use project commands:
-claude
+# Manual changelog generation (bypass automatic trigger)
+gh workflow run changelog.yml
 
-# Generate changelog without committing (for review)
-/project:changelog
+# Manual changelog with specific package
+gh workflow run changelog.yml -f package="nx-surrealdb" -f version="patch"
 
-# Generate changelog and commit (ready for PR)
-/project:release-commit
+# View workflow runs
+gh run list --workflow=ci.yml
+gh run list --workflow=changelog.yml  
+gh run list --workflow=release.yml
 
-# Publish packages with changelog-rc.md files
-/project:release-publish
+# Control release behavior via labels
+gh pr edit {pr-number} --add-label "do-not-release"
+gh pr edit {pr-number} --remove-label "do-not-release"
 ```
 
 ### Testing and Validation
@@ -252,44 +233,51 @@ nx show projects --affected
 # Validate builds before release
 nx affected --target=build
 
-# Check npm authentication
+# Check npm authentication  
 pnpm whoami
 
-# Verify git status
-git status
+# View stored artifacts
+gh api repos/deepbrainspace/goodiebag/actions/artifacts
+
+# Check workflow permissions
+gh api repos/deepbrainspace/goodiebag --jq .permissions
 ```
 
-### Manual Override Options
+### Manual Release Process
 
 ```bash
-# Skip Claude commands and use traditional git
-git add -A
-git commit -m "feat: manual commit without changelog"
-
-# Create changelog-rc.md manually if needed
-# Then use: claude release-publish
+# Bypass automated workflows entirely
+git checkout -b manual-release
+# ... make changes manually ...
+nx release --projects=nx-surrealdb --skip-publish
+# ... create PR manually ...
 ```
 
 ## 🔍 Monitoring & Debugging
 
-### Claude Command Debugging
+### Workflow Monitoring
 
 ```bash
-# Check affected packages
+# Check affected packages  
 nx show projects --affected
 
-# Verify changelog-rc.md generation
-find packages -name "changelog-rc.md"
+# Monitor workflow runs
+gh run list --workflow=ci.yml --limit=5
+gh run list --workflow=changelog.yml --limit=5
+gh run list --workflow=release.yml --limit=5
 
-# View Claude command files
-ls -la .claude/commands/
+# View specific run details
+gh run view {run-id} --log
+
+# Check workflow status
+gh workflow list
 ```
 
 ### CI Pipeline Monitoring
 
 - **GitHub Actions**: View lint/test/build execution in Actions tab
-- **Build Cache**: Verify artifacts are cached for release
-- **PR Reviews**: Check changelog-rc.md files in pull requests
+- **Build Artifacts**: Check stored artifacts in workflow runs
+- **PR Status**: View CI checks on PRs
 
 ### Release Process Monitoring
 
@@ -303,47 +291,52 @@ git tag | grep nx-surrealdb
 # Check GitHub releases
 gh release list --repo deepbrainspace/goodiebag
 
-# View Claude command output
-# Claude commands provide detailed output during execution
+# View artifact storage
+gh api repos/deepbrainspace/goodiebag/actions/artifacts --jq '.artifacts[] | {name, size_in_bytes, created_at}'
 ```
 
 ## 🚨 Troubleshooting
 
-### Claude Command Issues
+### Workflow Issues
 
-**Command not found:**
+**Changelog workflow not triggering:**
 
 ```bash
-# Verify Claude CLI is installed
-claude --version
+# Check if PR has do-not-release label
+gh pr view {pr-number} --json labels
 
-# Check command files exist
-ls .claude/commands/
+# Check if PR was actually merged (not just closed)
+gh pr view {pr-number} --json merged
+
+# Manual trigger
+gh workflow run changelog.yml
 ```
 
-**Changelog not generated:**
+**Release workflow not running:**
 
 ```bash
-# Check if packages have changes
-nx show projects --affected
+# Check if release branch was merged
+gh pr list --state merged --head "release/*"
 
-# Try alternative command
-claude changelog  # Generate without committing
+# Check workflow permissions
+gh api repos/deepbrainspace/goodiebag --jq .permissions
 
-# Manual verification
-find packages -name "changelog-rc.md"
+# View workflow run logs
+gh run view {run-id} --log
 ```
 
-### Release Issues
+### Artifact Issues
 
-**Can't find changelog-rc.md:**
+**Build artifacts not found:**
 
 ```bash
-# Check if files exist
-ls packages/*/changelog-rc.md
+# Check if CI workflow completed successfully
+gh run list --workflow=ci.yml --limit=5
 
-# Generate manually
-claude changelog
+# View artifact storage
+gh api repos/deepbrainspace/goodiebag/actions/artifacts
+
+# Check artifact retention (expires after 7 days)
 ```
 
 **Publishing failures:**
@@ -352,76 +345,76 @@ claude changelog
 # Check npm authentication
 pnpm whoami
 
-# Verify build artifacts
-nx affected --target=build
+# Verify NX publish target exists
+nx show project nx-surrealdb --json | jq .targets
 
 # Check versions
 pnpm view @deepbrainspace/nx-surrealdb versions
 ```
 
-**Git issues:**
+**Permission issues:**
 
 ```bash
-# Check git status
-git status
+# Check repository permissions
+gh api repos/deepbrainspace/goodiebag --jq .permissions
 
-# Verify remote connection
-git remote -v
+# Verify secrets are configured
+gh secret list
 
-# Check if tags exist
-git tag | grep nx-surrealdb
+# Check workflow permissions in .github/workflows/
 ```
 
 ## System Benefits
 
 ### Developer Experience
 
-- **Automated changelog generation** - Created during commit process
-- **Version calculation** - Based on conventional commits
-- **Skip capability** - Use --no-verify or [skip-changelog] when needed
-- **PR visibility** - Changelog visible for review before merge
+- **Fully automated** - No manual release commands needed
+- **PR-based workflow** - All changes documented and reviewable
+- **Flexible control** - Skip releases with labels, manual triggers available
+- **Zero duplicate builds** - CI artifacts reused for publishing
 
-### Release Process
+### Release Process  
 
-- **Clear release signals** - changelog-rc.md indicates readiness
+- **Branch-driven** - Logic based on branch names, not commit parsing
 - **Independent packages** - Each package maintains own release cycle
-- **Build caching** - Reuses CI artifacts during release
-- **Clean commits** - Release commits marked with [skip-changelog]
+- **Build integrity** - Publishes exact artifacts that passed CI
+- **Permission compliant** - No direct pushes to main, everything via PRs
 
 ## 🚀 Implementation Status
 
-### ✅ Phase 1: Claude Commands (Complete)
+### ✅ Phase 1: 3-Workflow Pipeline (Complete)
 
-1. ✅ Created `claude release-commit` command
-2. ✅ Created `claude changelog` command
-3. ✅ Created `claude release-publish` command
-4. ✅ Updated documentation
+1. ✅ CI Workflow - Build, test, store artifacts
+2. ✅ Changelog Workflow - Version bump, create release PRs  
+3. ✅ Release Workflow - Tag, publish using CI artifacts
+4. ✅ Cross-workflow artifact sharing
 
-### 🔄 Phase 2: Testing & Validation (Current)
+### ✅ Phase 2: Advanced Features (Complete)
 
-1. Test `claude release-commit` with nx-surrealdb
-2. Validate changelog generation and formatting
-3. Test complete flow: changelog → CI → publish
-4. Verify npm publishing and GitHub releases
+1. ✅ `do-not-release` label control
+2. ✅ Manual workflow triggers
+3. ✅ Branch-based detection (not commit parsing)
+4. ✅ Tech-agnostic version extraction
 
-### 📋 Phase 3: Optimization (Future)
+### 🔄 Phase 3: Testing & Validation (Current)
 
-1. Refine changelog formatting and categorization
-2. Add model specification (prefer Sonnet over Opus)
-3. Enhance error handling and validation
-4. Add more detailed command output
+1. Test complete flow: feature PR → CI → changelog → release
+2. Validate cross-workflow artifact download
+3. Test release branch exclusions
+4. Verify npm/cargo publishing
 
-### 🎯 Phase 4: Automation (Future)
+### 📋 Phase 4: Optimization (Future)
 
-1. Integrate release-publish with GitHub Actions
-2. Add webhook notifications (Slack/Discord)
-3. Implement automatic triggers for certain conditions
-4. Add safety checks for major version releases
+1. Add webhook notifications (Slack/Discord)
+2. Implement release approval workflows for major versions
+3. Add dependency update automation
+4. Enhanced error reporting and retry mechanisms
 
 ## 🔗 Related Documentation
 
-- [Claude CLI Documentation](https://claude.ai/code)
+- [GitHub Actions Workflows](https://docs.github.com/en/actions/using-workflows)
 - [NX Affected Documentation](https://nx.dev/ci/features/affected)
+- [NX Release Documentation](https://nx.dev/features/manage-releases)
 - [Conventional Commits](https://www.conventionalcommits.org/)
-- [pnpm Publishing](https://pnpm.io/cli/publish)
-- [GitHub CLI Releases](https://cli.github.com/manual/gh_release)
+- [Cross-Workflow Artifacts](https://github.com/dawidd6/action-download-artifact)
+- [GitHub CLI](https://cli.github.com/manual/)
