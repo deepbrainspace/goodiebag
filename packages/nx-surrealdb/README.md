@@ -1,5 +1,7 @@
 # nx-surrealdb
 
+*Part of the [GoodieBag](https://github.com/deepbrainspace/goodiebag) collection of tools and libraries*
+
 A comprehensive SurrealDB toolkit for [Nx](https://nx.dev/) monorepos featuring
 migration management, dependency resolution, and extensible tooling
 architecture.
