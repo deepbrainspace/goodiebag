@@ -48,6 +48,9 @@
       "dependsOn": ["build"],
       "options": {
         "packageRoot": "dist/packages/{projectName}"
+      },
+      "env": {
+        "NPM_TOKEN": "{env.NPM_TOKEN}"
       }
     },
     "check": {
