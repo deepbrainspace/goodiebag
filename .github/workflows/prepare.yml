@@ -91,7 +91,7 @@ jobs:
       - name: Prepare release and create branch
         run: |
           echo "📝 Preparing release for ${{ matrix.package }}..."
-          
+
           echo "🔍 Git environment debugging:"
           echo "Current branch: $(git branch --show-current)"
           echo "Recent commits:"
