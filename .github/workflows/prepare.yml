@@ -84,9 +84,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Prepare release (skip publish)
+      - name: Prepare release and create branch
         run: |
-          echo "📝 Preparing changelog for ${{ matrix.package }}..."
+          echo "📝 Preparing release for ${{ matrix.package }}..."
           
           VERSION_INPUT="${{ github.event.inputs.version }}"
           if [ -z "$VERSION_INPUT" ]; then
@@ -98,52 +98,39 @@ jobs:
           fi
 
           echo "🎯 Executing: $VERSION_CMD"
-          $VERSION_CMD
-
-      - name: Create release branch and PR
-        run: |
-          # Get the package name for this matrix job
-          PACKAGE_NAME="${{ matrix.package }}"
+          NX_OUTPUT=$($VERSION_CMD 2>&1)
+          echo "$NX_OUTPUT"
           
-          # Get the version from the package.json after NX updated it
-          if [ -f "packages/$PACKAGE_NAME/package.json" ]; then
-            VERSION=$(cat "packages/$PACKAGE_NAME/package.json" | grep '"version"' | cut -d'"' -f4)
-          elif [ -f "package.json" ] && [ "$PACKAGE_NAME" = "goodiebag" ]; then
-            VERSION=$(cat "package.json" | grep '"version"' | cut -d'"' -f4)
-          else
-            echo "❌ Could not find package.json for $PACKAGE_NAME"
-            exit 1
-          fi
+          # Extract version from NX output - look for "New version X.Y.Z written" line
+          VERSION=$(echo "$NX_OUTPUT" | grep "New version.*written" | grep -o "[0-9]\+\.[0-9]\+\.[0-9]\+" | head -1 || echo "")
           
-          echo "📦 Package: $PACKAGE_NAME"
-          echo "🔖 Version: $VERSION"
-          
-          # Check if version changed (not 0.0.0 which means no changes)
-          if [ "$VERSION" = "0.0.0" ]; then
-            echo "ℹ️ No version change for $PACKAGE_NAME, skipping release"
+          if [ -z "$VERSION" ]; then
+            echo "ℹ️ No version change for ${{ matrix.package }}, skipping release"
             exit 0
           fi
           
-          BRANCH_NAME="release/${PACKAGE_NAME}@${VERSION}"
+          echo "📦 Package: ${{ matrix.package }}"
+          echo "🔖 Version: $VERSION"
+          
+          BRANCH_NAME="release/${{ matrix.package }}@${VERSION}"
           echo "🌿 Branch: $BRANCH_NAME"
           
-          # Create release branch and PR
+          # Create release branch and push NX changes
           git checkout -b "$BRANCH_NAME"
           git push origin "$BRANCH_NAME"
           
           gh pr create \
-            --title "🚀 Release Request for ${PACKAGE_NAME}@${VERSION}" \
-            --body "Release request for ${PACKAGE_NAME} v${VERSION}
-
-## Changes
-$(git log --oneline --no-merges HEAD~10..HEAD | grep -E "(feat|fix|perf|docs|chore)(\($PACKAGE_NAME\))?" | head -5)
-
-## Package
-- **Name**: $PACKAGE_NAME  
-- **Version**: $VERSION
-- **Type**: $(if [[ $VERSION =~ \.[0-9]+\.0$ ]]; then echo "Minor"; elif [[ $VERSION =~ \.[0-9]+\.[1-9]+$ ]]; then echo "Patch"; else echo "Major"; fi) release
-
-Merge this PR to trigger the release pipeline." \
+            --title "🚀 Release Request for ${{ matrix.package }}@${VERSION}" \
+            --body "Release request for ${{ matrix.package }} v${VERSION}
+          
+          ## Changes
+          See the changelog files for detailed changes.
+          
+          ## Package
+          - **Name**: ${{ matrix.package }}
+          - **Version**: $VERSION
+          
+          Merge this PR to trigger the release pipeline." \
             --base main \
             --head "$BRANCH_NAME"
         env:
