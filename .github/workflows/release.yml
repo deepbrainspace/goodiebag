@@ -100,10 +100,10 @@ jobs:
           VERSION_INPUT="${{ github.event.inputs.version }}"
           if [ -z "$VERSION_INPUT" ]; then
             echo "📋 Using automatic version determination from conventional commits"
-            VERSION_CMD="nx release --projects=${{ matrix.package }}"
+            VERSION_CMD="nx release --projects=${{ matrix.package }} --yes"
           else
             echo "📋 Using manual version bump: $VERSION_INPUT"
-            VERSION_CMD="nx release $VERSION_INPUT --projects=${{ matrix.package }}"
+            VERSION_CMD="nx release $VERSION_INPUT --projects=${{ matrix.package }} --yes"
           fi
 
           echo "🎯 Executing: $VERSION_CMD"
