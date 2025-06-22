@@ -35,10 +35,10 @@ jobs:
     # Skip if PR has 'do-not-release' label (only for PR triggers, not manual)
     if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'do-not-release'))
     outputs:
-      has-packages: ${{ steps.detect.outputs.has-packages || steps.affected.outputs.has-packages }}
-      packages: ${{ steps.detect.outputs.packages || steps.affected.outputs.packages }}
-      package-count: ${{ steps.detect.outputs.package-count || steps.affected.outputs.package-count }}
-      package-groups: ${{ steps.detect.outputs.package-groups || steps.affected.outputs.package-groups }}
+      has-packages: ${{ steps.detect.outputs.has-packages }}
+      packages: ${{ steps.detect.outputs.packages }}
+      package-count: ${{ steps.detect.outputs.package-count }}
+      package-groups: ${{ steps.detect.outputs.package-groups }}
 
     steps:
       - name: Checkout repository
@@ -49,36 +49,11 @@ jobs:
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
 
-      - name: Handle manual vs automatic detection
+      - name: Detect affected packages
         id: detect
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            # Manual trigger - use specified package
-            PACKAGE="${{ github.event.inputs.package }}"
-            echo "🎯 Manual package specified: $PACKAGE"
-            echo "packages=[\"$PACKAGE\"]" >> $GITHUB_OUTPUT
-            echo "has-packages=true" >> $GITHUB_OUTPUT
-            echo "package-count=1" >> $GITHUB_OUTPUT
-            
-            # Determine package group from nx.json
-            PACKAGE_GROUP=""
-            if [[ "$PACKAGE" == nx-* ]]; then
-              PACKAGE_GROUP="nx-plugins"
-            elif [[ "$PACKAGE" == "claude-code-toolkit" ]]; then
-              PACKAGE_GROUP="rust-packages"
-            elif [[ "$PACKAGE" == "goodiebag" ]]; then
-              PACKAGE_GROUP="workspace"
-            fi
-            echo "package-groups={\"$PACKAGE\": \"$PACKAGE_GROUP\"}" >> $GITHUB_OUTPUT
-          else
-            # Automatic detection for PR merges
-            echo "🔍 Using automatic affected detection"
-          fi
-
-      - name: Detect affected packages (PR only)
-        id: affected
-        if: github.event_name != 'workflow_dispatch'
         uses: ./.github/actions/detect-affected
+        with:
+          package: ${{ github.event.inputs.package || '' }}
 
   changelog:
     name: Changelog ${{ matrix.package }}
