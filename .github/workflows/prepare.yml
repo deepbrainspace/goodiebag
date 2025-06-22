@@ -214,7 +214,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   no-packages:
-    name: No packages to release
+    name: ℹ️ No Release Needed
     runs-on: ubuntu-latest
     needs: detect
     if: needs.detect.outputs.has-packages == 'false'
@@ -224,3 +224,21 @@ jobs:
         run: |
           echo "ℹ️ No packages with publish targets were affected by recent changes."
           echo "The changes appear to be documentation, configuration, or non-publishable code."
+
+  # Summary status for GitHub checks
+  prepare-status:
+    name: ✅ Prepare Status
+    needs: [detect, changelog, no-packages]
+    if: always()
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Report prepare status
+        run: |
+          if [[ "${{ needs.detect.outputs.has-packages }}" == "true" ]]; then
+            echo "✅ Release PRs created successfully"
+            echo "📦 Packages: ${{ needs.detect.outputs.packages }}"
+            echo "🔗 Check the PRs tab for release requests"
+          else
+            echo "ℹ️ No releases needed - no affected packages found"
+          fi
