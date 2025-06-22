@@ -1,4 +1,4 @@
-name: ⚙️ CI
+name: ⚙️ Build
 
 on:
   pull_request:
@@ -13,10 +13,13 @@ on:
       - 'pnpm-lock.yaml'
       - 'nx.json'
       - 'tsconfig*.json'
-      - '.github/workflows/ci.yml'
+      - '.github/**'
+      - 'docs/**'
+      - 'README.md'
+      - 'CHANGELOG.md'
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: build-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -143,16 +146,16 @@ jobs:
 
   # Summary
   summary:
-    name: ✅ CI Summary
+    name: ✅ Build Summary
     needs: [detect-affected, lint, test, build]
     if: always()
     runs-on: ubuntu-latest
 
     steps:
-      - name: Post CI summary
+      - name: Post build summary
         run: |
           if [[ "${{ needs.detect-affected.outputs.has-packages }}" == "true" ]]; then
-            echo "✅ CI completed for ${{ needs.detect-affected.outputs.package-count }} packages"
+            echo "✅ Build completed for ${{ needs.detect-affected.outputs.package-count }} packages"
             echo "📦 Packages: ${{ needs.detect-affected.outputs.packages }}"
             echo ""
             echo "💡 To prepare for release, comment 'prepare_release' on this PR"

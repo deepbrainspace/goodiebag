@@ -44,11 +44,11 @@ jobs:
             exit 1
           fi
 
-      - name: Download CI build artifacts
+      - name: Download build artifacts
         uses: dawidd6/action-download-artifact@v11
         with:
           name: build-${{ steps.extract.outputs.package }}
-          workflow: ci.yml
+          workflow: build.yml
           path: dist/packages/${{ steps.extract.outputs.package }}
 
       - name: Verify artifacts exist

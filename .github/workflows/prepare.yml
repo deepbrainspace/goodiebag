@@ -1,4 +1,4 @@
-name: 📝 Changelog Generation
+name: 📝 Prepare Release
 
 on:
   pull_request:
@@ -10,8 +10,13 @@ on:
     inputs:
       package:
         description: 'Specific package to release'
-        required: false
-        type: string
+        required: true
+        type: choice
+        options:
+          - nx-rust
+          - nx-surrealdb
+          - claude-code-toolkit
+          - goodiebag
       version:
         description: 'Version bump type'
         required: false
