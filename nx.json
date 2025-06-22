@@ -156,6 +156,9 @@
         "targetName": "jest:test"
       }
     },
-    "@goodiebag/nx-rust"
+    {
+      "plugin": "@goodiebag/nx-rust",
+      "exclude": ["goodiebag"]
+    }
   ]
 }

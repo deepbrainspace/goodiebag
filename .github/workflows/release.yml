@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     # Only run if PR was merged and came from a release/* branch
     if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'release/')
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,23 +24,61 @@ jobs:
       - name: Extract release info
         id: extract
         run: |
-          # Extract package and version from release branch name
-          # Expected format: "release/package-name@1.2.3"
+          # Extract package from release branch name (Release Please strategy)
+          # Expected format: "release/package-name"
           BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
-          if [[ $BRANCH_NAME =~ release/([^@]+)@([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+          if [[ $BRANCH_NAME =~ release/(.+) ]]; then
             PACKAGE_NAME="${BASH_REMATCH[1]}"
-            VERSION="${BASH_REMATCH[2]}"
-            TAG_NAME="${PACKAGE_NAME}@${VERSION}"
-            
-            echo "package=$PACKAGE_NAME" >> $GITHUB_OUTPUT
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
-            echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
             
             echo "📦 Package: $PACKAGE_NAME"
-            echo "🏷️ Version: $VERSION"  
-            echo "🏷️ Tag: $TAG_NAME"
+            
+            # Extract version using NX (works across all project types)
+            echo "🔍 Detecting version using NX for $PACKAGE_NAME"
+            
+            # Use NX to detect the current version (works for all project types)
+            NX_OUTPUT=$(nx show project $PACKAGE_NAME --json 2>/dev/null || echo "{}")
+            
+            # Extract version from changelog file (created by NX release)
+            # Try both root-level and packages subdirectory
+            if [ -f "CHANGELOG.md" ] && grep -q "$PACKAGE_NAME" "CHANGELOG.md" 2>/dev/null; then
+              CHANGELOG_PATH="CHANGELOG.md"
+            elif [ -f "packages/$PACKAGE_NAME/CHANGELOG.md" ]; then
+              CHANGELOG_PATH="packages/$PACKAGE_NAME/CHANGELOG.md"
+            else
+              # Use NX to find the project root
+              PROJECT_ROOT=$(nx show project $PACKAGE_NAME --json 2>/dev/null | grep '"root":' | sed 's/.*"root": *"\([^"]*\)".*/\1/' || echo "")
+              if [ -n "$PROJECT_ROOT" ] && [ -f "$PROJECT_ROOT/CHANGELOG.md" ]; then
+                CHANGELOG_PATH="$PROJECT_ROOT/CHANGELOG.md"
+              else
+                CHANGELOG_PATH="packages/$PACKAGE_NAME/CHANGELOG.md"  # fallback
+              fi
+            fi
+            
+            if [ -f "$CHANGELOG_PATH" ]; then
+              # Extract the most recent version from changelog (first version heading)
+              VERSION=$(grep -m 1 "^## \[" "$CHANGELOG_PATH" | sed 's/^## \[\([^]]*\)\].*/\1/' || echo "")
+              
+              if [ -z "$VERSION" ]; then
+                echo "❌ Could not extract version from changelog: $CHANGELOG_PATH"
+                exit 1
+              fi
+              
+              TAG_NAME="${PACKAGE_NAME}@${VERSION}"
+              
+              echo "package=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+              echo "version=$VERSION" >> $GITHUB_OUTPUT
+              echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
+              
+              echo "🏷️ Version: $VERSION (from $CHANGELOG_PATH)"
+              echo "🏷️ Tag: $TAG_NAME"
+            else
+              echo "❌ Could not find changelog at: $CHANGELOG_PATH"
+              echo "Release branch should have been created with changelog by NX release"
+              exit 1
+            fi
           else
-            echo "❌ Could not extract release info from branch name: $BRANCH_NAME"
+            echo "❌ Could not extract package name from branch: $BRANCH_NAME"
+            echo "Expected format: release/package-name"
             exit 1
           fi
 
@@ -57,7 +95,7 @@ jobs:
             echo "❌ Build artifacts not found for ${{ steps.extract.outputs.package }}"
             exit 1
           fi
-          
+
           echo "✅ Build artifacts verified for ${{ steps.extract.outputs.package }}"
           ls -la "dist/packages/${{ steps.extract.outputs.package }}"
 
@@ -80,7 +118,7 @@ jobs:
     name: No release detected
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged != true || !startsWith(github.event.pull_request.head.ref, 'release/')
-    
+
     steps:
       - name: Skip release
         run: |
