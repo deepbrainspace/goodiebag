@@ -13,19 +13,9 @@
 - dont add 'Co-Authored-By: Claude noreply@anthropic.com' to commits or PR
   messages.
 
-## Automated Development Workflow (Husky)
+## Automated Workflow
 
-**All of the following are automatically enforced by Husky hooks - no manual intervention required:**
-
-- ✅ **Formatting**: Code automatically formatted on commit (`nx format:write --uncommitted`)
-- ✅ **Conventional Commits**: Commit messages automatically validated against conventional format
-- ✅ **Main Branch Protection**: Direct commits to main branch are blocked
-- ✅ **Secret Detection**: Potential secrets detected and flagged before commit
-- ✅ **Git-crypt Validation**: Unencrypted sensitive files detected and flagged
-- ✅ **Lockfile Sync**: pnpm-lock.yaml automatically updated and committed on push
-- ✅ **Auto Dependencies**: `pnpm install` runs automatically when switching branches with package changes
-
-**What this means**: Just write code and commit normally - the tools handle quality, security, and consistency automatically.
+Husky handles formatting, commit validation, lockfile sync, and security checks automatically.
 
 ## Package Manager Preference
 
@@ -66,17 +56,7 @@ development.
 
 ## Release Process
 
-**GitHub Actions Workflow (Primary)**:
-
-1. **Development**: Make changes with conventional commits (automatically validated by Husky)
-2. **Build**: Every PR runs build/test/lint validation via GitHub Actions
-3. **Prepare Release**: Merge PR triggers automatic release preparation workflow
-4. **Release**: Merge release PR triggers automatic tagging and publishing
-
-**Manual Override**:
-
-- Use "Prepare Release" GitHub Actions workflow for manual triggers
-- Available in Actions tab with package selection dropdown
+GitHub Actions workflow: PR merge → prepare release → merge release PR → publish.
 
 ### Automatic Release Features:
 
@@ -120,18 +100,8 @@ development.
 
 ## Conventional Commits
 
-**AUTOMATICALLY VALIDATED**: Husky enforces conventional commit format.
-
-**Quick Reference**:
-- `fix:` → Bug fixes (patch release)
-- `feat:` → New features (minor release)  
-- `chore:` → Maintenance (no release)
-- `docs:` → Documentation (no release)
-- `test:` → Tests (no release)
-- `refactor:` → Code refactoring (no release)
-- `BREAKING CHANGE:` → Major version bump
-
-**Examples**: `feat: add user auth`, `fix(api): resolve timeout`, `docs: update README`
+Use format: `type: description` or `type(scope): description`
+Types: feat, fix, chore, docs, test, refactor
 
 ## Project-Specific Commit Strategy
 
