@@ -1,3 +1,20 @@
+## 0.3.4 (2025-06-22)
+
+### 🩹 Fixes
+
+- pr fixes ([e39ea52](https://github.com/deepbrainspace/goodiebag/commit/e39ea52))
+- pr fixes ([f968574](https://github.com/deepbrainspace/goodiebag/commit/f968574))
+- updated changelog in nx-surrealdb ([8adb4d2](https://github.com/deepbrainspace/goodiebag/commit/8adb4d2))
+- tidy up nx.json ([4906c3a](https://github.com/deepbrainspace/goodiebag/commit/4906c3a))
+- surrealdb release version ([443a4a3](https://github.com/deepbrainspace/goodiebag/commit/443a4a3))
+- exclude build artifacts from prettier formatting ([c5758d8](https://github.com/deepbrainspace/goodiebag/commit/c5758d8))
+- use workspace-level dist for nx plugins to resolve package structure issues ([#29](https://github.com/deepbrainspace/goodiebag/pull/29))
+
+### ❤️ Thank You
+
+- nayeem.ai @wizardsupreme
+- wizard supreme @wizardsupreme
+
 ## 0.3.3 (2025-06-22)
 
 ### 🩹 Fixes
