@@ -1,0 +1,139 @@
+name: 📝 Changelog Generation
+
+on:
+  pull_request:
+    types: [closed]
+    branches: 
+      - main
+      - '!release/**'
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Specific package to release'
+        required: false
+        type: string
+      version:
+        description: 'Version bump type'
+        required: false
+        type: choice
+        default: ''
+        options:
+          - ''
+          - patch
+          - minor
+          - major
+
+jobs:
+  detect:
+    name: Detect
+    runs-on: ubuntu-latest
+    # Skip if PR has 'do-not-release' label (only for PR triggers, not manual)
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'do-not-release'))
+    outputs:
+      has-packages: ${{ steps.detect.outputs.has-packages }}
+      packages: ${{ steps.detect.outputs.packages }}
+      package-count: ${{ steps.detect.outputs.package-count }}
+      package-groups: ${{ steps.detect.outputs.package-groups }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
+
+      - name: Detect affected packages
+        id: detect
+        uses: ./.github/actions/detect-affected
+        with:
+          package: ${{ github.event.inputs.package || '' }}
+
+  changelog:
+    name: Changelog ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    needs: detect
+    if: needs.detect.outputs.has-packages == 'true'
+    
+    strategy:
+      matrix:
+        package: ${{ fromJson(needs.detect.outputs.packages) }}
+      fail-fast: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
+        with:
+          package-group: ${{ fromJson(needs.detect.outputs.package-groups)[matrix.package] }}
+          package-name: ${{ matrix.package }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Prepare release (skip publish)
+        run: |
+          echo "📝 Preparing changelog for ${{ matrix.package }}..."
+          
+          VERSION_INPUT="${{ github.event.inputs.version }}"
+          if [ -z "$VERSION_INPUT" ]; then
+            echo "📋 Using automatic version determination from conventional commits"
+            VERSION_CMD="nx release --projects=${{ matrix.package }} --skip-publish --yes"
+          else
+            echo "📋 Using manual version bump: $VERSION_INPUT"
+            VERSION_CMD="nx release $VERSION_INPUT --projects=${{ matrix.package }} --skip-publish --yes"
+          fi
+
+          echo "🎯 Executing: $VERSION_CMD"
+          $VERSION_CMD
+
+      - name: Create release branch and PR
+        run: |
+          # Extract version from the git commit that NX just made
+          # NX creates commits in format: "release(package-name): v1.2.3" per conventional commits
+          LAST_COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+          echo "Last commit: $LAST_COMMIT_MSG"
+          
+          # Extract version from NX commit message pattern
+          if [[ $LAST_COMMIT_MSG =~ release\(([^)]+)\):\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            PACKAGE_NAME="${BASH_REMATCH[1]}"
+            VERSION="${BASH_REMATCH[2]}"
+            BRANCH_NAME="release/${PACKAGE_NAME}@${VERSION}"
+            
+            echo "📦 Package: $PACKAGE_NAME, Version: $VERSION"
+            echo "🌿 Branch: $BRANCH_NAME"
+            
+            git checkout -b "$BRANCH_NAME"
+            git push origin "$BRANCH_NAME"
+            
+            gh pr create \
+              --title "🚀 Release Request for ${PACKAGE_NAME}@${VERSION}" \
+              --body "Release request for ${PACKAGE_NAME} v${VERSION}" \
+              --base main \
+              --head "$BRANCH_NAME"
+          else
+            echo "❌ Could not extract version from commit message: $LAST_COMMIT_MSG"
+            exit 1
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  no-packages:
+    name: No packages to release
+    runs-on: ubuntu-latest
+    needs: detect
+    if: needs.detect.outputs.has-packages == 'false'
+
+    steps:
+      - name: No packages affected
+        run: |
+          echo "ℹ️ No packages with publish targets were affected by recent changes."
+          echo "The changes appear to be documentation, configuration, or non-publishable code."
