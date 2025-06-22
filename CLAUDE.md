@@ -13,6 +13,20 @@
 - dont add 'Co-Authored-By: Claude noreply@anthropic.com' to commits or PR
   messages.
 
+## Automated Development Workflow (Husky)
+
+**All of the following are automatically enforced by Husky hooks - no manual intervention required:**
+
+- ✅ **Formatting**: Code automatically formatted on commit (`nx format:write --uncommitted`)
+- ✅ **Conventional Commits**: Commit messages automatically validated against conventional format
+- ✅ **Main Branch Protection**: Direct commits to main branch are blocked
+- ✅ **Secret Detection**: Potential secrets detected and flagged before commit
+- ✅ **Git-crypt Validation**: Unencrypted sensitive files detected and flagged
+- ✅ **Lockfile Sync**: pnpm-lock.yaml automatically updated and committed on push
+- ✅ **Auto Dependencies**: `pnpm install` runs automatically when switching branches with package changes
+
+**What this means**: Just write code and commit normally - the tools handle quality, security, and consistency automatically.
+
 ## Package Manager Preference
 
 **IMPORTANT**: Always use NX commands first, then pnpm. NEVER use npm.
@@ -52,22 +66,17 @@ development.
 
 ## Release Process
 
-**Manual Release (Primary)**:
+**GitHub Actions Workflow (Primary)**:
 
-1. **Development**: Make changes with conventional commits (feat:, fix:, chore:,
-   etc.)
-2. **CI**: Every PR runs lint/test/build validation
-3. **Release**: Run manually when ready:
-   ```bash
-   git checkout main && git pull
-   nx release --dry-run  # Preview what will happen
-   nx release           # Execute release
-   ```
+1. **Development**: Make changes with conventional commits (automatically validated by Husky)
+2. **Build**: Every PR runs build/test/lint validation via GitHub Actions
+3. **Prepare Release**: Merge PR triggers automatic release preparation workflow
+4. **Release**: Merge release PR triggers automatic tagging and publishing
 
-**Optional CI Release**:
+**Manual Override**:
 
-- Use GitHub Actions "Manual Release" workflow for CI-based releases
-- Available in Actions tab with optional version override
+- Use "Prepare Release" GitHub Actions workflow for manual triggers
+- Available in Actions tab with package selection dropdown
 
 ### Automatic Release Features:
 
@@ -111,31 +120,18 @@ development.
 
 ## Conventional Commits
 
-**REQUIRED**: Use conventional commit format for automatic version
-determination:
+**AUTOMATICALLY VALIDATED**: Husky enforces conventional commit format.
 
-```bash
-# Patch release
-git commit -m "fix: resolve connection timeout issue"
-
-# Minor release
-git commit -m "feat: add new migration rollback functionality"
-
-# Major release
-git commit -m "feat!: redesign migration API
-
-BREAKING CHANGE: Migration interface has changed"
-```
-
-### Commit Types:
-
+**Quick Reference**:
 - `fix:` → Bug fixes (patch release)
-- `feat:` → New features (minor release)
+- `feat:` → New features (minor release)  
 - `chore:` → Maintenance (no release)
 - `docs:` → Documentation (no release)
 - `test:` → Tests (no release)
 - `refactor:` → Code refactoring (no release)
 - `BREAKING CHANGE:` → Major version bump
+
+**Examples**: `feat: add user auth`, `fix(api): resolve timeout`, `docs: update README`
 
 ## Project-Specific Commit Strategy
 
