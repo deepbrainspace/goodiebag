@@ -51,7 +51,7 @@ runs:
           nx-cache-${{ runner.os }}-
 
     - name: Setup pnpm
-      uses: pnpm/action-setup@v2
+      uses: pnpm/action-setup@v4
       with:
         version: ${{ inputs.pnpm-version }}
 
@@ -71,7 +71,7 @@ runs:
       run: echo "${GITHUB_WORKSPACE}/node_modules/.bin" >> $GITHUB_PATH
 
     - name: Set SHAs for NX
-      uses: nrwl/nx-set-shas@v4
+      uses: nrwl/nx-set-shas@v4.3.0
       with:
         main-branch-name: 'main'
 
