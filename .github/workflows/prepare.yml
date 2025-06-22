@@ -131,7 +131,7 @@ jobs:
           NX_OUTPUT=$($VERSION_CMD 2>&1)
           echo "$NX_OUTPUT"
 
-          # Extract version from NX output - look for "New version X.Y.Z written" line
+          # Extract version from NX output first to use in commit message
           VERSION=$(echo "$NX_OUTPUT" | grep "New version.*written" | grep -o "[0-9]\+\.[0-9]\+\.[0-9]\+" | head -1 || echo "")
 
           if [ -z "$VERSION" ]; then
@@ -142,38 +142,74 @@ jobs:
           echo "📦 Package: ${{ matrix.package }}"
           echo "🔖 Version: $VERSION"
 
+          # Amend the commit message to be more descriptive
+          echo "📝 Updating commit message"
+          git commit --amend -m "chore(release): publish ${{ matrix.package }}@${VERSION}
+
+          - Update version to ${VERSION}
+          - Generate changelog entry
+          - Prepare for release to registry"
+
+          # Force push to release branch (safe since it's always the same branch)
+          # Read changelog content for PR body
+          echo "📖 Reading changelog content"
+          # Try both root-level and packages subdirectory
+          if [ -f "CHANGELOG.md" ] && grep -q "${{ matrix.package }}" "CHANGELOG.md" 2>/dev/null; then
+            CHANGELOG_PATH="CHANGELOG.md"
+          elif [ -f "packages/${{ matrix.package }}/CHANGELOG.md" ]; then
+            CHANGELOG_PATH="packages/${{ matrix.package }}/CHANGELOG.md"
+          else
+            # Use NX to find the project root
+            PROJECT_ROOT=$(nx show project ${{ matrix.package }} --json 2>/dev/null | grep '"root":' | sed 's/.*"root": *"\([^"]*\)".*/\1/' || echo "")
+            if [ -n "$PROJECT_ROOT" ] && [ -f "$PROJECT_ROOT/CHANGELOG.md" ]; then
+              CHANGELOG_PATH="$PROJECT_ROOT/CHANGELOG.md"
+            else
+              CHANGELOG_PATH="packages/${{ matrix.package }}/CHANGELOG.md"  # fallback
+            fi
+          fi
+
+          if [ -f "$CHANGELOG_PATH" ]; then
+            # Extract the latest changelog entry (between first ## and second ##)
+            CHANGELOG_CONTENT=$(sed -n '/^## \[/,/^## \[/p' "$CHANGELOG_PATH" | sed '$d' | tail -n +2 || echo "")
+            if [ -z "$CHANGELOG_CONTENT" ]; then
+              CHANGELOG_CONTENT="No changelog entry found for this version."
+            fi
+          else
+            CHANGELOG_CONTENT="Changelog file not found at $CHANGELOG_PATH"
+          fi
+
           # Force push to release branch (safe since it's always the same branch)
           echo "📤 Pushing release branch"
           git push origin "$BRANCH_NAME" --force
+
+          # Create comprehensive PR body with changelog content
+          PR_BODY="Release request for ${{ matrix.package }} v${VERSION}
+
+          ## 📋 Changes
+
+          ${CHANGELOG_CONTENT}
+
+          ## 📦 Package Details
+          - **Name**: \`${{ matrix.package }}\`
+          - **Version**: \`${VERSION}\`
+          - **Branch**: \`${BRANCH_NAME}\`
+
+          ## 🚀 Release Process
+          Merge this PR to trigger the release pipeline which will:
+          - Create git tag \`${{ matrix.package }}@${VERSION}\`
+          - Publish to appropriate registry (npm/crates.io)
+          - Generate GitHub release with changelog"
 
           # Create or update PR (GitHub will update existing PR if it exists)
           echo "📋 Creating/updating release PR"
           gh pr create \
             --title "🚀 Release Request for ${{ matrix.package }}@${VERSION}" \
-            --body "Release request for ${{ matrix.package }} v${VERSION}
-
-          ## Changes
-          See the changelog files for detailed changes.
-
-          ## Package
-          - **Name**: ${{ matrix.package }}
-          - **Version**: $VERSION
-
-          Merge this PR to trigger the release pipeline." \
+            --body "$PR_BODY" \
             --base main \
             --head "$BRANCH_NAME" || \
           gh pr edit "$BRANCH_NAME" \
             --title "🚀 Release Request for ${{ matrix.package }}@${VERSION}" \
-            --body "Release request for ${{ matrix.package }} v${VERSION}
-
-          ## Changes
-          See the changelog files for detailed changes.
-
-          ## Package
-          - **Name**: ${{ matrix.package }}
-          - **Version**: $VERSION
-
-          Merge this PR to trigger the release pipeline."
+            --body "$PR_BODY"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
