@@ -158,8 +158,7 @@
     },
     {
       "plugin": "@goodiebag/nx-rust",
-      "exclude": ["goodiebag"],
-      "include": ["claude-code-toolkit"]
+      "exclude": ["goodiebag"]
     }
   ]
 }
