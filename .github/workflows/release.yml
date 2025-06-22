@@ -15,9 +15,64 @@ on:
           - major
 
 jobs:
-  release:
-    name: 🚀 Release Packages
+  detect:
+    name: Detect
     runs-on: ubuntu-latest
+    outputs:
+      has-packages: ${{ steps.detect.outputs.has-packages }}
+      packages: ${{ steps.detect.outputs.packages }}
+      package-count: ${{ steps.detect.outputs.package-count }}
+      package-groups: ${{ steps.detect.outputs.package-groups }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
+
+      - name: Detect affected packages
+        id: detect
+        uses: ./.github/actions/detect-affected
+
+  build:
+    name: Build ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    needs: detect
+    if: needs.detect.outputs.has-packages == 'true'
+    
+    strategy:
+      matrix:
+        package: ${{ fromJson(needs.detect.outputs.packages) }}
+        include: ${{ fromJson(needs.detect.outputs.package-groups) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup workspace
+        uses: ./.github/actions/setup-workspace
+        with:
+          package-group: ${{ matrix.package-group }}
+          package-name: ${{ matrix.package }}
+
+      - name: Build package
+        run: nx build ${{ matrix.package }}
+
+  release:
+    name: Release ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    needs: [detect, build]
+    if: needs.detect.outputs.has-packages == 'true'
+    
+    strategy:
+      matrix:
+        package: ${{ fromJson(needs.detect.outputs.packages) }}
+        include: ${{ fromJson(needs.detect.outputs.package-groups) }}
 
     steps:
       - name: Checkout repository
@@ -28,62 +83,44 @@ jobs:
 
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
-
-      - name: Detect affected packages
-        id: detect
-        uses: ./.github/actions/detect-affected
+        with:
+          package-group: ${{ matrix.package-group }}
+          package-name: ${{ matrix.package }}
 
       - name: Configure git
-        if: steps.detect.outputs.has-packages == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Build affected packages
-        if: steps.detect.outputs.has-packages == 'true'
+      - name: Release package
         run: |
-          echo "🔨 Building affected packages before release..."
-          PACKAGES=$(echo '${{ steps.detect.outputs.packages }}' | jq -r '.[]' | tr '\n' ',' | sed 's/,$//')
-          echo "📦 Building packages: $PACKAGES"
-          nx run-many --target=build --projects=$PACKAGES --parallel=5
-
-      - name: Release packages
-        if: steps.detect.outputs.has-packages == 'true'
-        run: |
-          echo "🚀 Starting release process..."
-          echo "📦 Found ${{ steps.detect.outputs.package-count }} affected packages"
-          echo "📋 Packages: ${{ steps.detect.outputs.packages }}"
-
-          # Convert JSON array to comma-separated list
-          PACKAGES=$(echo '${{ steps.detect.outputs.packages }}' | jq -r '.[]' | tr '\n' ',' | sed 's/,$//')
-          echo "🎯 Packages to release: $PACKAGES"
-
+          echo "🚀 Releasing ${{ matrix.package }}..."
+          
           # Build release command
           VERSION_INPUT="${{ github.event.inputs.version }}"
           if [ -z "$VERSION_INPUT" ]; then
             echo "📋 Using automatic version determination from conventional commits"
-            VERSION_CMD="nx release --projects=$PACKAGES"
+            VERSION_CMD="nx release --projects=${{ matrix.package }}"
           else
             echo "📋 Using manual version bump: $VERSION_INPUT"
-            VERSION_CMD="nx release $VERSION_INPUT --projects=$PACKAGES"
+            VERSION_CMD="nx release $VERSION_INPUT --projects=${{ matrix.package }}"
           fi
 
           echo "🎯 Executing: $VERSION_CMD"
           $VERSION_CMD
-
-      - name: No packages affected
-        if: steps.detect.outputs.has-packages == 'false'
-        run: |
-          echo "ℹ️ No packages with publish targets were affected by recent changes."
-          echo "The changes appear to be documentation, configuration, or non-publishable code."
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Success notification
+  no-packages:
+    name: No packages to release
+    runs-on: ubuntu-latest
+    needs: detect
+    if: needs.detect.outputs.has-packages == 'false'
+
+    steps:
+      - name: No packages affected
         run: |
-          echo "✅ Release completed successfully!"
-          echo "📦 Packages have been published to npm"
-          echo "🏷️ GitHub releases have been created"
-          echo "📝 Changelogs have been updated"
+          echo "ℹ️ No packages with publish targets were affected by recent changes."
+          echo "The changes appear to be documentation, configuration, or non-publishable code."
