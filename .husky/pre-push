@@ -1,0 +1,6 @@
+# Check if lockfile is in sync before pushing
+if ! pnpm install --frozen-lockfile --ignore-scripts &>/dev/null; then
+  echo "❌ Lockfile is out of sync with package.json"
+  echo "💡 Run 'pnpm install' to update the lockfile"
+  exit 1
+fi

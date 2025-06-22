@@ -1,0 +1,6 @@
+# Auto-update lockfile when package.json changes after merge
+if git diff HEAD@{1} HEAD --name-only | grep -q "package.json\|pnpm-workspace.yaml"; then
+  echo "📦 package.json changed, updating lockfile..."
+  pnpm install
+  echo "✅ Lockfile updated"
+fi
