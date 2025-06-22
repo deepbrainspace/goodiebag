@@ -96,6 +96,7 @@ jobs:
       - name: Create release branch and PR
         run: |
           # Extract version from the git commit that NX just made
+          # NX creates commits in format: "release(package-name): v1.2.3" per conventional commits
           LAST_COMMIT_MSG=$(git log -1 --pretty=format:"%s")
           echo "Last commit: $LAST_COMMIT_MSG"
           
@@ -112,7 +113,7 @@ jobs:
             git push origin "$BRANCH_NAME"
             
             gh pr create \
-              --title "🚀 Release ${PACKAGE_NAME}@${VERSION}" \
+              --title "🚀 Release Request for ${PACKAGE_NAME}@${VERSION}" \
               --body "Release request for ${PACKAGE_NAME} v${VERSION}" \
               --base main \
               --head "$BRANCH_NAME"

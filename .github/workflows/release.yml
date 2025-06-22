@@ -27,6 +27,8 @@ jobs:
       - name: Extract release info
         id: extract
         run: |
+          # Extract package and version from release branch merge commit
+          # Expected format: "release(package-name): prepare v1.2.3"
           COMMIT_MSG="${{ github.event.head_commit.message }}"
           if [[ $COMMIT_MSG =~ release\(([^)]+)\):\ prepare\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
             PACKAGE_NAME="${BASH_REMATCH[1]}"
