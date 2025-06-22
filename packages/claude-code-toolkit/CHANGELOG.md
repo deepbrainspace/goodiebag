@@ -1,3 +1,13 @@
+## 0.3.1 (2025-06-22)
+
+### 🩹 Fixes
+
+- **claude-code-toolkit:** add build status badge with GitHub Actions link ([c6e8bca](https://github.com/deepbrainspace/goodiebag/commit/c6e8bca))
+
+### ❤️ Thank You
+
+- wizard supreme @wizardsupreme
+
 ## 0.2.1 (2025-06-21)
 
 ### 🩹 Fixes
