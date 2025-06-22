@@ -1,139 +1,90 @@
 name: 🚀 Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version bump type'
-        required: false
-        type: choice
-        default: ''
-        options:
-          - ''
-          - patch
-          - minor
-          - major
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/*/package.json'
+      - 'packages/*/CHANGELOG.md'
 
 jobs:
-  detect:
-    name: Detect
-    runs-on: ubuntu-latest
-    outputs:
-      has-packages: ${{ steps.detect.outputs.has-packages }}
-      packages: ${{ steps.detect.outputs.packages }}
-      package-count: ${{ steps.detect.outputs.package-count }}
-      package-groups: ${{ steps.detect.outputs.package-groups }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup workspace
-        uses: ./.github/actions/setup-workspace
-
-      - name: Detect affected packages
-        id: detect
-        uses: ./.github/actions/detect-affected
-
-  build:
-    name: Build ${{ matrix.package }}
-    runs-on: ubuntu-latest
-    needs: detect
-    if: needs.detect.outputs.has-packages == 'true'
-    
-    strategy:
-      matrix:
-        package: ${{ fromJson(needs.detect.outputs.packages) }}
-      fail-fast: false
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup workspace
-        uses: ./.github/actions/setup-workspace
-        with:
-          package-group: ${{ fromJson(needs.detect.outputs.package-groups)[matrix.package] }}
-          package-name: ${{ matrix.package }}
-
-      - name: Build package
-        run: nx build ${{ matrix.package }}
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-${{ matrix.package }}
-          path: dist/packages/${{ matrix.package }}
-          retention-days: 1
-
   release:
-    name: Release ${{ matrix.package }}
+    name: Tag and Publish
     runs-on: ubuntu-latest
-    needs: [detect, build]
-    if: needs.detect.outputs.has-packages == 'true'
+    # Only run if this push came from merging a release/* branch
+    if: contains(github.event.head_commit.message, 'release(') && contains(github.event.head_commit.message, 'prepare v')
     
-    strategy:
-      matrix:
-        package: ${{ fromJson(needs.detect.outputs.packages) }}
-      fail-fast: false
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
-        with:
-          package-group: ${{ fromJson(needs.detect.outputs.package-groups)[matrix.package] }}
-          package-name: ${{ matrix.package }}
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-${{ matrix.package }}
-          path: dist/packages/${{ matrix.package }}
-
-      - name: Configure git
+      - name: Extract release info
+        id: extract
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Release package
-        run: |
-          echo "🚀 Releasing ${{ matrix.package }}..."
-          
-          # Build release command
-          VERSION_INPUT="${{ github.event.inputs.version }}"
-          if [ -z "$VERSION_INPUT" ]; then
-            echo "📋 Using automatic version determination from conventional commits"
-            VERSION_CMD="nx release --projects=${{ matrix.package }} --yes"
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          if [[ $COMMIT_MSG =~ release\(([^)]+)\):\ prepare\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            PACKAGE_NAME="${BASH_REMATCH[1]}"
+            VERSION="${BASH_REMATCH[2]}"
+            TAG_NAME="${PACKAGE_NAME}@${VERSION}"
+            
+            echo "package=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
+            
+            echo "📦 Package: $PACKAGE_NAME"
+            echo "🏷️ Version: $VERSION"  
+            echo "🏷️ Tag: $TAG_NAME"
           else
-            echo "📋 Using manual version bump: $VERSION_INPUT"
-            VERSION_CMD="nx release $VERSION_INPUT --projects=${{ matrix.package }} --yes"
+            echo "❌ Could not extract release info from commit message: $COMMIT_MSG"
+            exit 1
           fi
 
-          echo "🎯 Executing: $VERSION_CMD"
-          $VERSION_CMD
+      - name: Download CI build artifacts
+        uses: dawidd6/action-download-artifact@v11
+        with:
+          name: build-${{ steps.extract.outputs.package }}
+          workflow: ci.yml
+          path: dist/packages/${{ steps.extract.outputs.package }}
+
+      - name: Verify artifacts exist
+        run: |
+          if [ ! -d "dist/packages/${{ steps.extract.outputs.package }}" ]; then
+            echo "❌ Build artifacts not found for ${{ steps.extract.outputs.package }}"
+            exit 1
+          fi
+          
+          echo "✅ Build artifacts verified for ${{ steps.extract.outputs.package }}"
+          ls -la "dist/packages/${{ steps.extract.outputs.package }}"
+
+      - name: Create and push tag
+        run: |
+          git tag "${{ steps.extract.outputs.tag }}"
+          git push origin "${{ steps.extract.outputs.tag }}"
+          echo "✅ Tag ${{ steps.extract.outputs.tag }} created and pushed"
+
+      - name: Publish to registries
+        run: |
+          echo "📦 Publishing ${{ steps.extract.outputs.package }}@${{ steps.extract.outputs.version }}..."
+          nx run ${{ steps.extract.outputs.package }}:nx-release-publish
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  no-packages:
-    name: No packages to release
+  no-release:
+    name: No release detected
     runs-on: ubuntu-latest
-    needs: detect
-    if: needs.detect.outputs.has-packages == 'false'
-
+    if: ${{ !(contains(github.event.head_commit.message, 'release(') && contains(github.event.head_commit.message, 'prepare v')) }}
+    
     steps:
-      - name: No packages affected
+      - name: Skip release
         run: |
-          echo "ℹ️ No packages with publish targets were affected by recent changes."
-          echo "The changes appear to be documentation, configuration, or non-publishable code."
+          echo "ℹ️ Push to main detected but not from a release branch merge."
+          echo "Commit message: ${{ github.event.head_commit.message }}"
+          echo "No release actions will be performed."

@@ -3,6 +3,8 @@ name: ⚙️ CI
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+    branches-ignore:
+      - 'release/**'
     paths:
       - 'packages/**'
       - 'apps/**'
@@ -131,6 +133,13 @@ jobs:
         run: |
           echo "🏗️ Building ${{ matrix.package }}..."
           nx build ${{ matrix.package }}
+
+      - name: Upload build artifacts for release
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.package }}
+          path: dist/packages/${{ matrix.package }}
+          retention-days: 7
 
   # Summary
   summary:
