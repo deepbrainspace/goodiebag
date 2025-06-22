@@ -38,11 +38,20 @@ jobs:
             # Use NX to detect the current version (works for all project types)
             NX_OUTPUT=$(nx show project $PACKAGE_NAME --json 2>/dev/null || echo "{}")
             
-            # Alternative: Extract version from changelog file (created by NX release)
-            if [ "$PACKAGE_NAME" = "goodiebag" ]; then
+            # Extract version from changelog file (created by NX release)
+            # Try both root-level and packages subdirectory
+            if [ -f "CHANGELOG.md" ] && grep -q "$PACKAGE_NAME" "CHANGELOG.md" 2>/dev/null; then
               CHANGELOG_PATH="CHANGELOG.md"
-            else
+            elif [ -f "packages/$PACKAGE_NAME/CHANGELOG.md" ]; then
               CHANGELOG_PATH="packages/$PACKAGE_NAME/CHANGELOG.md"
+            else
+              # Use NX to find the project root
+              PROJECT_ROOT=$(nx show project $PACKAGE_NAME --json 2>/dev/null | grep '"root":' | sed 's/.*"root": *"\([^"]*\)".*/\1/' || echo "")
+              if [ -n "$PROJECT_ROOT" ] && [ -f "$PROJECT_ROOT/CHANGELOG.md" ]; then
+                CHANGELOG_PATH="$PROJECT_ROOT/CHANGELOG.md"
+              else
+                CHANGELOG_PATH="packages/$PACKAGE_NAME/CHANGELOG.md"  # fallback
+              fi
             fi
             
             if [ -f "$CHANGELOG_PATH" ]; then
