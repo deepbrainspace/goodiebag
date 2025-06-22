@@ -71,7 +71,7 @@ runs:
       run: echo "${GITHUB_WORKSPACE}/node_modules/.bin" >> $GITHUB_PATH
 
     - name: Set SHAs for NX
-      uses: nrwl/nx-set-shas@v4
+      uses: nrwl/nx-set-shas@v4.3.0
       with:
         main-branch-name: 'main'
 
