@@ -3,7 +3,7 @@ name: 📝 Prepare Release
 on:
   pull_request:
     types: [closed]
-    branches: 
+    branches:
       - main
       - '!release/**'
   workflow_dispatch:
@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: detect
     if: needs.detect.outputs.has-packages == 'true'
-    
+
     strategy:
       matrix:
         package: ${{ fromJson(needs.detect.outputs.packages) }}
@@ -87,7 +87,7 @@ jobs:
       - name: Prepare release and create branch
         run: |
           echo "📝 Preparing release for ${{ matrix.package }}..."
-          
+
           VERSION_INPUT="${{ github.event.inputs.version }}"
           if [ -z "$VERSION_INPUT" ]; then
             echo "📋 Using automatic version determination from conventional commits"
@@ -100,36 +100,36 @@ jobs:
           echo "🎯 Executing: $VERSION_CMD"
           NX_OUTPUT=$($VERSION_CMD 2>&1)
           echo "$NX_OUTPUT"
-          
+
           # Extract version from NX output - look for "New version X.Y.Z written" line
           VERSION=$(echo "$NX_OUTPUT" | grep "New version.*written" | grep -o "[0-9]\+\.[0-9]\+\.[0-9]\+" | head -1 || echo "")
-          
+
           if [ -z "$VERSION" ]; then
             echo "ℹ️ No version change for ${{ matrix.package }}, skipping release"
             exit 0
           fi
-          
+
           echo "📦 Package: ${{ matrix.package }}"
           echo "🔖 Version: $VERSION"
-          
+
           BRANCH_NAME="release/${{ matrix.package }}@${VERSION}"
           echo "🌿 Branch: $BRANCH_NAME"
-          
+
           # Create release branch and push NX changes
           git checkout -b "$BRANCH_NAME"
           git push origin "$BRANCH_NAME"
-          
+
           gh pr create \
             --title "🚀 Release Request for ${{ matrix.package }}@${VERSION}" \
             --body "Release request for ${{ matrix.package }} v${VERSION}
-          
+
           ## Changes
           See the changelog files for detailed changes.
-          
+
           ## Package
           - **Name**: ${{ matrix.package }}
           - **Version**: $VERSION
-          
+
           Merge this PR to trigger the release pipeline." \
             --base main \
             --head "$BRANCH_NAME"
