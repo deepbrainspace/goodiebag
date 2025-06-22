@@ -1,5 +1,7 @@
 # claude-code-toolkit
 
+*Part of the [GoodieBag](https://github.com/deepbrainspace/goodiebag) collection of tools and libraries*
+
 [![Crates.io](https://img.shields.io/crates/v/claude-code-toolkit.svg)](https://crates.io/crates/claude-code-toolkit)
 [![Rust](https://img.shields.io/badge/rust-2024-orange.svg)](https://www.rust-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
