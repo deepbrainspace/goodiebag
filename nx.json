@@ -27,9 +27,7 @@
       "!{projectRoot}/src/test-setup.[jt]s",
       "!{projectRoot}/test-setup.[jt]s"
     ],
-    "sharedGlobals": [
-      "{workspaceRoot}/nx.json"
-    ]
+    "sharedGlobals": []
   },
   "targetDefaults": {
     "build": {
