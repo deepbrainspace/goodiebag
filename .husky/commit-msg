@@ -1,0 +1,20 @@
+# Validate conventional commit format
+commit_regex='^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .{1,50}'
+
+if ! grep -qE "$commit_regex" "$1"; then
+  echo "❌ Invalid commit message format!"
+  echo ""
+  echo "📋 Conventional commit format required:"
+  echo "   <type>[optional scope]: <description>"
+  echo ""
+  echo "✅ Valid types: feat, fix, docs, style, refactor, test, chore, perf, ci, build, revert"
+  echo ""
+  echo "📝 Examples:"
+  echo "   feat: add new user authentication"
+  echo "   fix(api): resolve login timeout issue"
+  echo "   docs: update README with new examples"
+  echo "   feat(nx-rust): add cargo build support"
+  echo ""
+  echo "💡 Your commit: $(cat "$1")"
+  exit 1
+fi

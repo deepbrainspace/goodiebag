@@ -13,6 +13,10 @@
 - dont add 'Co-Authored-By: Claude noreply@anthropic.com' to commits or PR
   messages.
 
+## Automated Workflow
+
+Husky handles formatting, commit validation, lockfile sync, and security checks automatically.
+
 ## Package Manager Preference
 
 **IMPORTANT**: Always use NX commands first, then pnpm. NEVER use npm.
@@ -52,22 +56,7 @@ development.
 
 ## Release Process
 
-**Manual Release (Primary)**:
-
-1. **Development**: Make changes with conventional commits (feat:, fix:, chore:,
-   etc.)
-2. **CI**: Every PR runs lint/test/build validation
-3. **Release**: Run manually when ready:
-   ```bash
-   git checkout main && git pull
-   nx release --dry-run  # Preview what will happen
-   nx release           # Execute release
-   ```
-
-**Optional CI Release**:
-
-- Use GitHub Actions "Manual Release" workflow for CI-based releases
-- Available in Actions tab with optional version override
+GitHub Actions workflow: PR merge → prepare release → merge release PR → publish.
 
 ### Automatic Release Features:
 
@@ -111,31 +100,8 @@ development.
 
 ## Conventional Commits
 
-**REQUIRED**: Use conventional commit format for automatic version
-determination:
-
-```bash
-# Patch release
-git commit -m "fix: resolve connection timeout issue"
-
-# Minor release
-git commit -m "feat: add new migration rollback functionality"
-
-# Major release
-git commit -m "feat!: redesign migration API
-
-BREAKING CHANGE: Migration interface has changed"
-```
-
-### Commit Types:
-
-- `fix:` → Bug fixes (patch release)
-- `feat:` → New features (minor release)
-- `chore:` → Maintenance (no release)
-- `docs:` → Documentation (no release)
-- `test:` → Tests (no release)
-- `refactor:` → Code refactoring (no release)
-- `BREAKING CHANGE:` → Major version bump
+Use format: `type: description` or `type(scope): description`
+Types: feat, fix, chore, docs, test, refactor
 
 ## Project-Specific Commit Strategy
 

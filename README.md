@@ -1,7 +1,7 @@
 # Goodie-Bag 🎒
 
-[![CI](https://github.com/deepbrainspace/goodiebag/actions/workflows/ci.yml/badge.svg)](https://github.com/deepbrainspace/goodiebag/actions/workflows/ci.yml)
-[![CD](https://github.com/deepbrainspace/goodiebag/actions/workflows/cd.yml/badge.svg?branch=main)](https://github.com/deepbrainspace/goodiebag/actions/workflows/cd.yml)
+[![Build](https://github.com/deepbrainspace/goodiebag/actions/workflows/build.yml/badge.svg)](https://github.com/deepbrainspace/goodiebag/actions/workflows/build.yml)
+[![Prepare Release](https://github.com/deepbrainspace/goodiebag/actions/workflows/prepare.yml/badge.svg)](https://github.com/deepbrainspace/goodiebag/actions/workflows/prepare.yml)
 [![Release](https://github.com/deepbrainspace/goodiebag/actions/workflows/release.yml/badge.svg)](https://github.com/deepbrainspace/goodiebag/actions/workflows/release.yml)
 
 A streamlined monorepo of developer utilities, NX plugins, MCP servers, and
@@ -106,8 +106,6 @@ npm install @deepbrainspace/nx-surrealdb --save-dev
 # Clone and install
 git clone https://github.com/deepbrainspace/goodiebag.git
 cd goodiebag
-git clone https://github.com/deepbrainspace/goodiebag.git
-cd goodiebag
 pnpm install
 
 # Build all packages
@@ -119,6 +117,40 @@ pnpm test
 # Lint all packages
 pnpm lint
 ```
+
+### Automated Development Workflow (Husky)
+
+This repository uses **Husky Git hooks** to automate code quality, security, and workflow management:
+
+#### Pre-commit Automation 🛡️
+- **🚫 Main Branch Protection**: Blocks direct commits to main branch
+- **🔍 Secret Detection**: Scans for potential API keys, tokens, and secrets
+- **🔐 Git-crypt Validation**: Ensures encrypted files aren't committed unencrypted
+- **✨ Auto-formatting**: Runs `nx format:write --uncommitted` on staged files
+
+#### Commit Message Validation 📝
+- **📋 Conventional Commits**: Enforces `type: description` or `type(scope): description` format
+- **🎯 Valid Types**: `feat`, `fix`, `chore`, `docs`, `test`, `refactor`
+- **⚡ Auto-versioning**: Enables semantic versioning in CI/CD pipeline
+
+#### Push-time Automation 🚀
+- **📦 Lockfile Sync**: Automatically updates and commits `pnpm-lock.yaml` if out of sync
+- **🔄 Zero Manual Intervention**: Lockfile changes are committed automatically with `--amend`
+
+#### Branch Management 🌿
+- **📥 Auto-install**: Runs `pnpm install` when switching branches with dependency changes
+- **⚡ Smart Detection**: Only installs when `package.json` or workspace files change
+
+#### What This Means for Developers
+
+**Just code normally!** The automation handles:
+- ✅ Code formatting and consistency
+- ✅ Commit message validation  
+- ✅ Security scanning
+- ✅ Dependency synchronization
+- ✅ Workflow protection
+
+**No manual steps needed** for formatting, linting setup, or lockfile management.
 
 ### Intelligent Monorepo Design
 
