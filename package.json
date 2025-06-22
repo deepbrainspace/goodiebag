@@ -1,8 +1,7 @@
 {
-  "name": "goodiebag",
+  "name": "@deepbrainspace/goodiebag",
   "version": "1.0.0",
   "description": "GoodieBag of tools and libraries for DeepBrain projects",
-  "private": true,
   "type": "module",
   "workspaces": [
     "packages/*",

@@ -1,7 +1,7 @@
 
 [package]
 name = 'claude-code-toolkit'
-version = '0.2.1'
+version = '0.2.2'
 edition = '2024'
 description = 'Claude Code management tool for credential sync, session monitoring, and GitHub integration'
 license = 'MIT'
@@ -23,8 +23,8 @@ exclude = [
 
 [package.metadata.docs.rs]
 all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
-targets = ["x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc", "x86_64-apple-darwin"]
+rustdoc-args = ['--cfg', 'docsrs']
+targets = ['x86_64-unknown-linux-gnu', 'x86_64-pc-windows-msvc', 'x86_64-apple-darwin']
 
 [lib]
 name = 'claude_code_toolkit'
@@ -65,11 +65,11 @@ notifications = ['notify-rust']
 systemd = ['libsystemd']
 
 [profile.release]
-opt-level = "z"     # Optimize for size
-lto = true          # Enable Link Time Optimization
-codegen-units = 1   # Reduce number of codegen units to increase optimizations
-panic = "abort"     # Abort on panic instead of unwinding
-strip = true        # Strip symbols from binary
+opt-level = 'z' # Optimize for size
+lto = true # Enable Link Time Optimization
+codegen-units = 1 # Reduce number of codegen units to increase optimizations
+panic = 'abort' # Abort on panic instead of unwinding
+strip = true # Strip symbols from binary
 
 [dev-dependencies]
 tempfile = '3.8'

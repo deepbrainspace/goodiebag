@@ -1,3 +1,22 @@
+## 0.3.6 (2025-06-22)
+
+This was a version bump only for nx-surrealdb to align it with other projects, there were no code changes.
+
+## 0.3.5 (2025-06-22)
+
+This was a version bump only for nx-surrealdb to align it with other projects, there were no code changes.
+
+## 0.3.4 (2025-06-22)
+
+### 🩹 Fixes
+
+- exclude build artifacts from prettier formatting ([c5758d8](https://github.com/deepbrainspace/goodiebag/commit/c5758d8))
+- use workspace-level dist for nx plugins to resolve package structure issues ([#29](https://github.com/deepbrainspace/goodiebag/pull/29))
+
+### ❤️ Thank You
+
+- nayeem.ai @wizardsupreme
+
 ## 0.3.1 (2025-06-21)
 
 ### 🩹 Fixes

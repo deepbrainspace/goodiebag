@@ -323,6 +323,39 @@ distribution channels and backup options.
 6. **Run** full test suite: `pnpm test`
 7. **Submit** pull request with clear description
 
+### Merge Policy: Regular Merges Only
+
+**⚠️ Important**: This repository uses **regular merges** instead of squash merges to preserve granular conventional commit history for proper semantic versioning.
+
+**Why Regular Merges?**
+- **Preserves individual commits** with proper conventional commit prefixes (`feat:`, `fix:`, `perf:`)
+- **Enables accurate semantic versioning** - NX can detect version-worthy changes per package
+- **Maintains audit trail** - each logical change has its own commit with proper scope
+- **Prevents version detection issues** - squash merges collapse multiple semantic changes into single commits
+
+**Conventional Commit Examples:**
+```bash
+feat(claude-code-toolkit): add new sync functionality
+fix(nx-surrealdb): resolve connection timeout issue  
+perf(claude-code-toolkit): optimize binary size by 62%
+docs(README): update contribution guidelines
+```
+
+**Branch Strategy:**
+```bash
+# ✅ Good - individual commits preserved
+git checkout -b feat/add-sync-feature
+git commit -m "feat(claude-code-toolkit): add sync service"
+git commit -m "test(claude-code-toolkit): add sync service tests"
+git commit -m "docs(claude-code-toolkit): document sync functionality"
+# PR merged with regular merge → NX detects feat: for minor version bump
+
+# ❌ Problematic - squash merge loses granular history  
+# Multiple semantic changes → single "docs:" commit → no version bump detected
+```
+
+When reviewing PRs, maintainers will use **"Create a merge commit"** option to preserve the individual commit history essential for automated versioning.
+
 ### Goodie-Bag Standards
 
 - ✅ **Zero ESLint warnings** policy (blocks CI)

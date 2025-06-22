@@ -77,6 +77,19 @@ development.
 - ✅ **Publishing**: Auto-publish to npm with proper dependencies
 - ✅ **GitHub Releases**: Auto-created with changelog
 
+## Git Strategy - Merge Policy
+
+**IMPORTANT**: When merging PRs, always use **regular merge** instead of squash merge.
+
+- ✅ **Use**: "Create a merge commit" option  
+- ❌ **NEVER use**: "Squash and merge" option
+
+**Why Regular Merges?**
+- **Preserves conventional commit history** for accurate semantic versioning
+- **Enables per-package version detection** by NX release automation  
+- **Maintains granular audit trail** of individual changes
+- **Prevents version detection issues** caused by collapsed commits
+
 ## Architecture Rules
 
 **Repository Pattern**: MigrationService → MigrationRepository → Database
