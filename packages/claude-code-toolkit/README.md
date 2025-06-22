@@ -376,7 +376,7 @@ claude-code-toolkit service install
 
 ## Performance
 
-- **Binary Size**: ~8MB (optimized)
+- **Binary Size**: ~3.5MB (optimized)
 - **Memory Usage**: ~5-10MB runtime
 - **CPU Usage**: Near-zero when idle
 - **Startup Time**: <100ms
