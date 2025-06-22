@@ -36,8 +36,8 @@ jobs:
   detect:
     name: Detect
     runs-on: ubuntu-latest
-    # Skip if PR has 'do-not-release' label (only for PR triggers, not manual)
-    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'do-not-release'))
+    # Skip if PR has 'do-not-release' label or if it's a release PR merge (only for PR triggers, not manual)
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'do-not-release') && !startsWith(github.event.pull_request.head.ref, 'release/'))
     outputs:
       has-packages: ${{ steps.detect.outputs.has-packages }}
       packages: ${{ steps.detect.outputs.packages }}
