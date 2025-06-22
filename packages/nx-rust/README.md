@@ -1,6 +1,7 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="80" alt="Nx Logo">
   <h1>@goodiebag/nx-rust</h1>
+  <p><em>Part of the <a href="https://github.com/deepbrainspace/goodiebag">GoodieBag</a> collection of tools and libraries</em></p>
 </div>
 
 <div align="center">
