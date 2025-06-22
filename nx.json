@@ -142,6 +142,17 @@
       "rust-packages": {
         "projects": ["claude-code-toolkit"],
         "version": {
+          "conventionalCommits": {
+            "types": {
+              "docs": {
+                "semverBump": "patch",
+                "changelog": {
+                  "title": "📖 Documentation",
+                  "hidden": false
+                }
+              }
+            }
+          },
           "versionActions": "@goodiebag/nx-rust/release"
         },
         "changelog": {
