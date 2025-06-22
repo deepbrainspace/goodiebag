@@ -46,7 +46,7 @@ jobs:
     strategy:
       matrix:
         package: ${{ fromJson(needs.detect.outputs.packages) }}
-        include: ${{ fromJson(needs.detect.outputs.package-groups) }}
+      fail-fast: false
 
     steps:
       - name: Checkout repository
@@ -57,7 +57,7 @@ jobs:
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
         with:
-          package-group: ${{ matrix.package-group }}
+          package-group: ${{ fromJson(needs.detect.outputs.package-groups)[matrix.package] }}
           package-name: ${{ matrix.package }}
 
       - name: Build package
@@ -72,7 +72,7 @@ jobs:
     strategy:
       matrix:
         package: ${{ fromJson(needs.detect.outputs.packages) }}
-        include: ${{ fromJson(needs.detect.outputs.package-groups) }}
+      fail-fast: false
 
     steps:
       - name: Checkout repository
@@ -84,7 +84,7 @@ jobs:
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
         with:
-          package-group: ${{ matrix.package-group }}
+          package-group: ${{ fromJson(needs.detect.outputs.package-groups)[matrix.package] }}
           package-name: ${{ matrix.package }}
 
       - name: Configure git
