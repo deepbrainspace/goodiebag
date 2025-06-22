@@ -1,19 +1,16 @@
 name: 🚀 Release
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'packages/*/package.json'
-      - 'packages/*/CHANGELOG.md'
+  pull_request:
+    types: [closed]
+    branches: [main]
 
 jobs:
   release:
     name: Tag and Publish
     runs-on: ubuntu-latest
-    # Only run if this push came from merging a release/* branch
-    if: contains(github.event.head_commit.message, 'release(') && contains(github.event.head_commit.message, 'prepare v')
+    # Only run if PR was merged and came from a release/* branch
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'release/')
     
     steps:
       - name: Checkout repository
@@ -27,10 +24,10 @@ jobs:
       - name: Extract release info
         id: extract
         run: |
-          # Extract package and version from release branch merge commit
-          # Expected format: "release(package-name): prepare v1.2.3"
-          COMMIT_MSG="${{ github.event.head_commit.message }}"
-          if [[ $COMMIT_MSG =~ release\(([^)]+)\):\ prepare\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+          # Extract package and version from release branch name
+          # Expected format: "release/package-name@1.2.3"
+          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+          if [[ $BRANCH_NAME =~ release/([^@]+)@([0-9]+\.[0-9]+\.[0-9]+) ]]; then
             PACKAGE_NAME="${BASH_REMATCH[1]}"
             VERSION="${BASH_REMATCH[2]}"
             TAG_NAME="${PACKAGE_NAME}@${VERSION}"
@@ -43,7 +40,7 @@ jobs:
             echo "🏷️ Version: $VERSION"  
             echo "🏷️ Tag: $TAG_NAME"
           else
-            echo "❌ Could not extract release info from commit message: $COMMIT_MSG"
+            echo "❌ Could not extract release info from branch name: $BRANCH_NAME"
             exit 1
           fi
 
@@ -82,11 +79,12 @@ jobs:
   no-release:
     name: No release detected
     runs-on: ubuntu-latest
-    if: ${{ !(contains(github.event.head_commit.message, 'release(') && contains(github.event.head_commit.message, 'prepare v')) }}
+    if: github.event.pull_request.merged != true || !startsWith(github.event.pull_request.head.ref, 'release/')
     
     steps:
       - name: Skip release
         run: |
-          echo "ℹ️ Push to main detected but not from a release branch merge."
-          echo "Commit message: ${{ github.event.head_commit.message }}"
+          echo "ℹ️ PR detected but not a merged release branch PR."
+          echo "PR merged: ${{ github.event.pull_request.merged }}"
+          echo "Head ref: ${{ github.event.pull_request.head.ref }}"
           echo "No release actions will be performed."
