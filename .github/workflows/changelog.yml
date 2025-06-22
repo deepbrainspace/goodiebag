@@ -113,7 +113,7 @@ jobs:
             
             gh pr create \
               --title "🚀 Release ${PACKAGE_NAME}@${VERSION}" \
-              --body "Release preparation for ${PACKAGE_NAME} v${VERSION}" \
+              --body "Release request for ${PACKAGE_NAME} v${VERSION}" \
               --base main \
               --head "$BRANCH_NAME"
           else
