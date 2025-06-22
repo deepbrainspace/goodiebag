@@ -1,4 +1,4 @@
-name: 📝 Prepare Release
+name: 📝 Prepare
 
 on:
   pull_request:
