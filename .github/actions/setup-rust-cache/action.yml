@@ -23,8 +23,4 @@ runs:
           rust-${{ runner.os }}-
 
     - name: Setup Rust toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: stable
-        override: true
+      uses: dtolnay/rust-toolchain@stable
