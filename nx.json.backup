@@ -90,8 +90,8 @@
   "release": {
     "projectsRelationship": "independent",
     "version": {
-      "currentVersionResolver": "disk",
-      "fallbackCurrentVersionResolver": "git-tag"
+      "conventionalCommits": true,
+      "fallbackCurrentVersionResolver": "disk"
     },
     "changelog": {
       "automaticFromRef": true,
@@ -101,6 +101,12 @@
     "groups": {
       "workspace": {
         "projects": ["goodiebag"],
+        "version": {
+          "generatorOptions": {
+            "currentVersionResolver": "git-tag",
+            "fallbackCurrentVersionResolver": "disk"
+          }
+        },
         "changelog": {
           "automaticFromRef": true,
           "projectChangelogs": {
@@ -115,6 +121,12 @@
       },
       "nx-plugins": {
         "projects": ["nx-*"],
+        "version": {
+          "generatorOptions": {
+            "currentVersionResolver": "git-tag",
+            "fallbackCurrentVersionResolver": "disk"
+          }
+        },
         "changelog": {
           "automaticFromRef": true,
           "projectChangelogs": {
@@ -131,7 +143,11 @@
       "rust-packages": {
         "projects": ["claude-code-toolkit"],
         "version": {
-          "versionActions": "@goodiebag/nx-rust/release"
+          "versionActions": "@goodiebag/nx-rust/release",
+          "generatorOptions": {
+            "currentVersionResolver": "git-tag",
+            "fallbackCurrentVersionResolver": "disk"
+          }
         },
         "changelog": {
           "automaticFromRef": true,
