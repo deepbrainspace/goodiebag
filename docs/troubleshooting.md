@@ -1,5 +1,9 @@
 # Troubleshooting Guide
 
+> **Last Updated**: June 22, 2025  
+> **Issue Discovery**: During PR #41 testing (goodiebag@0.1.0 release)  
+> **Context**: Squash merge of prepare workflow improvements broke NX changelog generation
+
 ## Release Workflow Issues
 
 ### GitHub Actions Permission Errors
@@ -7,30 +11,34 @@
 #### Issue: "GitHub Actions is not permitted to create or approve pull requests"
 
 **Error Message:**
+
 ```
 pull request create failed: GraphQL: GitHub Actions is not permitted to create or approve pull requests (createPullRequest)
 ```
 
-**Root Cause:**
-GitHub has security settings that prevent the default `GITHUB_TOKEN` from creating pull requests.
+**Root Cause:** GitHub has security settings that prevent the default
+`GITHUB_TOKEN` from creating pull requests.
 
 **Solutions:**
 
 1. **Organization Level** (Admin Required):
+
    - Go to Organization Settings → Actions → General → Workflow permissions
    - Enable "Allow GitHub Actions to create and approve pull requests"
 
 2. **Repository Level**:
-   - Go to Repository Settings → Actions → General → Workflow permissions 
+
+   - Go to Repository Settings → Actions → General → Workflow permissions
    - Enable "Allow GitHub Actions to create and approve pull requests"
    - Set permissions to "Read and write permissions"
 
 3. **Use Personal Access Token (Recommended)**:
+
    ```yaml
    - name: Create Pull Request
      uses: peter-evans/create-pull-request@v7
      with:
-       token: ${{ secrets.GH_PAT }}  # Use PAT instead of GITHUB_TOKEN
+       token: ${{ secrets.GH_PAT }} # Use PAT instead of GITHUB_TOKEN
    ```
 
 4. **Add Explicit Permissions**:
@@ -44,10 +52,21 @@ GitHub has security settings that prevent the default `GITHUB_TOKEN` from creati
 
 #### Issue: "No changes were detected using git history and the conventional commits standard"
 
-**Root Cause:**
-NX Release has a known bug (GitHub issue #26241) where squash merges break conventional commit parsing. GitHub uses `----` separator in squash commits, which conflicts with NX's parser.
+**Discovered**: June 22, 2025 during PR #41 (🔧 Fix prepare workflow permissions and multi-language versioning)
+
+**Root Cause:** NX Release has a known bug (GitHub issue #26241) where squash
+merges break conventional commit parsing. GitHub uses `----` separator in squash
+commits, which conflicts with NX's parser.
+
+**Our Specific Case:**
+- Squash merged PR #41 with multiple "fix:" commits
+- NX detected version bump correctly (goodiebag 0.0.0 → 0.1.0) 
+- But showed "No changes detected for changelogs"
+- Changelog generation failed despite having valid conventional commits
+- Workflow output: `NOTE: There was no diff detected for the changelog entry`
 
 **Symptoms:**
+
 - NX detects version bump correctly (e.g., 0.0.0 → 0.1.0)
 - But shows "No changes detected for changelogs"
 - Changelog generation fails despite having valid conventional commits
@@ -55,11 +74,13 @@ NX Release has a known bug (GitHub issue #26241) where squash merges break conve
 **Solutions:**
 
 1. **Use Regular Merges** (Recommended):
+
    - Avoid "Squash and merge" option in GitHub
    - Use "Create a merge commit" option instead
    - This preserves individual conventional commit history
 
 2. **Repository Policy**:
+
    - Disable squash merges at repository/organization level
    - Enforce regular merges only
 
@@ -72,16 +93,18 @@ NX Release has a known bug (GitHub issue #26241) where squash merges break conve
 
 #### Issue: "husky - pre-commit script failed (code 1)" with no error message
 
-**Root Cause:**
-Shell commands in hooks failing without proper error handling or output.
+**Root Cause:** Shell commands in hooks failing without proper error handling or
+output.
 
 **Common Causes:**
 
 1. **Empty Commits**:
+
    - Trying to commit with no staged files
    - Solution: Add files first or use `--allow-empty`
 
 2. **Unstaged Changes**:
+
    - Modified files not added to staging area
    - Solution: Run `git add <files>` before commit
 
@@ -90,6 +113,7 @@ Shell commands in hooks failing without proper error handling or output.
    - Especially `tsconfig.base.json` (known NX bug #10937)
 
 **Debugging:**
+
 ```bash
 # Run pre-commit hook manually to see actual error
 .husky/pre-commit
@@ -105,11 +129,11 @@ git diff --name-only
 
 #### Issue: tsconfig.base.json constantly reformatted
 
-**Root Cause:**
-Known NX bug where `nx format:write` gets stuck in formatting loop with `tsconfig.base.json`.
+**Root Cause:** Known NX bug where `nx format:write` gets stuck in formatting
+loop with `tsconfig.base.json`.
 
-**Solution:**
-Add to `.prettierignore`:
+**Solution:** Add to `.prettierignore`:
+
 ```
 # Known NX formatting bug - exclude tsconfig.base.json
 # See: https://github.com/nrwl/nx/issues/10937
@@ -120,12 +144,13 @@ tsconfig.base.json
 
 #### Issue: "Lockfile out of sync" messages during push
 
-**Root Cause:**
-Pre-push hook checking lockfile sync with `pnpm install --frozen-lockfile` but finding discrepancies.
+**Root Cause:** Pre-push hook checking lockfile sync with
+`pnpm install --frozen-lockfile` but finding discrepancies.
 
 **Solutions:**
 
 1. **Run lockfile sync**:
+
    ```bash
    pnpm install
    git add pnpm-lock.yaml
@@ -139,6 +164,7 @@ Pre-push hook checking lockfile sync with `pnpm install --frozen-lockfile` but f
 ## Best Practices
 
 ### Workflow Permissions
+
 ```yaml
 permissions:
   contents: write
@@ -146,16 +172,19 @@ permissions:
 ```
 
 ### Git Merge Policy
+
 - ✅ **Use**: "Create a merge commit" option
 - ❌ **NEVER use**: "Squash and merge" option
 - **Reason**: Preserves conventional commit history for NX Release
 
 ### Token Management
+
 - Use Personal Access Token (PAT) for workflow actions
 - Store in repository secrets as `GH_PAT`
 - Grant minimal required permissions (contents:write, pull-requests:write)
 
 ### Error Handling in Hooks
+
 ```bash
 # Good: Handle exit codes properly
 RESULT=$(some_command 2>/dev/null || true)
@@ -165,7 +194,9 @@ RESULT=$(some_command)
 ```
 
 ### Debugging Hooks
+
 Add debug output to understand what's happening:
+
 ```bash
 echo "🔍 Starting step..."
 # do work
