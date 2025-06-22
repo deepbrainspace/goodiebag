@@ -14,7 +14,8 @@
     "test": "nx run-many --target=test --all",
     "lint": "nx run-many --target=lint --all",
     "release": "nx release",
-    "release:dry-run": "nx release --dry-run"
+    "release:dry-run": "nx release --dry-run",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@goodiebag/nx-rust": "^3.0.2",
@@ -29,6 +30,7 @@
     "@types/jest": "^29.5.12",
     "@types/node": "~18.16.9",
     "esbuild": "^0.19.2",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
     "jest-environment-node": "^29.7.0",
     "nx": "^21.2.0",
