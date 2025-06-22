@@ -1,21 +1,29 @@
 # claude-code-toolkit
 
-*Part of the [GoodieBag](https://github.com/deepbrainspace/goodiebag) collection of tools and libraries*
+_Part of the [GoodieBag](https://github.com/deepbrainspace/goodiebag) collection
+of tools and libraries_
 
 [![Crates.io](https://img.shields.io/crates/v/claude-code-toolkit.svg)](https://crates.io/crates/claude-code-toolkit)
 [![Rust](https://img.shields.io/badge/rust-2024-orange.svg)](https://www.rust-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Claude Code management tool for automatic credential synchronization to GitHub, session monitoring, and daemon service management.
+Claude Code management tool for automatic credential synchronization to GitHub,
+session monitoring, and daemon service management.
 
 ## Features
 
-- **🔄 Automatic Credential Sync**: Syncs Claude Code credentials to GitHub organization/repository secrets
-- **⏰ Smart Scheduling**: Monitors token expiry and syncs 1 minute after new token generation
-- **🎯 Multi-Target Support**: Sync to multiple GitHub organizations and repositories simultaneously
-- **📊 Session Monitoring**: Real-time session timer and status tracking with desktop notifications
-- **🔧 Systemd User Service Integration**: Runs as a background daemon with automatic startup
-- **🚀 High Performance**: Written in Rust for minimal resource usage and maximum reliability
+- **🔄 Automatic Credential Sync**: Syncs Claude Code credentials to GitHub
+  organization/repository secrets
+- **⏰ Smart Scheduling**: Monitors token expiry and syncs 1 minute after new
+  token generation
+- **🎯 Multi-Target Support**: Sync to multiple GitHub organizations and
+  repositories simultaneously
+- **📊 Session Monitoring**: Real-time session timer and status tracking with
+  desktop notifications
+- **🔧 Systemd User Service Integration**: Runs as a background daemon with
+  automatic startup
+- **🚀 High Performance**: Written in Rust for minimal resource usage and
+  maximum reliability
 
 ## Installation
 
@@ -49,7 +57,8 @@ service to work. If you move the binary after installing the service, run
 
 - **Rust 2024 Edition** (rustc 1.80+)
 - **GitHub CLI** (`gh`) installed and authenticated
-- **GitHub Personal Access Token** with appropriate permissions (see setup below)
+- **GitHub Personal Access Token** with appropriate permissions (see setup
+  below)
 - **Claude Code** installed and authenticated
 - **Linux/macOS** with systemd (for daemon functionality)
 
@@ -69,14 +78,17 @@ brew install gh
 
 #### 2. Create GitHub Personal Access Token
 
-1. Go to [GitHub Settings > Developer Settings > Personal Access Tokens > Fine-grained tokens](https://github.com/settings/personal-access-tokens/new)
+1. Go to
+   [GitHub Settings > Developer Settings > Personal Access Tokens > Fine-grained tokens](https://github.com/settings/personal-access-tokens/new)
 2. Create a new token with these permissions:
-   - **Repository access**: Select specific repositories OR all repositories (depending on your needs)
+   - **Repository access**: Select specific repositories OR all repositories
+     (depending on your needs)
    - **Repository permissions**:
      - `Secrets: Write` (required for updating repository secrets)
      - `Metadata: Read` (required for basic repository access)
    - **Organization permissions** (if syncing to organizations):
-     - `Organization secrets: Write` (required for updating organization secrets)
+     - `Organization secrets: Write` (required for updating organization
+       secrets)
      - `Members: Read` (required for organization access)
 
 #### 3. Authenticate GitHub CLI
@@ -129,13 +141,16 @@ claude-code-toolkit timer
 
 ### Organization Management
 
-- `claude-code-toolkit org add <name> [--secret-name NAME]` - Add GitHub organization
+- `claude-code-toolkit org add <name> [--secret-name NAME]` - Add GitHub
+  organization
 - `claude-code-toolkit org remove <name>` - Remove organization
-- `claude-code-toolkit org list` - List configured organizations with availability
+- `claude-code-toolkit org list` - List configured organizations with
+  availability
 
 ### Repository Management
 
-- `claude-code-toolkit repo add <owner/repo> [--secret-name NAME]` - Add repository
+- `claude-code-toolkit repo add <owner/repo> [--secret-name NAME]` - Add
+  repository
 - `claude-code-toolkit repo remove <owner/repo>` - Remove repository
 - `claude-code-toolkit repo list` - List configured repositories
 
@@ -154,7 +169,8 @@ claude-code-toolkit timer
 
 ### Configuration
 
-- `claude-code-toolkit configure` - Interactive configuration wizard _(coming soon)_
+- `claude-code-toolkit configure` - Interactive configuration wizard _(coming
+  soon)_
 
 ## Configuration
 
@@ -167,7 +183,7 @@ You can configure targets using the CLI commands:
 claude-code-toolkit org add my-org --secret-name CLAUDE_TOKEN
 claude-code-toolkit org add another-org --secret-name CUSTOM_CLAUDE_TOKEN
 
-# Add repositories  
+# Add repositories
 claude-code-toolkit repo add owner/repo --secret-name CLAUDE_CODE_TOKEN
 claude-code-toolkit repo add owner/special-repo --secret-name CUSTOM_TOKEN
 
@@ -178,32 +194,34 @@ claude-code-toolkit repo list
 
 ### Direct YAML Configuration
 
-**Alternative**: You can directly edit the configuration file at `~/.goodiebag/claude-code/config.yml`:
+**Alternative**: You can directly edit the configuration file at
+`~/.goodiebag/claude-code/config.yml`:
 
 ```yaml
 daemon:
-  log_level: info                    # debug, info, warn, error
-  sync_delay_after_expiry: 60       # seconds to wait after token expiry
+  log_level: info # debug, info, warn, error
+  sync_delay_after_expiry: 60 # seconds to wait after token expiry
 
 github:
   organizations:
     - name: deepbrainspace
-      secret_name: CLAUDE_CODE_TOKEN  # Custom secret name (optional)
+      secret_name: CLAUDE_CODE_TOKEN # Custom secret name (optional)
     - name: another-org
       secret_name: CLAUDE_ACCESS_TOKEN
-    - name: simple-org                # Uses default secret name
+    - name: simple-org # Uses default secret name
 
   repositories:
     - repo: user/special-repo
       secret_name: CUSTOM_CLAUDE_TOKEN
-    - repo: owner/another-repo        # Uses default secret name
+    - repo: owner/another-repo # Uses default secret name
 
 notifications:
-  session_warnings: [30, 15, 5]      # Warning times (minutes before expiry)
-  sync_failures: true                # Notify on sync failures
+  session_warnings: [30, 15, 5] # Warning times (minutes before expiry)
+  sync_failures: true # Notify on sync failures
 ```
 
 **Configuration Notes**:
+
 - If `secret_name` is omitted, defaults to `CLAUDE_CODE_TOKEN`
 - Restart the daemon after editing YAML: `claude-code-toolkit service restart`
 - Validate configuration: `claude-code-toolkit status`

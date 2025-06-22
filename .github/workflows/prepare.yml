@@ -167,7 +167,7 @@ jobs:
               CHANGELOG_PATH="packages/${{ matrix.package }}/CHANGELOG.md"  # fallback
             fi
           fi
-          
+
           if [ -f "$CHANGELOG_PATH" ]; then
             # Extract the latest changelog entry (between first ## and second ##)
             CHANGELOG_CONTENT=$(sed -n '/^## \[/,/^## \[/p' "$CHANGELOG_PATH" | sed '$d' | tail -n +2 || echo "")
