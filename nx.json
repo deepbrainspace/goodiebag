@@ -87,6 +87,9 @@
   "parallel": 5,
   "release": {
     "projectsRelationship": "independent",
+    "git": {
+      "push": true
+    },
     "version": {
       "conventionalCommits": true,
       "fallbackCurrentVersionResolver": "disk",
