@@ -8,4 +8,6 @@
 # Additional build artifacts
 **/node_modules/
 **/.cargo/
-# Removed tsconfig.base.json - let the formatter do its job!
+# Known NX formatting bug - exclude tsconfig.base.json to prevent endless loops
+# See: https://github.com/nrwl/nx/issues/10937
+tsconfig.base.json
