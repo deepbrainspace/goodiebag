@@ -5,55 +5,59 @@ if [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ]; then
   exit 1
 fi
 
-# Check for actual secret values (not just references to secrets)
+# Check for actual secret values (long strings that look like tokens/keys)
 STAGED_FILES=$(git diff --cached --name-only | grep -v "^\.husky/")
-if [ -n "$STAGED_FILES" ] && echo "$STAGED_FILES" | xargs grep -l -E "(api[_-]?key|secret[_-]?key|token|password)\s*[:=]\s*['\"][a-zA-Z0-9+/]{20,}['\"]" 2>/dev/null | head -1 >/dev/null; then
-  echo "⚠️  Potential secret values detected in staged files!"
-  echo "🔍 Files containing potential secrets:"
-  echo "$STAGED_FILES" | xargs grep -l -E "(api[_-]?key|secret[_-]?key|token|password)\s*[:=]\s*['\"][a-zA-Z0-9+/]{20,}['\"]" 2>/dev/null
-  echo ""
-  echo "💡 Please review and ensure no actual secrets are being committed"
-  echo "❓ Continue anyway? (y/N)"
-  read -r response
-  if [ "$response" != "y" ] && [ "$response" != "Y" ]; then
-    echo "🚫 Commit aborted"
-    exit 1
+if [ -n "$STAGED_FILES" ]; then
+  # Look for patterns that look like actual secret values:
+  # - Long base64-like strings (20+ chars)
+  # - API key patterns (sk-, ghp_, etc.)
+  # - JWT tokens (starting with ey)
+  SECRET_MATCHES=$(echo "$STAGED_FILES" | xargs grep -n -E "(sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{20,}|ey[a-zA-Z0-9]{20,}|['\"][a-zA-Z0-9+/]{32,}['\"])" 2>/dev/null || true)
+  if [ -n "$SECRET_MATCHES" ]; then
+    echo "⚠️  Potential secret values detected in staged files!"
+    echo "🔍 Found the following matches:"
+    echo "$SECRET_MATCHES"
+    echo ""
+    echo "💡 Please review and ensure no actual secrets are being committed"
+    echo "❓ Continue anyway? (y/N)"
+    read -r response
+    if [ "$response" != "y" ] && [ "$response" != "Y" ]; then
+      echo "🚫 Commit aborted"
+      exit 1
+    fi
   fi
 fi
 
-# Check git-crypt status for potential unencrypted sensitive files
+# Check git-crypt status for staged files only
 if command -v git-crypt >/dev/null 2>&1; then
   # Check if git-crypt is initialized
   if git-crypt status >/dev/null 2>&1; then
-    # Get files that should be encrypted but might not be
-    CRYPT_STATUS=$(git-crypt status 2>&1)
-    
-    # Look for files marked as "not encrypted" that are in .gitattributes
-    if echo "$CRYPT_STATUS" | grep -q "not encrypted"; then
-      echo "🔐 Git-crypt warning: Some files may not be properly encrypted!"
-      echo ""
-      echo "$CRYPT_STATUS" | grep "not encrypted"
-      echo ""
-      echo "⚠️  These files are marked for encryption but appear unencrypted in history"
-      echo "💡 Run 'git-crypt status' to see full details"
-      echo "🔧 To fix: Remove from history and re-add encrypted"
-      echo ""
-      echo "❓ Continue anyway? (y/N)"
-      read -r response
-      if [ "$response" != "y" ] && [ "$response" != "Y" ]; then
-        echo "🚫 Commit aborted"
-        exit 1
-      fi
-    fi
-    
-    # Also check staged files that should be encrypted
+    # Check only staged files that should be encrypted
     STAGED_FILES=$(git diff --cached --name-only)
+    CRYPT_ISSUES=""
+    
     if [ -n "$STAGED_FILES" ]; then
       for file in $STAGED_FILES; do
-        if git check-attr filter "$file" | grep -q "git-crypt" && ! git-crypt status "$file" 2>/dev/null | grep -q "encrypted"; then
-          echo "🔐 Warning: $file should be encrypted but may not be!"
+        # Check if file should be encrypted according to .gitattributes
+        if git check-attr filter "$file" | grep -q "git-crypt"; then
+          # Check if file is actually encrypted
+          if ! git-crypt status "$file" 2>/dev/null | grep -q "encrypted"; then
+            CRYPT_ISSUES="$CRYPT_ISSUES$file: should be encrypted but appears unencrypted\n"
+          fi
         fi
       done
+      
+      if [ -n "$CRYPT_ISSUES" ]; then
+        echo "🔐 Git-crypt warning: Staged files have encryption issues!"
+        echo -e "$CRYPT_ISSUES"
+        echo "💡 Run 'git-crypt status <file>' to check specific files"
+        echo "❓ Continue anyway? (y/N)"
+        read -r response
+        if [ "$response" != "y" ] && [ "$response" != "Y" ]; then
+          echo "🚫 Commit aborted"
+          exit 1
+        fi
+      fi
     fi
   fi
 fi
