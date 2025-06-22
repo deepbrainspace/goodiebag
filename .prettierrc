@@ -14,8 +14,16 @@
   "overrides": [
     {
       "files": ["*.json", "*.jsonc"],
+      "excludeFiles": ["tsconfig.base.json"],
       "options": {
         "printWidth": 80,
+        "tabWidth": 2
+      }
+    },
+    {
+      "files": ["tsconfig.base.json"],
+      "options": {
+        "printWidth": 200,
         "tabWidth": 2
       }
     },

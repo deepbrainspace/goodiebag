@@ -1,5 +1,9 @@
 name: 📝 Prepare
 
+permissions:
+  contents: write
+  pull-requests: write
+
 on:
   pull_request:
     types: [closed]
@@ -88,13 +92,21 @@ jobs:
         run: |
           echo "📝 Preparing release for ${{ matrix.package }}..."
 
+          echo "🔍 Git environment debugging:"
+          echo "Current branch: $(git branch --show-current)"
+          echo "Recent commits:"
+          git log --oneline -5
+          echo "Git status:"
+          git status --porcelain
+          echo ""
+
           VERSION_INPUT="${{ github.event.inputs.version }}"
           if [ -z "$VERSION_INPUT" ]; then
             echo "📋 Using automatic version determination from conventional commits"
-            VERSION_CMD="nx release --projects=${{ matrix.package }} --skip-publish"
+            VERSION_CMD="nx release --projects=${{ matrix.package }} --skip-publish --verbose"
           else
             echo "📋 Using manual version bump: $VERSION_INPUT"
-            VERSION_CMD="nx release $VERSION_INPUT --projects=${{ matrix.package }} --skip-publish"
+            VERSION_CMD="nx release $VERSION_INPUT --projects=${{ matrix.package }} --skip-publish --verbose"
           fi
 
           echo "🎯 Executing: $VERSION_CMD"

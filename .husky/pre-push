@@ -1,22 +1,14 @@
-# Auto-sync lockfiles before pushing
-if ! pnpm install --frozen-lockfile --ignore-scripts &>/dev/null; then
-  echo "📦 Lockfile out of sync, updating automatically..."
-  pnpm install
-  
-  # Auto-commit any lockfile changes
-  LOCKFILES_CHANGED=false
-  
-  # Check for any lockfile changes (root and packages)
-  if ! git diff --quiet --exit-code '**/pnpm-lock.yaml' 'pnpm-lock.yaml' 2>/dev/null; then
-    echo "✅ Adding updated lockfiles to current commit..."
-    git add '**/pnpm-lock.yaml' 'pnpm-lock.yaml' 2>/dev/null || true
-    git commit --amend --no-edit --no-verify
-    LOCKFILES_CHANGED=true
-  fi
-  
-  if [ "$LOCKFILES_CHANGED" = true ]; then
-    echo "🚀 Lockfiles updated and committed automatically"
-  else
-    echo "✅ Lockfiles were already in sync"
-  fi
+# Check lockfile sync before pushing
+echo "🔍 Testing frozen lockfile check..."
+pnpm install --frozen-lockfile --ignore-scripts 2>&1 | head -10
+EXIT_CODE=$?
+echo "Exit code: $EXIT_CODE"
+
+if [ $EXIT_CODE -ne 0 ]; then
+  echo "❌ Lockfile is out of sync!"
+  echo "🔧 Please run 'pnpm install' to update lockfiles and commit the changes"
+  echo "📝 Then try pushing again"
+  exit 1
 fi
+
+echo "✅ Lockfile check passed"
