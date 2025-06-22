@@ -88,14 +88,14 @@
   "release": {
     "projectsRelationship": "independent",
     "version": {
-      "conventionalCommits": true
+      "conventionalCommits": true,
+      "fallbackCurrentVersionResolver": "disk"
     },
     "changelog": {
       "automaticFromRef": true,
       "projectChangelogs": true,
       "workspaceChangelog": false
     },
-    "releaseTagPattern": "{projectName}-v{version}",
     "groups": {
       "workspace": {
         "projects": ["goodiebag"],
