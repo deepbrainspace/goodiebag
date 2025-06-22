@@ -1,6 +1,12 @@
 name: 'Detect Affected Packages'
 description: 'Detect packages affected by changes using NX'
 
+inputs:
+  package:
+    description: 'Optional specific package to include (for manual triggers)'
+    required: false
+    default: ''
+
 outputs:
   packages:
     description: 'JSON array of affected packages'
@@ -22,8 +28,14 @@ runs:
       id: detect
       shell: bash
       run: |
-        # Get affected projects with publish target
-        AFFECTED=$(nx show projects --affected --json || echo '[]')
+        # Handle manual package input
+        if [ -n "${{ inputs.package }}" ]; then
+          echo "🎯 Manual package specified: ${{ inputs.package }}"
+          AFFECTED="[\"${{ inputs.package }}\"]"
+        else
+          # Get affected projects with publish target
+          AFFECTED=$(nx show projects --affected --json || echo '[]')
+        fi
         echo "🔍 Affected packages detected: $AFFECTED"
 
         if [ "$AFFECTED" = "[]" ] || [ -z "$AFFECTED" ]; then
