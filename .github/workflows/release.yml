@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     # Only run if PR was merged and came from a release/* branch
     if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'release/')
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -32,25 +32,39 @@ jobs:
             
             echo "📦 Package: $PACKAGE_NAME"
             
-            # Extract version from package.json in the merged commit
+            # Extract version using NX (works across all project types)
+            echo "🔍 Detecting version using NX for $PACKAGE_NAME"
+            
+            # Use NX to detect the current version (works for all project types)
+            NX_OUTPUT=$(nx show project $PACKAGE_NAME --json 2>/dev/null || echo "{}")
+            
+            # Alternative: Extract version from changelog file (created by NX release)
             if [ "$PACKAGE_NAME" = "goodiebag" ]; then
-              PACKAGE_JSON_PATH="package.json"
+              CHANGELOG_PATH="CHANGELOG.md"
             else
-              PACKAGE_JSON_PATH="packages/$PACKAGE_NAME/package.json"
+              CHANGELOG_PATH="packages/$PACKAGE_NAME/CHANGELOG.md"
             fi
             
-            if [ -f "$PACKAGE_JSON_PATH" ]; then
-              VERSION=$(cat "$PACKAGE_JSON_PATH" | grep '"version":' | head -1 | sed 's/.*"version": *"\([^"]*\)".*/\1/')
+            if [ -f "$CHANGELOG_PATH" ]; then
+              # Extract the most recent version from changelog (first version heading)
+              VERSION=$(grep -m 1 "^## \[" "$CHANGELOG_PATH" | sed 's/^## \[\([^]]*\)\].*/\1/' || echo "")
+              
+              if [ -z "$VERSION" ]; then
+                echo "❌ Could not extract version from changelog: $CHANGELOG_PATH"
+                exit 1
+              fi
+              
               TAG_NAME="${PACKAGE_NAME}@${VERSION}"
               
               echo "package=$PACKAGE_NAME" >> $GITHUB_OUTPUT
               echo "version=$VERSION" >> $GITHUB_OUTPUT
               echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
               
-              echo "🏷️ Version: $VERSION (from $PACKAGE_JSON_PATH)"
+              echo "🏷️ Version: $VERSION (from $CHANGELOG_PATH)"
               echo "🏷️ Tag: $TAG_NAME"
             else
-              echo "❌ Could not find package.json at: $PACKAGE_JSON_PATH"
+              echo "❌ Could not find changelog at: $CHANGELOG_PATH"
+              echo "Release branch should have been created with changelog by NX release"
               exit 1
             fi
           else
@@ -72,7 +86,7 @@ jobs:
             echo "❌ Build artifacts not found for ${{ steps.extract.outputs.package }}"
             exit 1
           fi
-          
+
           echo "✅ Build artifacts verified for ${{ steps.extract.outputs.package }}"
           ls -la "dist/packages/${{ steps.extract.outputs.package }}"
 
@@ -95,7 +109,7 @@ jobs:
     name: No release detected
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged != true || !startsWith(github.event.pull_request.head.ref, 'release/')
-    
+
     steps:
       - name: Skip release
         run: |
