@@ -8,3 +8,5 @@
 # Additional build artifacts
 **/node_modules/
 **/.cargo/
+# Problematic config files that get constantly reformatted
+/tsconfig.base.json
