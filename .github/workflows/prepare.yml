@@ -1,4 +1,4 @@
-name: 📝 Changelog Generation
+name: 📝 Prepare Release
 
 on:
   pull_request:
