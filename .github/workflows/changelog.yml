@@ -78,7 +78,6 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Prepare release (skip publish)
-        id: prepare
         run: |
           echo "📝 Preparing changelog for ${{ matrix.package }}..."
           
@@ -93,25 +92,34 @@ jobs:
 
           echo "🎯 Executing: $VERSION_CMD"
           $VERSION_CMD
-          
-          # Get new version for branch naming
-          NEW_VERSION=$(node -p "require('./packages/${{ matrix.package }}/package.json').version")
-          echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Create release branch and PR
         run: |
-          BRANCH_NAME="release/${{ matrix.package }}@${{ steps.prepare.outputs.new-version }}"
+          # Extract version from the git commit that NX just made
+          LAST_COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+          echo "Last commit: $LAST_COMMIT_MSG"
           
-          git checkout -b "$BRANCH_NAME"
-          git add .
-          git commit -m "release(${{ matrix.package }}): prepare v${{ steps.prepare.outputs.new-version }}"
-          git push origin "$BRANCH_NAME"
-          
-          gh pr create \
-            --title "🚀 Release ${{ matrix.package }}@${{ steps.prepare.outputs.new-version }}" \
-            --body "Release preparation for ${{ matrix.package }} v${{ steps.prepare.outputs.new-version }}" \
-            --base main \
-            --head "$BRANCH_NAME"
+          # Extract version from NX commit message pattern
+          if [[ $LAST_COMMIT_MSG =~ release\(([^)]+)\):\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            PACKAGE_NAME="${BASH_REMATCH[1]}"
+            VERSION="${BASH_REMATCH[2]}"
+            BRANCH_NAME="release/${PACKAGE_NAME}@${VERSION}"
+            
+            echo "📦 Package: $PACKAGE_NAME, Version: $VERSION"
+            echo "🌿 Branch: $BRANCH_NAME"
+            
+            git checkout -b "$BRANCH_NAME"
+            git push origin "$BRANCH_NAME"
+            
+            gh pr create \
+              --title "🚀 Release ${PACKAGE_NAME}@${VERSION}" \
+              --body "Release preparation for ${PACKAGE_NAME} v${VERSION}" \
+              --base main \
+              --head "$BRANCH_NAME"
+          else
+            echo "❌ Could not extract version from commit message: $LAST_COMMIT_MSG"
+            exit 1
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
