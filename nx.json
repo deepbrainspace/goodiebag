@@ -88,9 +88,7 @@
   "release": {
     "projectsRelationship": "independent",
     "version": {
-      "conventionalCommits": true,
-      "currentVersionResolver": "git-tag",
-      "fallbackCurrentVersionResolver": "disk"
+      "conventionalCommits": true
     },
     "changelog": {
       "automaticFromRef": true,
