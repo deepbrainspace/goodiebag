@@ -12,6 +12,7 @@ import { VersionActions } from 'nx/release';
 import { ReleaseGroupWithName } from 'nx/src/command-line/release/config/filter-release-groups';
 import { FinalConfigForProject } from 'nx/src/command-line/release/version/release-group-processor';
 import { NxReleaseVersionConfiguration } from 'nx/src/config/nx-json';
+import { gitPush } from 'nx/src/command-line/release/utils/git';
 import { parseCargoToml, stringifyCargoToml } from '../utils/toml';
 
 export default class RustVersionActions extends VersionActions {
@@ -260,7 +261,7 @@ To fix this you will either need to add a Cargo.toml file at that location, or c
 
 /**
  * Function called after all projects have been versioned.
- * Updates Cargo.lock file if it exists.
+ * Updates Cargo.lock file if it exists and pushes changes to git remote.
  */
 export async function afterAllProjectsVersioned(
   cwd: string,
@@ -292,6 +293,24 @@ export async function afterAllProjectsVersioned(
         console.warn('[nx-rust] Failed to update Cargo.lock:', error);
       }
     }
+  }
+
+  // Push changes to git remote (matches NX standard behavior)
+  // This ensures commits and tags are pushed to remote for Rust packages
+  try {
+    if (opts.verbose) {
+      console.log(`[nx-rust] Pushing to git remote "origin"`);
+    }
+    await gitPush({
+      gitRemote: 'origin',
+      dryRun: opts.dryRun,
+      verbose: opts.verbose,
+    });
+  } catch (error) {
+    if (opts.verbose) {
+      console.warn('[nx-rust] Failed to push to git remote:', error);
+    }
+    // Don't throw error to avoid breaking the release process
   }
 
   return {
