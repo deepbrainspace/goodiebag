@@ -100,6 +100,24 @@ jobs:
           git status --porcelain
           echo ""
 
+          # Use consistent branch naming (Release Please strategy)
+          BRANCH_NAME="release/${{ matrix.package }}"
+          echo "🌿 Target branch: $BRANCH_NAME"
+
+          # Check if release branch already exists
+          if git ls-remote --exit-code --heads origin "$BRANCH_NAME" >/dev/null 2>&1; then
+            echo "📋 Release branch exists, updating with latest changes"
+            git fetch origin "$BRANCH_NAME"
+            git checkout -B "$BRANCH_NAME" "origin/$BRANCH_NAME"
+            
+            # Merge main into release branch to get latest changes
+            echo "🔀 Merging main into release branch"
+            git merge main --no-edit
+          else
+            echo "📋 Creating new release branch"
+            git checkout -b "$BRANCH_NAME"
+          fi
+
           VERSION_INPUT="${{ github.event.inputs.version }}"
           if [ -z "$VERSION_INPUT" ]; then
             echo "📋 Using automatic version determination from conventional commits"
@@ -124,13 +142,12 @@ jobs:
           echo "📦 Package: ${{ matrix.package }}"
           echo "🔖 Version: $VERSION"
 
-          BRANCH_NAME="release/${{ matrix.package }}@${VERSION}"
-          echo "🌿 Branch: $BRANCH_NAME"
+          # Force push to release branch (safe since it's always the same branch)
+          echo "📤 Pushing release branch"
+          git push origin "$BRANCH_NAME" --force
 
-          # Create release branch and push NX changes
-          git checkout -b "$BRANCH_NAME"
-          git push origin "$BRANCH_NAME"
-
+          # Create or update PR (GitHub will update existing PR if it exists)
+          echo "📋 Creating/updating release PR"
           gh pr create \
             --title "🚀 Release Request for ${{ matrix.package }}@${VERSION}" \
             --body "Release request for ${{ matrix.package }} v${VERSION}
@@ -144,7 +161,19 @@ jobs:
 
           Merge this PR to trigger the release pipeline." \
             --base main \
-            --head "$BRANCH_NAME"
+            --head "$BRANCH_NAME" || \
+          gh pr edit "$BRANCH_NAME" \
+            --title "🚀 Release Request for ${{ matrix.package }}@${VERSION}" \
+            --body "Release request for ${{ matrix.package }} v${VERSION}
+
+          ## Changes
+          See the changelog files for detailed changes.
+
+          ## Package
+          - **Name**: ${{ matrix.package }}
+          - **Version**: $VERSION
+
+          Merge this PR to trigger the release pipeline."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

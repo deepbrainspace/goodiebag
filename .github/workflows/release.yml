@@ -24,23 +24,38 @@ jobs:
       - name: Extract release info
         id: extract
         run: |
-          # Extract package and version from release branch name
-          # Expected format: "release/package-name@1.2.3"
+          # Extract package from release branch name (Release Please strategy)
+          # Expected format: "release/package-name"
           BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
-          if [[ $BRANCH_NAME =~ release/([^@]+)@([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+          if [[ $BRANCH_NAME =~ release/(.+) ]]; then
             PACKAGE_NAME="${BASH_REMATCH[1]}"
-            VERSION="${BASH_REMATCH[2]}"
-            TAG_NAME="${PACKAGE_NAME}@${VERSION}"
-            
-            echo "package=$PACKAGE_NAME" >> $GITHUB_OUTPUT
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
-            echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
             
             echo "📦 Package: $PACKAGE_NAME"
-            echo "🏷️ Version: $VERSION"  
-            echo "🏷️ Tag: $TAG_NAME"
+            
+            # Extract version from package.json in the merged commit
+            if [ "$PACKAGE_NAME" = "goodiebag" ]; then
+              PACKAGE_JSON_PATH="package.json"
+            else
+              PACKAGE_JSON_PATH="packages/$PACKAGE_NAME/package.json"
+            fi
+            
+            if [ -f "$PACKAGE_JSON_PATH" ]; then
+              VERSION=$(cat "$PACKAGE_JSON_PATH" | grep '"version":' | head -1 | sed 's/.*"version": *"\([^"]*\)".*/\1/')
+              TAG_NAME="${PACKAGE_NAME}@${VERSION}"
+              
+              echo "package=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+              echo "version=$VERSION" >> $GITHUB_OUTPUT
+              echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
+              
+              echo "🏷️ Version: $VERSION (from $PACKAGE_JSON_PATH)"
+              echo "🏷️ Tag: $TAG_NAME"
+            else
+              echo "❌ Could not find package.json at: $PACKAGE_JSON_PATH"
+              exit 1
+            fi
           else
-            echo "❌ Could not extract release info from branch name: $BRANCH_NAME"
+            echo "❌ Could not extract package name from branch: $BRANCH_NAME"
+            echo "Expected format: release/package-name"
             exit 1
           fi
 
