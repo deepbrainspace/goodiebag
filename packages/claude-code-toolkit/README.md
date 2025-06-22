@@ -6,6 +6,7 @@ of tools and libraries_
 [![Crates.io](https://img.shields.io/crates/v/claude-code-toolkit.svg)](https://crates.io/crates/claude-code-toolkit)
 [![Rust](https://img.shields.io/badge/rust-2024-orange.svg)](https://www.rust-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/deepbrainspace/goodiebag/actions)
 
 Claude Code management tool for automatic credential synchronization to GitHub,
 session monitoring, and daemon service management.
@@ -376,7 +377,7 @@ claude-code-toolkit service install
 
 ## Performance
 
-- **Binary Size**: ~8MB (optimized)
+- **Binary Size**: ~3.5MB (optimized)
 - **Memory Usage**: ~5-10MB runtime
 - **CPU Usage**: Near-zero when idle
 - **Startup Time**: <100ms
