@@ -24,48 +24,47 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Cache workspace setup
-      id: cache-workspace
+    # Split caches for better granularity and space efficiency
+    - name: Cache pnpm store
       uses: actions/cache@v4
       with:
-        path: |
-          ~/.pnpm-store
-          node_modules
-          .nx/cache
-        key: workspace-${{ runner.os }}-node${{ inputs.node-version }}-pnpm${{ inputs.pnpm-version }}-${{ hashFiles('**/pnpm-lock.yaml', 'package.json', 'packages/*/package.json') }}
+        path: ~/.pnpm-store
+        key: pnpm-store-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
-          workspace-${{ runner.os }}-node${{ inputs.node-version }}-pnpm${{ inputs.pnpm-version }}-
-          workspace-${{ runner.os }}-node${{ inputs.node-version }}-
+          pnpm-store-${{ runner.os }}-
+
+    - name: Cache node_modules
+      id: cache-node-modules
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-node${{ inputs.node-version }}-${{ hashFiles('**/pnpm-lock.yaml', 'package.json') }}
+        restore-keys: |
+          node-modules-${{ runner.os }}-node${{ inputs.node-version }}-
+
+    - name: Cache NX cache
+      uses: actions/cache@v4
+      with:
+        path: .nx/cache
+        key: nx-cache-${{ runner.os }}-${{ github.sha }}
+        restore-keys: |
+          nx-cache-${{ runner.os }}-
 
     - name: Setup pnpm
-      if: steps.cache-workspace.outputs.cache-hit != 'true'
       uses: pnpm/action-setup@v2
       with:
         version: ${{ inputs.pnpm-version }}
 
     - name: Setup Node.js
-      if: steps.cache-workspace.outputs.cache-hit != 'true'
       uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node-version }}
         cache: 'pnpm'
 
     - name: Install dependencies
-      if: steps.cache-workspace.outputs.cache-hit != 'true'
+      if: steps.cache-node-modules.outputs.cache-hit != 'true'
       shell: bash
       run: pnpm install --frozen-lockfile
-
-    - name: Setup pnpm (cache hit)
-      if: steps.cache-workspace.outputs.cache-hit == 'true'
-      uses: pnpm/action-setup@v2
-      with:
-        version: ${{ inputs.pnpm-version }}
-
-    - name: Setup Node.js (cache hit)
-      if: steps.cache-workspace.outputs.cache-hit == 'true'
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ inputs.node-version }}
 
     - name: Add node_modules/.bin to PATH
       shell: bash

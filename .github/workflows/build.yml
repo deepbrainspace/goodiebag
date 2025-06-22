@@ -107,7 +107,7 @@ jobs:
         with:
           name: coverage-${{ matrix.package }}
           path: coverage/
-          retention-days: 7
+          retention-days: 1
 
   # Phase 3: Build (Parallel per Package)
   build:
@@ -142,7 +142,7 @@ jobs:
         with:
           name: build-${{ matrix.package }}
           path: dist/packages/${{ matrix.package }}
-          retention-days: 7
+          retention-days: 1
 
   # Summary
   summary:
