@@ -1,6 +1,6 @@
 {
   "name": "@deepbrainspace/nx-surrealdb",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "NX plugin for SurrealDB migrations with modular architecture",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
