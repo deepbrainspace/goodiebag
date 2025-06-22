@@ -3,7 +3,9 @@ name: 📝 Changelog Generation
 on:
   pull_request:
     types: [closed]
-    branches: [main]
+    branches: 
+      - main
+      - '!release/**'
   workflow_dispatch:
     inputs:
       package:
@@ -25,8 +27,8 @@ jobs:
   detect:
     name: Detect
     runs-on: ubuntu-latest
-    # Skip if PR has 'do-not-release' label or if merging from release branch (only for PR triggers, not manual)
-    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'do-not-release') && !startsWith(github.event.pull_request.head.ref, 'release/'))
+    # Skip if PR has 'do-not-release' label (only for PR triggers, not manual)
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'do-not-release'))
     outputs:
       has-packages: ${{ steps.detect.outputs.has-packages }}
       packages: ${{ steps.detect.outputs.packages }}
