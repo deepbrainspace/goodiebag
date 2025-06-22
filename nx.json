@@ -93,7 +93,17 @@
       "push": false
     },
     "version": {
-      "conventionalCommits": true,
+      "conventionalCommits": {
+        "types": {
+          "docs": {
+            "semverBump": "patch",
+            "changelog": {
+              "title": "📖 Documentation",
+              "hidden": false
+            }
+          }
+        }
+      },
       "fallbackCurrentVersionResolver": "disk",
       "updateDependents": "never"
     },
