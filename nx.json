@@ -90,13 +90,16 @@
   "release": {
     "projectsRelationship": "independent",
     "version": {
-      "conventionalCommits": true
+      "conventionalCommits": true,
+      "currentVersionResolver": "git-tag",
+      "fallbackCurrentVersionResolver": "disk"
     },
     "changelog": {
       "automaticFromRef": true,
       "projectChangelogs": true,
       "workspaceChangelog": false
     },
+    "releaseTagPattern": "{projectName}-v{version}",
     "groups": {
       "workspace": {
         "projects": ["goodiebag"],
@@ -107,7 +110,6 @@
             "file": "{workspaceRoot}/CHANGELOG.md"
           }
         },
-        "releaseTagPattern": "goodiebag-v{version}",
         "publish": {
           "registry": "https://registry.npmjs.org/"
         }
@@ -121,10 +123,8 @@
             "file": true
           }
         },
-        "releaseTagPattern": "{projectName}-v{version}",
         "publish": {
-          "registry": "https://registry.npmjs.org/",
-          "tag": "alpha"
+          "registry": "https://registry.npmjs.org/"
         }
       },
       "rust-packages": {
@@ -139,8 +139,6 @@
             "file": true
           }
         },
-        "releaseTagPattern": "{projectName}-v{version}",
-        "projectsRelationship": "independent",
         "publish": {
           "options": {
             "packageRoot": "packages/{projectName}"
