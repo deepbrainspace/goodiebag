@@ -26,12 +26,12 @@
       "options": {
         "commands": [
           "echo '🏗️  Building workspace documentation...'",
-          "mkdir -p dist/workspace",
-          "nx graph --file=dist/workspace/dependency-graph.json",
+          "mkdir -p dist/packages/goodiebag",
+          "nx graph --file=dist/packages/goodiebag/dependency-graph.json",
           "echo '✅ Workspace build completed'"
         ]
       },
-      "outputs": ["{workspaceRoot}/dist/workspace"]
+      "outputs": ["{workspaceRoot}/dist/packages/goodiebag"]
     }
   },
   "implicitDependencies": [],
