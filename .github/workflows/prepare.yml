@@ -102,32 +102,50 @@ jobs:
 
       - name: Create release branch and PR
         run: |
-          # Extract version from the git commit that NX just made
-          # NX creates commits in format: "release(package-name): v1.2.3" per conventional commits
-          LAST_COMMIT_MSG=$(git log -1 --pretty=format:"%s")
-          echo "Last commit: $LAST_COMMIT_MSG"
+          # Get the package name for this matrix job
+          PACKAGE_NAME="${{ matrix.package }}"
           
-          # Extract version from NX commit message pattern
-          if [[ $LAST_COMMIT_MSG =~ release\(([^)]+)\):\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
-            PACKAGE_NAME="${BASH_REMATCH[1]}"
-            VERSION="${BASH_REMATCH[2]}"
-            BRANCH_NAME="release/${PACKAGE_NAME}@${VERSION}"
-            
-            echo "📦 Package: $PACKAGE_NAME, Version: $VERSION"
-            echo "🌿 Branch: $BRANCH_NAME"
-            
-            git checkout -b "$BRANCH_NAME"
-            git push origin "$BRANCH_NAME"
-            
-            gh pr create \
-              --title "🚀 Release Request for ${PACKAGE_NAME}@${VERSION}" \
-              --body "Release request for ${PACKAGE_NAME} v${VERSION}" \
-              --base main \
-              --head "$BRANCH_NAME"
+          # Get the version from the package.json after NX updated it
+          if [ -f "packages/$PACKAGE_NAME/package.json" ]; then
+            VERSION=$(cat "packages/$PACKAGE_NAME/package.json" | grep '"version"' | cut -d'"' -f4)
+          elif [ -f "package.json" ] && [ "$PACKAGE_NAME" = "goodiebag" ]; then
+            VERSION=$(cat "package.json" | grep '"version"' | cut -d'"' -f4)
           else
-            echo "❌ Could not extract version from commit message: $LAST_COMMIT_MSG"
+            echo "❌ Could not find package.json for $PACKAGE_NAME"
             exit 1
           fi
+          
+          echo "📦 Package: $PACKAGE_NAME"
+          echo "🔖 Version: $VERSION"
+          
+          # Check if version changed (not 0.0.0 which means no changes)
+          if [ "$VERSION" = "0.0.0" ]; then
+            echo "ℹ️ No version change for $PACKAGE_NAME, skipping release"
+            exit 0
+          fi
+          
+          BRANCH_NAME="release/${PACKAGE_NAME}@${VERSION}"
+          echo "🌿 Branch: $BRANCH_NAME"
+          
+          # Create release branch and PR
+          git checkout -b "$BRANCH_NAME"
+          git push origin "$BRANCH_NAME"
+          
+          gh pr create \
+            --title "🚀 Release Request for ${PACKAGE_NAME}@${VERSION}" \
+            --body "Release request for ${PACKAGE_NAME} v${VERSION}
+
+## Changes
+$(git log --oneline --no-merges HEAD~10..HEAD | grep -E "(feat|fix|perf|docs|chore)(\($PACKAGE_NAME\))?" | head -5)
+
+## Package
+- **Name**: $PACKAGE_NAME  
+- **Version**: $VERSION
+- **Type**: $(if [[ $VERSION =~ \.[0-9]+\.0$ ]]; then echo "Minor"; elif [[ $VERSION =~ \.[0-9]+\.[1-9]+$ ]]; then echo "Patch"; else echo "Major"; fi) release
+
+Merge this PR to trigger the release pipeline." \
+            --base main \
+            --head "$BRANCH_NAME"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
