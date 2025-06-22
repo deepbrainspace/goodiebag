@@ -13,7 +13,10 @@ on:
       - 'pnpm-lock.yaml'
       - 'nx.json'
       - 'tsconfig*.json'
-      - '.github/workflows/build.yml'
+      - '.github/**'
+      - 'docs/**'
+      - 'README.md'
+      - 'CHANGELOG.md'
 
 concurrency:
   group: build-${{ github.ref }}
