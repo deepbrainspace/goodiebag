@@ -2,6 +2,17 @@
   "name": "goodiebag",
   "projectType": "library",
   "sourceRoot": ".",
+  "namedInputs": {
+    "default": [
+      ".github/**/*",
+      "docs/**/*",
+      "*.md",
+      "nx.json",
+      "package.json",
+      "pnpm-lock.yaml",
+      ".husky/**/*"
+    ]
+  },
   "targets": {
     "lint": {
       "executor": "nx:run-commands",
