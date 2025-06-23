@@ -6,11 +6,10 @@ on:
 
 jobs:
   dispatch:
-    name: 🚀 Route Release Workflow
     runs-on: ubuntu-latest
     if: 'github.event.pull_request.merged == true'
     steps:
-      - name: Dispatch to appropriate release workflow
+      - name: Route to appropriate workflow
         run: |
           if [[ ! "${{ github.head_ref }}" =~ ^release/ ]]; then
             echo "📝 Triggering prepare release workflow for merged PR"

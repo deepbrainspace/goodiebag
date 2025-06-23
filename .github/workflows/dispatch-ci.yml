@@ -6,10 +6,9 @@ on:
 
 jobs:
   dispatch:
-    name: 🚦 Route Workflow
     runs-on: ubuntu-latest
     steps:
-      - name: Dispatch to appropriate workflow
+      - name: Route to appropriate workflow
         run: |
           if [[ ! "${{ github.head_ref }}" =~ ^release/ ]]; then
             echo "🏗️ Triggering build workflow for regular branch"
