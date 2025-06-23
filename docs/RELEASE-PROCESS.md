@@ -1,41 +1,63 @@
 # Release Process
 
-This document describes the automated release process for the Goodie-Bag monorepo, which uses a 3-workflow GitHub Actions pipeline for continuous integration, changelog generation, and publishing.
+This document describes the automated release process for the Goodie-Bag
+monorepo, which uses an event-driven GitHub Actions pipeline for continuous
+integration, release preparation, and publishing.
 
 ## Overview
 
-The release process consists of three automated workflows:
+The release process consists of multiple automated workflows orchestrated by PR
+events:
 
-1. **CI Workflow** - Automated code quality checks (lint → test → build) + artifact storage
-2. **Changelog Workflow** - Automated version bumping and release PR creation  
-3. **Release Workflow** - Automated tagging and publishing using CI artifacts
+1. **Build Feature PR** - Automated code quality checks (lint → test → build) +
+   artifact storage
+2. **Create Release PRs** - Automated version bumping and release PR creation
+3. **Publish Packages** - Automated tagging and publishing using CI artifacts
+4. **Validation** - PR routing and release branch validation
 
 ## Workflow Architecture
 
+The CI/CD system uses event-driven GitHub Actions with PR routing:
+
 ```
-  Feature PR        CI Workflow        Changelog         Release PR        Release
-      │                 │             Workflow             │             Workflow
-      ▼                 ▼                 │                 ▼                 │
-┌───────────┐     ┌────────────┐     ┌───────────┐     ┌─────────┐     ┌─────────┐
-│ Developer │────▶│ Build +    │────▶│ Generate  │────▶│ Review  │────▶│ Tag +   │
-│ Opens PR  │     │ Test +     │     │ Changelog │     │ Release │     │ Publish │
-│           │     │ Store      │     │ + Version │     │ Changes │     │ to npm/ │
-│           │     │ Artifacts  │     │ Bump      │     │         │     │ cargo   │
-└───────────┘     └────────────┘     └───────────┘     └─────────┘     └─────────┘
-      │                 │                 │                 │                 │
-      ▼                 ▼                 ▼                 ▼                 ▼
-  Triggers CI       Tested Build      Release PR        Manual          Published
-  Validation        Artifacts         Created           Review          Packages
+ PR Events                 Router Workflows              Build/Release Workflows
+     │                          │                             │
+     ▼                          ▼                             ▼
+┌─────────────┐         ┌─────────────────┐        ┌─────────────────────┐
+│ PR Opened/  │────────▶│ on-pr-opened    │───────▶│ build-feature-pr    │
+│ Synchronized│         │ (Router)        │        │ (Lint→Test→Build)   │
+└─────────────┘         └─────────────────┘        └─────────────────────┘
+                                 │                             │
+                                 ▼                             ▼
+                        ┌─────────────────┐        ┌─────────────────────┐
+                        │ validate-       │        │ Artifacts Stored    │
+                        │ release-pr      │        │ (1 day retention)   │
+                        │ (for release/*) │        └─────────────────────┘
+                        └─────────────────┘
+
+┌─────────────┐         ┌─────────────────┐        ┌─────────────────────┐
+│ PR Merged   │────────▶│ on-pr-merged    │───────▶│ create-release-prs  │
+│             │         │ (Router)        │        │ (Changelog + PRs)   │
+└─────────────┘         └─────────────────┘        └─────────────────────┘
+                                 │                             │
+                                 ▼                             ▼
+                        ┌─────────────────┐        ┌─────────────────────┐
+                        │ publish-        │        │ Release PRs Created │
+                        │ packages        │        │ (release/pkg@ver)   │
+                        │ (Tag + Publish) │        └─────────────────────┘
+                        └─────────────────┘
 ```
 
-### 3-Workflow Pipeline Benefits
+### Event-Driven Pipeline Benefits
 
-1. **Zero Duplicate Builds**: CI artifacts are reused for publishing
-2. **Permission Compliant**: No direct pushes to main, everything via PRs  
-3. **Build Integrity**: Publishes exact same artifacts that passed CI tests
-4. **Flexible Control**: `do-not-release` label for batching changes
-5. **Manual Override**: Always available for selective releases
-6. **Clean Separation**: CI→validate, Changelog→prepare, Release→publish
+1. **Smart Routing**: PRs automatically routed to correct workflow based on
+   branch type
+2. **Parallel Processing**: Matrix strategy for affected packages in build phase
+3. **Artifact Reuse**: Build artifacts stored and reused for publishing
+4. **Branch-Based Logic**: Release vs feature branches trigger different
+   workflows
+5. **Concurrency Control**: Prevents duplicate builds with cancellation groups
+6. **Comprehensive Validation**: Separate validation for feature vs release PRs
 
 ## 🔄 Complete Release Flow
 
@@ -54,10 +76,13 @@ gh pr create --title "feat: add new migration functionality" --body "Description
 ```
 
 **What happens automatically:**
-- **CI Workflow** triggers on PR creation
-- Runs lint, test, build for affected packages
-- Stores build artifacts for later release use
-- Build artifacts cached for 7 days
+
+- **on-pr-opened** router workflow detects feature branch
+- Routes to **build-feature-pr** workflow via API dispatch
+- Detects affected packages using NX with matrix strategy
+- Runs lint, test, build in parallel for each affected package
+- Stores build artifacts with 1-day retention
+- Reports status back via GitHub check runs
 
 ### 2. PR Merge & Changelog Generation
 
@@ -67,13 +92,16 @@ gh pr merge --squash  # or merge via GitHub UI
 ```
 
 **What happens automatically:**
-- **Changelog Workflow** triggers on PR merge to main
-- Detects affected packages using NX
+
+- **on-pr-merged** router workflow detects feature branch merge
+- Routes to **create-release-prs** workflow via API dispatch
+- Detects affected packages using NX affected
 - Runs `nx release --skip-publish` for version bump + changelog
-- Creates release branch: `release/nx-surrealdb@1.2.3`
-- Opens release PR with changelog and version changes
+- Creates release branch: `release/package@version`
+- Opens release PR with comprehensive changelog and version changes
 
 **Control Options:**
+
 - Add `do-not-release` label to PR to skip automatic release
 - Use manual workflow dispatch for selective package releases
 
@@ -82,7 +110,7 @@ gh pr merge --squash  # or merge via GitHub UI
 gh pr edit {pr-number} --add-label "do-not-release"
 
 # Optional: Manual release trigger
-gh workflow run changelog.yml -f package="nx-surrealdb" -f version="patch"
+gh workflow run create-release-prs.yml -f package="nx-surrealdb" -f version="patch"
 ```
 
 ### 3. Release PR Review & Publish
@@ -94,34 +122,48 @@ gh pr merge {release-pr-number} # Merge when ready to publish
 ```
 
 **What happens automatically:**
-- **Release Workflow** triggers on release PR merge
-- Downloads CI build artifacts (from original feature PR)
-- Extracts package and version from branch name: `release/nx-surrealdb@1.2.3`
-- Creates git tag: `nx-surrealdb@1.2.3`
-- Publishes to npm/cargo using exact CI artifacts
-- Creates GitHub release with changelog
 
-#### **What Happens:**
+- **on-pr-merged** router workflow detects release branch merge
+- Routes to **publish-packages** workflow via API dispatch
+- Extracts package and version from merge commit message
+- Downloads CI build artifacts using `dawidd6/action-download-artifact`
+- Creates git tag and pushes to GitHub
+- Publishes to npm/cargo using `nx run {package}:nx-release-publish`
+- Cleans up release branch automatically
 
-1. **🔍 Detection**: Detects release branch merge via PR event
+#### **Detailed Publishing Process:**
+
+1. **🔍 Detection**:
+
+   - Router detects `release/*` branch merge
+   - Extracts package/version from PR title:
+     `🚀 Release Request for package@version`
 
 2. **📦 Artifact Retrieval**:
-   - Downloads CI build artifacts using `dawidd6/action-download-artifact`
+
+   - Downloads build artifacts from original feature PR build
    - Verifies artifacts exist before proceeding
-   - Uses exact same builds that passed CI tests
+   - Uses exact same builds that passed all CI tests
 
 3. **📦 Publishing**:
-   - Create git tag: `{package}@{version}` (e.g., `nx-surrealdb@1.2.3`)
-   - Push tag to GitHub
-   - Publish to npm: `nx run {package}:nx-release-publish`
-   - Create GitHub release with changelog content
 
-4. **🔄 Artifact Flow**:
+   - Creates git tag: `{package}@{version}` (e.g., `nx-surrealdb@1.2.3`)
+   - Pushes tag to GitHub repository
+   - Publishes to npm/cargo: `nx run {package}:nx-release-publish`
+   - Creates GitHub release with extracted changelog
+
+4. **🧹 Cleanup**:
+
+   - Deletes release branch after successful publish
+   - Maintains clean branch structure
+
+5. **🔄 Artifact Flow**:
    ```
-   Feature PR → CI Artifacts → Stored (7 days) → Release Workflow → Publish
+   Feature PR → CI Artifacts → Stored (1 day) → Release Workflow → Publish
    ```
 
-**Safety**: 
+**Safety**:
+
 - Only publishes if CI artifacts are found
 - Uses branch-based triggers (not commit message parsing)
 - Every action documented via PR audit trail
@@ -131,21 +173,26 @@ gh pr merge {release-pr-number} # Merge when ready to publish
 ### Automatic Version Calculation
 
 **NX Conventional Commits:**
+
 - `fix:` → patch (0.2.0 → 0.2.1)
-- `feat:` → minor (0.2.0 → 0.3.0) 
+- `feat:` → minor (0.2.0 → 0.3.0)
 - `feat!:` or `BREAKING CHANGE:` → major (0.2.0 → 1.0.0)
 
 **Branch Naming:**
-- Release branches: `release/{package}@{version}` (e.g., `release/nx-surrealdb@1.2.3`)
+
+- Release branches: `release/{package}@{version}` (e.g.,
+  `release/nx-surrealdb@1.2.3`)
 - Git tags: `{package}@{version}` (e.g., `nx-surrealdb@1.2.3`)
 
 **Package Versioning:**
+
 - **Format**: `x.y.z` (semantic versioning)
 - **npm tag**: `latest`
 - **GitHub**: Tagged as `{package}@{version}`
 - **Independent**: Each package maintains own version cycle
 
 **Root Project:**
+
 - **No versioning**: Root project doesn't get published
 - **Tags**: Only packages get git tags
 - **Releases**: GitHub releases created for each package
@@ -153,18 +200,20 @@ gh pr merge {release-pr-number} # Merge when ready to publish
 ### Control Mechanisms
 
 **Batching Changes:**
+
 ```bash
 # Add label to skip automatic release
 gh pr edit {pr-number} --add-label "do-not-release"
 
 # Manual release when ready (accumulates all changes)
-gh workflow run changelog.yml
+gh workflow run create-release-prs.yml
 ```
 
 **Selective Releases:**
+
 ```bash
 # Release specific package manually
-gh workflow run changelog.yml -f package="nx-surrealdb" -f version="minor"
+gh workflow run create-release-prs.yml -f package="nx-surrealdb" -f version="minor"
 ```
 
 ### Installation
@@ -172,7 +221,7 @@ gh workflow run changelog.yml -f package="nx-surrealdb" -f version="minor"
 ```bash
 # Install released version
 pnpm add @deepbrainspace/nx-surrealdb@latest
-# or specific version  
+# or specific version
 pnpm add @deepbrainspace/nx-surrealdb@1.2.3
 ```
 
@@ -216,7 +265,7 @@ gh workflow run changelog.yml -f package="nx-surrealdb" -f version="patch"
 
 # View workflow runs
 gh run list --workflow=ci.yml
-gh run list --workflow=changelog.yml  
+gh run list --workflow=changelog.yml
 gh run list --workflow=release.yml
 
 # Control release behavior via labels
@@ -233,7 +282,7 @@ nx show projects --affected
 # Validate builds before release
 nx affected --target=build
 
-# Check npm authentication  
+# Check npm authentication
 pnpm whoami
 
 # View stored artifacts
@@ -258,7 +307,7 @@ nx release --projects=nx-surrealdb --skip-publish
 ### Workflow Monitoring
 
 ```bash
-# Check affected packages  
+# Check affected packages
 nx show projects --affected
 
 # Monitor workflow runs
@@ -373,7 +422,7 @@ gh secret list
 - **Flexible control** - Skip releases with labels, manual triggers available
 - **Zero duplicate builds** - CI artifacts reused for publishing
 
-### Release Process  
+### Release Process
 
 - **Branch-driven** - Logic based on branch names, not commit parsing
 - **Independent packages** - Each package maintains own release cycle
@@ -385,7 +434,7 @@ gh secret list
 ### ✅ Phase 1: 3-Workflow Pipeline (Complete)
 
 1. ✅ CI Workflow - Build, test, store artifacts
-2. ✅ Changelog Workflow - Version bump, create release PRs  
+2. ✅ Changelog Workflow - Version bump, create release PRs
 3. ✅ Release Workflow - Tag, publish using CI artifacts
 4. ✅ Cross-workflow artifact sharing
 
