@@ -4,13 +4,13 @@
   "sourceRoot": ".",
   "namedInputs": {
     "default": [
-      ".github/**/*",
-      "docs/**/*",
-      "*.md",
-      "nx.json",
-      "package.json",
-      "pnpm-lock.yaml",
-      ".husky/**/*"
+      "{workspaceRoot}/.github/**/*",
+      "{workspaceRoot}/docs/**/*",
+      "{workspaceRoot}/*.md",
+      "{workspaceRoot}/nx.json",
+      "{workspaceRoot}/package.json",
+      "{workspaceRoot}/pnpm-lock.yaml",
+      "{workspaceRoot}/.husky/**/*"
     ]
   },
   "targets": {
