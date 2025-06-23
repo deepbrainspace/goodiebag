@@ -152,6 +152,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Check build status
         run: |
           if [[ "${{ needs.detect-affected.outputs.has-packages }}" == "true" ]]; then
