@@ -1,26 +1,19 @@
 # Changelog
 
-## 0.1.0 (2025-06-22)
+## [0.1.0]
 
-### 🚀 Features
+### Added
 
-- implement PR-based release pipeline with cross-workflow artifacts
-  ([04eae2c](https://github.com/deepbrainspace/goodiebag/commit/04eae2c))
-- **workflow:** implement matrix-based release pipeline with improved visibility
-  ([3cf8c23](https://github.com/deepbrainspace/goodiebag/commit/3cf8c23))
-
-### 🩹 Fixes
-
-- update PR body to 'Release request' for clarity
-  ([20cc269](https://github.com/deepbrainspace/goodiebag/commit/20cc269))
-- prevent changelog workflow from running on release branch merges
-  ([996f290](https://github.com/deepbrainspace/goodiebag/commit/996f290))
-- resolve release workflow dist/ artifact sharing issues
-  ([#35](https://github.com/deepbrainspace/goodiebag/pull/35))
-- resolve NX release cross-dependency issues
-  ([a12a307](https://github.com/deepbrainspace/goodiebag/commit/a12a307))
-- correct matrix strategy syntax in release workflow
-  ([b425ede](https://github.com/deepbrainspace/goodiebag/commit/b425ede))
+- **PR-based release pipeline**: Cross-workflow artifact sharing and automated
+  release management
+- **Matrix-based workflows**: Improved visibility and parallel processing for
+  releases
+- **Clean workflow dispatcher**: Streamlined CI interface with unified status
+  checks
+- **User notification prevention**: Fixed release PR descriptions to avoid
+  unintended contributor tagging
+- **Release workflow improvements**: Enhanced clarity and automation for package
+  releases
 
 ---
 
