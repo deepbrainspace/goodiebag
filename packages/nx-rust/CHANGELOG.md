@@ -103,14 +103,6 @@ This package is based on the excellent work from the
 and contributors. We're grateful for their foundational Rust tooling for NX
 workspaces that made this project possible.
 
-**Major changes from Monodon v2.3.0:**
-
-- Updated for NX 21+ compatibility
-- Streamlined architecture focused on core Rust workflows
-- Enhanced TypeScript implementation with modern tooling
-- Improved workspace detection and flexibility
-- Modern release system integration
-
 For the complete historical changelog of the original Monodon project, please
 visit:
 [https://github.com/Cammisuli/monodon/blob/main/packages/rust/CHANGELOG.md](https://github.com/Cammisuli/monodon/blob/main/packages/rust/CHANGELOG.md)
