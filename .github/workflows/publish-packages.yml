@@ -1,9 +1,6 @@
 name: 🚀 Publish Packages
 
 on:
-  pull_request:
-    types: [closed]
-    branches: [main]
   workflow_dispatch:
     inputs:
       pr_number:
@@ -27,8 +24,6 @@ jobs:
   release:
     name: Tag and Publish
     runs-on: ubuntu-latest
-    # Only run if PR was merged and came from a release/* branch
-    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'release/')
 
     steps:
       - name: Checkout repository
@@ -107,16 +102,3 @@ jobs:
           echo "🧹 Deleting release branch: $BRANCH_NAME"
           git push origin --delete "$BRANCH_NAME" || echo "ℹ️ Branch $BRANCH_NAME already deleted or doesn't exist"
           echo "✅ Release branch cleanup completed"
-
-  no-release:
-    name: No release detected
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.merged != true || !startsWith(github.event.pull_request.head.ref, 'release/')
-
-    steps:
-      - name: Skip release
-        run: |
-          echo "ℹ️ PR detected but not a merged release branch PR."
-          echo "PR merged: ${{ github.event.pull_request.merged }}"
-          echo "Head ref: ${{ github.event.pull_request.head.ref }}"
-          echo "No release actions will be performed."
