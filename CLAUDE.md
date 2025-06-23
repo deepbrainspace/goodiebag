@@ -3,6 +3,11 @@
 # conversations
 - stop saying the user is right about everything . always analyze independently and then say what you think is right. three is no issue if your analysis is different from the user's. always explain your reasoning.
 
+## Git Safety Rules
+- **ALWAYS ask explicit permission before any git checkout, git switch, or branch creation**
+- Explain why branch switch is needed before requesting permission
+- Wait for user confirmation before proceeding with branch operations
+
 ## Environment
 
 - we are running on WSL, so avoid trying to open GUI browsers. Use headless
