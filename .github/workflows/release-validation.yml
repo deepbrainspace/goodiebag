@@ -33,7 +33,9 @@ jobs:
             --field name="✅ Release Validation" \
             --field head_sha=${{ inputs.head_sha }} \
             --field status="in_progress" \
-            --field details_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            --field details_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --field summary="Validating release branch requirements" \
+            --field text="Checking for CHANGELOG.md and other release requirements"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -77,6 +79,8 @@ jobs:
             --field head_sha=${{ inputs.head_sha }} \
             --field status="completed" \
             --field conclusion="$conclusion" \
-            --field details_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            --field details_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --field summary="Release validation completed with $conclusion" \
+            --field text="Click to view detailed validation logs and requirements check"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

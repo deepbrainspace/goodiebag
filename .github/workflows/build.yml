@@ -37,7 +37,9 @@ jobs:
             --field name="✅ Build Status" \
             --field head_sha=${{ inputs.head_sha }} \
             --field status="in_progress" \
-            --field details_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            --field details_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --field summary="Building affected packages and running tests" \
+            --field text="View detailed build logs and individual job status"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -191,7 +193,9 @@ jobs:
             --field head_sha=${{ inputs.head_sha }} \
             --field status="completed" \
             --field conclusion="$conclusion" \
-            --field details_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            --field details_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --field summary="Build pipeline completed with $conclusion" \
+            --field text="Click to view detailed build logs, test results, and individual job status"
 
           if [[ "${{ needs.detect-affected.outputs.has-packages }}" == "true" ]]; then
             echo "📦 Packages: ${{ needs.detect-affected.outputs.packages }}"
