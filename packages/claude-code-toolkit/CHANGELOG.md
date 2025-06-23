@@ -1,14 +1,19 @@
-## 0.2.1 (2025-06-21)
+# Changelog
 
-### 🩹 Fixes
+## [0.2.0]
 
-- exclude build artifacts from prettier formatting ([c5758d8](https://github.com/deepbrainspace/goodiebag/commit/c5758d8))
+### Added
 
-### ❤️ Thank You
+- **Rust CLI toolkit**: Command-line utilities for Claude Code integration
+- **Build artifact management**: Proper handling of build outputs and formatting
+  exclusions
+- **NX workspace integration**: Seamless integration with monorepo build system
 
-- nayeem.ai @wizardsupreme
+---
 
-## 0.2.0 (2025-06-21)
+## ❤️ Thank You
 
-This was a version bump only for claude-code-toolkit to align it with other
-projects, there were no code changes.
+- nayeem.ai
+- wizard supreme
+
+All development and contributions to this package.

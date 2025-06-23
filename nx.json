@@ -120,10 +120,7 @@
         "projects": ["goodiebag"],
         "changelog": {
           "automaticFromRef": true,
-          "projectChangelogs": {
-            "createRelease": "github",
-            "file": "{workspaceRoot}/CHANGELOG.md"
-          }
+          "file": "{workspaceRoot}/CHANGELOG.md"
         },
         "publish": {
           "registry": "https://registry.npmjs.org/"
