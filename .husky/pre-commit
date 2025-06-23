@@ -64,3 +64,6 @@ fi
 
 # Format affected files with NX
 nx format:write --uncommitted
+
+# Stage any formatting changes
+git add .
