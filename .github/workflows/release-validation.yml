@@ -36,8 +36,3 @@ jobs:
         run: |
           echo "🎉 Release validation completed successfully!"
           echo "✅ CHANGELOG.md is included in this release PR"
-
-      - name: Add automerge label
-        uses: ./.github/actions/add-automerge-label
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}

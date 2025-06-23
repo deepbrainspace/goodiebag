@@ -166,12 +166,6 @@ jobs:
             echo "ℹ️ No affected packages found - documentation or config changes only"
           fi
 
-      - name: Add automerge label
-        if: needs.lint.result == 'success' && needs.test.result == 'success' && needs.build.result == 'success'
-        uses: ./.github/actions/add-automerge-label
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
   # No affected packages notification
   no-packages:
     name: ℹ️ No Packages Affected
