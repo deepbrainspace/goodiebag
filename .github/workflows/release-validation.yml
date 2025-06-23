@@ -1,0 +1,38 @@
+name: 🚀 Release Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches-ignore:
+      - '!release/**'
+
+jobs:
+  release-validation:
+    name: ✅ Release Validation
+    runs-on: ubuntu-latest
+    # Only run for release branches
+    if: startsWith(github.head_ref, 'release/')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for CHANGELOG.md updates
+        run: |
+          echo "🔍 Checking for CHANGELOG.md in PR changes"
+
+          # Check if CHANGELOG.md was modified in this PR
+          if git diff --name-only origin/main...HEAD | grep -q "CHANGELOG.md"; then
+            echo "✅ CHANGELOG.md found in PR changes"
+          else
+            echo "❌ CHANGELOG.md not found in PR changes"
+            echo "Release PRs must include updates to CHANGELOG.md"
+            exit 1
+          fi
+
+      - name: Release validation summary
+        run: |
+          echo "🎉 Release validation completed successfully!"
+          echo "✅ CHANGELOG.md is included in this release PR"
