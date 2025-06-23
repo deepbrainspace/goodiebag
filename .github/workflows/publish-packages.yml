@@ -4,6 +4,24 @@ on:
   pull_request:
     types: [closed]
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number'
+        required: false
+        type: string
+      head_ref:
+        description: 'Head branch reference'
+        required: false
+        type: string
+      head_sha:
+        description: 'Head commit SHA'
+        required: false
+        type: string
+      base_ref:
+        description: 'Base branch reference'
+        required: false
+        type: string
 
 jobs:
   release:
