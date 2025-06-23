@@ -1,4 +1,4 @@
-name: 📝 Prepare
+name: 📝 Create Release PRs
 
 permissions:
   contents: write

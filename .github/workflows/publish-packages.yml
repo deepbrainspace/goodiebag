@@ -1,4 +1,4 @@
-name: 🚀 Release
+name: 🚀 Publish Packages
 
 on:
   pull_request:
