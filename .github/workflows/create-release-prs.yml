@@ -1,4 +1,4 @@
-name: 📝 Prepare
+name: 📝 Create Release PRs
 
 permissions:
   contents: write
@@ -12,9 +12,10 @@ on:
       - '!release/**'
   workflow_dispatch:
     inputs:
+      # For manual execution
       package:
         description: 'Specific package to release'
-        required: true
+        required: false
         type: choice
         options:
           - nx-rust
@@ -25,12 +26,29 @@ on:
         description: 'Version bump type'
         required: false
         type: choice
-        default: ''
+        default: 'auto'
         options:
-          - ''
+          - 'auto'
           - patch
           - minor
           - major
+      # For automatic execution via on-pr-merged.yml
+      pr_number:
+        description: 'PR number'
+        required: false
+        type: string
+      head_ref:
+        description: 'Head branch reference'
+        required: false
+        type: string
+      head_sha:
+        description: 'Head commit SHA'
+        required: false
+        type: string
+      base_ref:
+        description: 'Base branch reference'
+        required: false
+        type: string
 
 jobs:
   detect:
@@ -111,15 +129,15 @@ jobs:
             git checkout -B "$BRANCH_NAME" "origin/$BRANCH_NAME"
             
             # Merge main into release branch to get latest changes
-            echo "🔀 Merging main into release branch"
-            git merge main --no-edit
+            echo "🔀 Merging main into release branch (preferring main's version on conflicts)"
+            git merge main --no-edit -X theirs
           else
             echo "📋 Creating new release branch"
             git checkout -b "$BRANCH_NAME"
           fi
 
           VERSION_INPUT="${{ github.event.inputs.version }}"
-          if [ -z "$VERSION_INPUT" ]; then
+          if [ -z "$VERSION_INPUT" ] || [ "$VERSION_INPUT" = "auto" ]; then
             echo "📋 Using automatic version determination from conventional commits"
             VERSION_CMD="nx release --projects=${{ matrix.package }} --skip-publish --verbose"
           else

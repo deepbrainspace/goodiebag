@@ -1,23 +1,24 @@
-name: 🚦 CI Dispatcher
+name: 🚀 On PR Merged
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [closed]
 
 jobs:
   dispatch:
     runs-on: ubuntu-latest
+    if: 'github.event.pull_request.merged == true'
     steps:
       - name: Route to appropriate workflow
         run: |
           if [[ ! "${{ github.head_ref }}" =~ ^release/ ]]; then
-            echo "🏗️ Triggering build workflow for regular branch"
+            echo "📝 Triggering prepare release workflow for merged PR"
             curl -X POST \
               -H "Accept: application/vnd.github.v3+json" \
               -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              https://api.github.com/repos/${{ github.repository }}/actions/workflows/build.yml/dispatches \
+              https://api.github.com/repos/${{ github.repository }}/actions/workflows/create-release-prs.yml/dispatches \
               -d '{
-                "ref": "${{ github.head_ref }}",
+                "ref": "main",
                 "inputs": {
                   "pr_number": "${{ github.event.pull_request.number }}",
                   "head_ref": "${{ github.head_ref }}",
@@ -26,13 +27,13 @@ jobs:
                 }
               }'
           else
-            echo "🚀 Triggering release validation for release branch"
+            echo "🚀 Triggering release publish workflow for merged release PR"
             curl -X POST \
               -H "Accept: application/vnd.github.v3+json" \
               -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              https://api.github.com/repos/${{ github.repository }}/actions/workflows/release-validation.yml/dispatches \
+              https://api.github.com/repos/${{ github.repository }}/actions/workflows/publish-packages.yml/dispatches \
               -d '{
-                "ref": "${{ github.head_ref }}",
+                "ref": "main",
                 "inputs": {
                   "pr_number": "${{ github.event.pull_request.number }}",
                   "head_ref": "${{ github.head_ref }}",
