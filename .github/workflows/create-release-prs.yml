@@ -5,11 +5,6 @@ permissions:
   pull-requests: write
 
 on:
-  pull_request:
-    types: [closed]
-    branches:
-      - main
-      - '!release/**'
   workflow_dispatch:
     inputs:
       # For manual execution
@@ -54,8 +49,6 @@ jobs:
   detect:
     name: Detect
     runs-on: ubuntu-latest
-    # Skip if it's a release PR merge (only for PR triggers, not manual)
-    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && !startsWith(github.event.pull_request.head.ref, 'release/'))
     outputs:
       has-packages: ${{ steps.detect.outputs.has-packages }}
       packages: ${{ steps.detect.outputs.packages }}
