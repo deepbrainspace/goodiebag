@@ -1,10 +1,15 @@
 # CLAUDE.md
 
 # conversations
-- stop saying the user is right about everything . always analyze independently and then say what you think is right. three is no issue if your analysis is different from the user's. always explain your reasoning.
+
+- stop saying the user is right about everything . always analyze independently
+  and then say what you think is right. three is no issue if your analysis is
+  different from the user's. always explain your reasoning.
 
 ## Git Safety Rules
-- **ALWAYS ask explicit permission before any git checkout, git switch, or branch creation**
+
+- **ALWAYS ask explicit permission before any git checkout, git switch, or
+  branch creation**
 - Explain why branch switch is needed before requesting permission
 - Wait for user confirmation before proceeding with branch operations
 
@@ -20,7 +25,8 @@
 
 ## Automated Workflow
 
-Husky handles formatting, commit validation, lockfile sync, and security checks automatically.
+Husky handles formatting, commit validation, lockfile sync, and security checks
+automatically.
 
 ## Package Manager Preference
 
@@ -61,7 +67,8 @@ development.
 
 ## Release Process
 
-GitHub Actions workflow: PR merge → prepare release → merge release PR → publish.
+GitHub Actions workflow: PR merge → prepare release → merge release PR →
+publish.
 
 ### Automatic Release Features:
 
@@ -76,14 +83,16 @@ GitHub Actions workflow: PR merge → prepare release → merge release PR → p
 
 ## Git Strategy - Merge Policy
 
-**IMPORTANT**: When merging PRs, always use **regular merge** instead of squash merge.
+**IMPORTANT**: When merging PRs, always use **regular merge** instead of squash
+merge.
 
-- ✅ **Use**: "Create a merge commit" option  
+- ✅ **Use**: "Create a merge commit" option
 - ❌ **NEVER use**: "Squash and merge" option
 
 **Why Regular Merges?**
+
 - **Preserves conventional commit history** for accurate semantic versioning
-- **Enables per-package version detection** by NX release automation  
+- **Enables per-package version detection** by NX release automation
 - **Maintains granular audit trail** of individual changes
 - **Prevents version detection issues** caused by collapsed commits
 
@@ -105,8 +114,8 @@ GitHub Actions workflow: PR merge → prepare release → merge release PR → p
 
 ## Conventional Commits
 
-Use format: `type: description` or `type(scope): description`
-Types: feat, fix, chore, docs, test, refactor
+Use format: `type: description` or `type(scope): description` Types: feat, fix,
+chore, docs, test, refactor
 
 ## Project-Specific Commit Strategy
 
