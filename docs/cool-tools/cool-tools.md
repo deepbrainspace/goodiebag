@@ -9,3 +9,5 @@ https://llm.datasette.io/en/stable/index.html
 https://github.com/JamesIves/github-pages-deploy-action
 
 https://github.com/squidfunk/mkdocs-material - make documentatiovns
+
+https://github.com/TheYkk/git-switcher - git switcher

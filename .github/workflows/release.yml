@@ -31,7 +31,7 @@ jobs:
 
           # Extract package name and version from commit message
           EXTRACT_RESULT=$(echo "$COMMIT_MESSAGE" | sed -n 's/.*for \([^@]*\)@\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1|\2/p')
-          
+
           if [ -n "$EXTRACT_RESULT" ]; then
             PACKAGE_NAME=$(echo "$EXTRACT_RESULT" | cut -d'|' -f1)
             VERSION=$(echo "$EXTRACT_RESULT" | cut -d'|' -f2)
