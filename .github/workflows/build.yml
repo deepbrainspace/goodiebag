@@ -30,11 +30,11 @@ jobs:
     name: 🏗️ Initialize Build Pipeline
     runs-on: ubuntu-latest
     steps:
-      - name: Create build pipeline check
+      - name: Create CI build check
         run: |
           gh api repos/${{ github.repository }}/check-runs \
             --method POST \
-            --field name="✅ Build Status" \
+            --field name="✅ CI Build" \
             --field head_sha=${{ inputs.head_sha }} \
             --field status="in_progress" \
             --field details_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
@@ -189,12 +189,12 @@ jobs:
           # Update the check run
           gh api repos/${{ github.repository }}/check-runs \
             --method POST \
-            --field name="✅ Build Status" \
+            --field name="✅ CI Build" \
             --field head_sha=${{ inputs.head_sha }} \
             --field status="completed" \
             --field conclusion="$conclusion" \
             --field details_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            --field summary="Build pipeline completed with $conclusion" \
+            --field summary="CI build completed with $conclusion" \
             --field text="Click to view detailed build logs, test results, and individual job status"
 
           if [[ "${{ needs.detect-affected.outputs.has-packages }}" == "true" ]]; then

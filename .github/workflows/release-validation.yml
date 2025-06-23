@@ -26,11 +26,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create release validation check
+      - name: Create CI build check
         run: |
           gh api repos/${{ github.repository }}/check-runs \
             --method POST \
-            --field name="✅ Release Validation" \
+            --field name="✅ CI Build" \
             --field head_sha=${{ inputs.head_sha }} \
             --field status="in_progress" \
             --field details_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
@@ -75,7 +75,7 @@ jobs:
           # Update the check run
           gh api repos/${{ github.repository }}/check-runs \
             --method POST \
-            --field name="✅ Release Validation" \
+            --field name="✅ CI Build" \
             --field head_sha=${{ inputs.head_sha }} \
             --field status="completed" \
             --field conclusion="$conclusion" \
