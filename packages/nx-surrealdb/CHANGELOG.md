@@ -1,18 +1,19 @@
+# Changelog
+
 ## 0.3.3 (2025-06-22)
 
 ### 🩹 Fixes
 
-- updated changelog in nx-surrealdb ([8adb4d2](https://github.com/deepbrainspace/goodiebag/commit/8adb4d2))
-- tidy up nx.json ([4906c3a](https://github.com/deepbrainspace/goodiebag/commit/4906c3a))
-- surrealdb release version ([443a4a3](https://github.com/deepbrainspace/goodiebag/commit/443a4a3))
-- exclude build artifacts from prettier formatting ([c5758d8](https://github.com/deepbrainspace/goodiebag/commit/c5758d8))
-- use workspace-level dist for nx plugins to resolve package structure issues ([#29](https://github.com/deepbrainspace/goodiebag/pull/29))
-
-### ❤️ Thank You
-
-- nayeem.ai @wizardsupreme
-- wizard supreme @wizardsupreme
-
+- updated changelog in nx-surrealdb
+  ([8adb4d2](https://github.com/deepbrainspace/goodiebag/commit/8adb4d2))
+- tidy up nx.json
+  ([4906c3a](https://github.com/deepbrainspace/goodiebag/commit/4906c3a))
+- surrealdb release version
+  ([443a4a3](https://github.com/deepbrainspace/goodiebag/commit/443a4a3))
+- exclude build artifacts from prettier formatting
+  ([c5758d8](https://github.com/deepbrainspace/goodiebag/commit/c5758d8))
+- use workspace-level dist for nx plugins to resolve package structure issues
+  ([#29](https://github.com/deepbrainspace/goodiebag/pull/29))
 
 ## 0.3.1 (2025-06-21)
 
@@ -21,20 +22,12 @@
 - use workspace-level dist for nx plugins to resolve package structure issues
   ([#29](https://github.com/deepbrainspace/goodiebag/pull/29))
 
-### ❤️ Thank You
-
-- nayeem.ai @wizardsupreme
-
 ## 0.3.0 (2025-06-21)
 
 ### 🚀 Features
 
 - enhance release workflow and prepare nx-rust v3.0.0
   ([#24](https://github.com/deepbrainspace/goodiebag/pull/24))
-
-### ❤️ Thank You
-
-- nayeem.ai @wizardsupreme
 
 ## 0.2.3 (2025-06-20)
 
@@ -47,10 +40,6 @@ there were no code changes.
 
 - ensure .surql schema files are copied to dist during build
   ([#22](https://github.com/deepbrainspace/goodiebag/pull/22))
-
-### ❤️ Thank You
-
-- nayeem.ai @wizardsupreme
 
 ## 0.2.1 (2025-06-20)
 
@@ -70,11 +59,6 @@ there were no code changes.
 - fixed nx-surrealdb to work as a package
   ([16586e0](https://github.com/deepbrainspace/goodiebag/commit/16586e0))
 
-### ❤️ Thank You
-
-- nayeem.ai @wizardsupreme
-- wizard supreme @wizardsupreme
-
 ## 0.2.0 (2025-06-20)
 
 ### 🚀 Features
@@ -93,7 +77,11 @@ there were no code changes.
 - fixed nx-surrealdb to work as a package
   ([16586e0](https://github.com/deepbrainspace/goodiebag/commit/16586e0))
 
-### ❤️ Thank You
+---
 
-- nayeem.ai @wizardsupreme
-- wizard supreme @wizardsupreme
+## ❤️ Thank You
+
+- nayeem.ai
+- wizard supreme
+
+All development and contributions to this package.
