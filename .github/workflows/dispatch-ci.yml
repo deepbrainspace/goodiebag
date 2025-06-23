@@ -1,0 +1,36 @@
+name: 🚦 CI Dispatcher
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  dispatch-build:
+    name: 🏗️ Dispatch Build Pipeline
+    runs-on: ubuntu-latest
+    if: "! startsWith(github.head_ref, 'release/')"
+    steps:
+      - name: Trigger build workflow
+        run: |
+          gh workflow run build.yml \
+            --field pr_number=${{ github.event.pull_request.number }} \
+            --field head_ref=${{ github.head_ref }} \
+            --field head_sha=${{ github.event.pull_request.head.sha }} \
+            --field base_ref=${{ github.base_ref }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  dispatch-release:
+    name: 🚀 Dispatch Release Validation
+    runs-on: ubuntu-latest
+    if: "startsWith(github.head_ref, 'release/')"
+    steps:
+      - name: Trigger release validation workflow
+        run: |
+          gh workflow run release-validation.yml \
+            --field pr_number=${{ github.event.pull_request.number }} \
+            --field head_ref=${{ github.head_ref }} \
+            --field head_sha=${{ github.event.pull_request.head.sha }} \
+            --field base_ref=${{ github.base_ref }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

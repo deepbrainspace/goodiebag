@@ -1,33 +1,51 @@
 name: ⚙️ Build
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
-    branches-ignore:
-      - 'release/**'
-    paths:
-      - 'packages/**'
-      - 'apps/**'
-      - 'libs/**'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'nx.json'
-      - 'tsconfig*.json'
-      - '.github/**'
-      - 'docs/**'
-      - 'README.md'
-      - 'CHANGELOG.md'
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number'
+        required: true
+        type: string
+      head_ref:
+        description: 'Head branch reference'
+        required: true
+        type: string
+      head_sha:
+        description: 'Head commit SHA'
+        required: true
+        type: string
+      base_ref:
+        description: 'Base branch reference'
+        required: true
+        type: string
 
 concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  # Initialize build pipeline check
+  start-check:
+    name: 🏗️ Initialize Build Pipeline
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create build pipeline check
+        run: |
+          gh api repos/${{ github.repository }}/check-runs \
+            --method POST \
+            --field name="🏗️ Build Pipeline" \
+            --field head_sha=${{ inputs.head_sha }} \
+            --field status="in_progress" \
+            --field details_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   # Phase 1: Detection
   detect-affected:
     name: 🔍 Detect Affected Packages
+    needs: start-check
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
     outputs:
       packages: ${{ steps.detect.outputs.packages }}
       has-packages: ${{ steps.detect.outputs.has-packages }}
@@ -144,27 +162,44 @@ jobs:
           path: dist/packages/${{ matrix.package }}
           retention-days: 1
 
-  # Summary
+  # Summary and final check update
   summary:
     name: ✅ Build Status
-    needs: [detect-affected, lint, test, build]
+    needs: [start-check, detect-affected, lint, test, build, no-packages]
     if: always()
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Check build status
+      - name: Check build status and update final check
         run: |
+          # Determine overall result
+          if [[ "${{ needs.detect-affected.result }}" == "success" && 
+                ("${{ needs.lint.result }}" == "success" || "${{ needs.lint.result }}" == "skipped") && 
+                ("${{ needs.test.result }}" == "success" || "${{ needs.test.result }}" == "skipped") && 
+                ("${{ needs.build.result }}" == "success" || "${{ needs.build.result }}" == "skipped") ]]; then
+            conclusion="success"
+            echo "✅ Build pipeline completed successfully"
+          else
+            conclusion="failure" 
+            echo "❌ Build pipeline failed"
+          fi
+
+          # Update the check run
+          gh api repos/${{ github.repository }}/check-runs \
+            --method POST \
+            --field name="🏗️ Build Pipeline" \
+            --field head_sha=${{ inputs.head_sha }} \
+            --field status="completed" \
+            --field conclusion="$conclusion" \
+            --field details_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
           if [[ "${{ needs.detect-affected.outputs.has-packages }}" == "true" ]]; then
-            echo "✅ Build completed for ${{ needs.detect-affected.outputs.package-count }} packages"
             echo "📦 Packages: ${{ needs.detect-affected.outputs.packages }}"
-            echo ""
-            echo "💡 To prepare for release, comment 'prepare_release' on this PR"
           else
             echo "ℹ️ No affected packages found - documentation or config changes only"
           fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # No affected packages notification
   no-packages:
