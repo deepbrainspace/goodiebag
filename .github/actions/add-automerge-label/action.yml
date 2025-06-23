@@ -14,8 +14,8 @@ runs:
       shell: bash
       run: |
         echo "🏷️ Adding automerge label to enable auto-merge"
-        gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels \
+        echo '{"labels": ["automerge"]}' | gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels \
           --method POST \
-          --field labels='["automerge"]'
+          --input -
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
