@@ -5,44 +5,40 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
-  dispatch-build:
-    name: 🏗️ Dispatch Build Pipeline
+  dispatch:
+    name: 🚦 Route Workflow
     runs-on: ubuntu-latest
-    if: "! startsWith(github.head_ref, 'release/')"
     steps:
-      - name: Trigger build workflow
+      - name: Dispatch to appropriate workflow
         run: |
-          curl -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/${{ github.repository }}/actions/workflows/build.yml/dispatches \
-            -d '{
-              "ref": "${{ github.head_ref }}",
-              "inputs": {
-                "pr_number": "${{ github.event.pull_request.number }}",
-                "head_ref": "${{ github.head_ref }}",
-                "head_sha": "${{ github.event.pull_request.head.sha }}",
-                "base_ref": "${{ github.base_ref }}"
-              }
-            }'
-
-  dispatch-release:
-    name: 🚀 Dispatch Release Validation
-    runs-on: ubuntu-latest
-    if: "startsWith(github.head_ref, 'release/')"
-    steps:
-      - name: Trigger release validation workflow
-        run: |
-          curl -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/${{ github.repository }}/actions/workflows/release-validation.yml/dispatches \
-            -d '{
-              "ref": "${{ github.head_ref }}",
-              "inputs": {
-                "pr_number": "${{ github.event.pull_request.number }}",
-                "head_ref": "${{ github.head_ref }}",
-                "head_sha": "${{ github.event.pull_request.head.sha }}",
-                "base_ref": "${{ github.base_ref }}"
-              }
-            }'
+          if [[ ! "${{ github.head_ref }}" =~ ^release/ ]]; then
+            echo "🏗️ Triggering build workflow for regular branch"
+            curl -X POST \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              https://api.github.com/repos/${{ github.repository }}/actions/workflows/build.yml/dispatches \
+              -d '{
+                "ref": "${{ github.head_ref }}",
+                "inputs": {
+                  "pr_number": "${{ github.event.pull_request.number }}",
+                  "head_ref": "${{ github.head_ref }}",
+                  "head_sha": "${{ github.event.pull_request.head.sha }}",
+                  "base_ref": "${{ github.base_ref }}"
+                }
+              }'
+          else
+            echo "🚀 Triggering release validation for release branch"
+            curl -X POST \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              https://api.github.com/repos/${{ github.repository }}/actions/workflows/release-validation.yml/dispatches \
+              -d '{
+                "ref": "${{ github.head_ref }}",
+                "inputs": {
+                  "pr_number": "${{ github.event.pull_request.number }}",
+                  "head_ref": "${{ github.head_ref }}",
+                  "head_sha": "${{ github.event.pull_request.head.sha }}",
+                  "base_ref": "${{ github.base_ref }}"
+                }
+              }'
+          fi
