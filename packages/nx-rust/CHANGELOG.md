@@ -1,20 +1,3 @@
-## 3.1.0 (2025-06-22)
-
-### 🚀 Features
-
-- implement PR-based release pipeline with cross-workflow artifacts ([04eae2c](https://github.com/deepbrainspace/goodiebag/commit/04eae2c))
-
-### 🩹 Fixes
-
-- resolve release workflow dist/ artifact sharing issues ([#35](https://github.com/deepbrainspace/goodiebag/pull/35))
-- remove circular self-dependency from nx-rust package ([6707c1b](https://github.com/deepbrainspace/goodiebag/commit/6707c1b))
-- exclude build artifacts from prettier formatting ([c5758d8](https://github.com/deepbrainspace/goodiebag/commit/c5758d8))
-
-### ❤️ Thank You
-
-- nayeem.ai @wizardsupreme
-- wizard supreme @wizardsupreme
-
 ## 3.0.0-alpha.3 (2025-06-21)
 
 ### 🩹 Fixes
