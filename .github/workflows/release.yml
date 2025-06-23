@@ -83,6 +83,13 @@ jobs:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Cleanup release branch
+        run: |
+          BRANCH_NAME="release/${{ steps.extract.outputs.package }}"
+          echo "🧹 Deleting release branch: $BRANCH_NAME"
+          git push origin --delete "$BRANCH_NAME" || echo "ℹ️ Branch $BRANCH_NAME already deleted or doesn't exist"
+          echo "✅ Release branch cleanup completed"
+
   no-release:
     name: No release detected
     runs-on: ubuntu-latest
