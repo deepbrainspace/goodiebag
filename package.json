@@ -3,6 +3,15 @@
   "version": "0.1.0",
   "description": "GoodieBag of tools and libraries for DeepBrain projects",
   "type": "module",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepbrainspace/goodiebag.git"
+  },
+  "license": "MIT",
   "workspaces": [
     "packages/*",
     "apps/*",
