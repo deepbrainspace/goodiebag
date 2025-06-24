@@ -47,29 +47,37 @@ jobs:
         run: |
           echo "🔍 Validating release branch: ${{ github.head_ref }}"
 
-          # Check for git tags
-          TAGS=$(git tag --points-at HEAD)
-          if [ -n "$TAGS" ]; then
-            echo "✅ Found git tags: $TAGS"
+          # Check for git tags matching commits in this branch
+          COMMIT_SHAS=$(git log --format="%H" HEAD~5..HEAD)
+          FOUND_TAGS=""
+          for sha in $COMMIT_SHAS; do
+            TAGS_FOR_SHA=$(git tag --points-at $sha)
+            if [ -n "$TAGS_FOR_SHA" ]; then
+              FOUND_TAGS="$FOUND_TAGS $TAGS_FOR_SHA"
+            fi
+          done
+          
+          if [ -n "$FOUND_TAGS" ]; then
+            echo "✅ Found git tags for commits in branch:$FOUND_TAGS"
           else
-            echo "❌ No git tags found on HEAD commit"
+            echo "❌ No git tags found for any commits in branch"
             exit 1
           fi
 
-          # Check for recent changelog updates
-          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          # Check for recent changelog updates in branch
+          CHANGED_FILES=$(git diff --name-only HEAD~5..HEAD)
           if echo "$CHANGED_FILES" | grep -q "CHANGELOG.md"; then
-            echo "✅ Changelog updated in this commit"
+            echo "✅ Changelog updated in recent commits"
           else
-            echo "❌ No changelog updates found"
+            echo "❌ No changelog updates found in recent commits"
             exit 1
           fi
 
-          # Check for version bump in package.json files
+          # Check for version bump in package.json files in branch
           if echo "$CHANGED_FILES" | grep -q "package.json"; then
-            echo "✅ Package version files updated"
+            echo "✅ Package version files updated in recent commits"
           else
-            echo "❌ No package.json updates found"
+            echo "❌ No package.json updates found in recent commits"
             exit 1
           fi
 
