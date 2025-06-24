@@ -11,6 +11,9 @@ importers:
       '@goodiebag/nx-rust':
         specifier: 3.1.0
         version: 3.1.0(nx@21.2.1(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17)))
+      '@goodiebag/nx-toolkit':
+        specifier: 0.2.0
+        version: 0.2.0(nx@21.2.1(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17)))
       '@nx/esbuild':
         specifier: 21.2.0
         version: 21.2.0(@babel/traverse@7.27.4)(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17))(esbuild@0.19.12)(nx@21.2.1(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17)))
@@ -1034,6 +1037,11 @@ packages:
 
   '@goodiebag/nx-rust@3.1.0':
     resolution: {integrity: sha512-9Vyh9owBCQ+clHgkIYAM9bc74kwzkThTFXDEE+kdhwJMLeBwTrJnomE4Jmp0aLfdtVkKwSpOz2JVuJkX92+KvQ==}
+
+  '@goodiebag/nx-toolkit@0.2.0':
+    resolution: {integrity: sha512-FkBq05muvGhXOUdV1NswulKIKOvBtOdNAmWWaFAVylzUOJH+ui7J49r4NWGfawn4fvCUJ0mfVZrBCDxFija6KA==}
+    peerDependencies:
+      nx: '>= 16 <= 22'
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -4285,6 +4293,13 @@ snapshots:
       tslib: 2.8.1
     transitivePeerDependencies:
       - nx
+
+  '@goodiebag/nx-toolkit@0.2.0(nx@21.2.1(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17)))':
+    dependencies:
+      '@nx/devkit': 21.2.1(nx@21.2.1(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17)))
+      nx: 21.2.1(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17))
+      tslib: 2.8.1
+      yargs: 17.7.2
 
   '@humanfs/core@0.19.1': {}
 

@@ -1,6 +1,6 @@
 {
   "name": "@goodiebag/nx-toolkit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "NX toolkit plugin with useful executors including release management and version tools",
   "main": "src/index.js",
   "executors": "./executors.json",

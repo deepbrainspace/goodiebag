@@ -31,6 +31,12 @@
     "sharedGlobals": ["{workspaceRoot}/nx.json"]
   },
   "targetDefaults": {
+    "versions": {
+      "executor": "@goodiebag/nx-toolkit:versions",
+      "options": {
+        "verbose": true
+      }
+    },
     "build": {
       "dependsOn": ["^build", "test"],
       "inputs": ["production", "^production"],
@@ -181,6 +187,7 @@
     {
       "plugin": "@goodiebag/nx-rust",
       "exclude": ["goodiebag", "nx-*"]
-    }
+    },
+    "@goodiebag/nx-toolkit"
   ]
 }

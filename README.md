@@ -36,6 +36,7 @@ This repository demonstrates next-generation monorepo management with:
 | --------------------------------------------------------- | --------- | ----------------------------------------------------------------- | --------------------------------------------------------- |
 | [`@deepbrainspace/nx-surrealdb`](./packages/nx-surrealdb) | NX Plugin | ![npm](https://img.shields.io/npm/v/@deepbrainspace/nx-surrealdb) | SurrealDB migrations with modular architecture            |
 | [`@goodiebag/nx-rust`](./packages/nx-rust)                | NX Plugin | ![npm](https://img.shields.io/npm/v/@goodiebag/nx-rust)           | NX plugin for Rust projects with comprehensive tooling    |
+| [`@goodiebag/nx-toolkit`](./packages/nx-toolkit)          | NX Plugin | ![npm](https://img.shields.io/npm/v/@goodiebag/nx-toolkit)        | Development utilities with release management and versions |
 | [`claude-code-toolkit`](./packages/claude-code-toolkit)   | CLI Tool  | ![crates.io](https://img.shields.io/crates/v/claude-code-toolkit) | Claude Code management for credential sync and monitoring |
 
 ### @deepbrainspace/goodiebag

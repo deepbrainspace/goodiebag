@@ -57,10 +57,7 @@
       }
     },
     "versions": {
-      "executor": "@goodiebag/nx-toolkit:versions",
-      "options": {
-        "verbose": true
-      }
+      "executor": "@goodiebag/nx-toolkit:versions"
     }
   },
   "implicitDependencies": [],
