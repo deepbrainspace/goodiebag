@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "version": 2,
+  "title": "Release Please executor",
+  "description": "Release workflow with branch creation and PR automation",
+  "type": "object",
+  "properties": {
+    "specifier": {
+      "type": "string",
+      "enum": ["major", "minor", "patch"],
+      "default": "minor",
+      "description": "The type of version bump to apply"
+    },
+    "dry-run": {
+      "type": "boolean",
+      "default": false,
+      "description": "Preview the changes without updating files/creating releases"
+    },
+    "verbose": {
+      "type": "boolean",
+      "default": false,
+      "description": "Prints additional information about the commands that are going to be executed"
+    },
+    "skip-pr": {
+      "type": "boolean",
+      "default": false,
+      "description": "Skip creating a pull request after pushing the release"
+    },
+    "create-release-branch": {
+      "type": "boolean",
+      "default": true,
+      "description": "Create and push a release branch before releasing"
+    },
+    "base-branch": {
+      "type": "string",
+      "default": "main",
+      "description": "The base branch to create PR against"
+    },
+    "first-release": {
+      "type": "boolean",
+      "default": false,
+      "description": "Indicates that this is the first release of the project"
+    },
+    "skip-publish": {
+      "type": "boolean",
+      "default": false,
+      "description": "Skip publishing packages after versioning and changelog generation"
+    },
+    "affected": {
+      "type": "boolean",
+      "default": false,
+      "description": "Only release projects that have been affected by changes"
+    },
+    "base": {
+      "type": "string",
+      "description": "Base of the current branch (usually main or origin/main) for affected calculation"
+    },
+    "head": {
+      "type": "string",
+      "description": "Latest commit of the current branch (usually HEAD) for affected calculation"
+    },
+    "ensure-clean-base": {
+      "type": "boolean",
+      "default": true,
+      "description": "Ensure we start from clean base branch (switches to base branch and pulls latest)"
+    },
+    "yes": {
+      "type": "boolean",
+      "default": false,
+      "description": "Automatically answer yes to all prompts (non-interactive mode)"
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "One or more release groups to target with the command"
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "One or more projects to target with the command"
+    },
+    "preid": {
+      "type": "string",
+      "description": "The prerelease identifier to use when releasing a prerelease version"
+    },
+    "git-remote": {
+      "type": "string",
+      "default": "origin",
+      "description": "The git remote to push changes to"
+    },
+    "git-commit-message": {
+      "type": "string",
+      "description": "Custom git commit message"
+    },
+    "git-tag-message": {
+      "type": "string",
+      "description": "Custom git tag message"
+    },
+    "stage-changes": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to stage changes"
+    }
+  },
+  "required": []
+}
