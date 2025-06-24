@@ -143,10 +143,46 @@ nx run my-package:release-please --yes --skip-pr
 
 ## Development
 
+### Building
 ```bash
 # Build the plugin
 nx build nx-toolkit
-
-# Test (executors only - commands need to be installed)
-nx run goodiebag:versions
 ```
+
+### Testing
+
+**Executors** (work immediately after build):
+```bash
+# Test the versions executor
+nx run goodiebag:versions
+
+# Test the release-please executor (dry run)
+nx run goodiebag:release-please --dry-run
+```
+
+**Commands** (require installation):
+```bash
+# Option 1: Install from local build
+pnpm add -D file:./dist/packages/nx-toolkit
+
+# Option 2: Install from npm (after publishing)
+pnpm add -D @goodiebag/nx-toolkit
+
+# Option 3: Add to nx.json plugins
+# Add "@goodiebag/nx-toolkit" to the plugins array in nx.json
+
+# Then test global command
+nx versions
+```
+
+### Key Differences
+
+- **Executors** - Reference local builds directly via project.json configuration
+- **Commands** - Need plugin installation for NX to discover and register global commands
+
+### Local Testing Workflow
+
+1. Make changes to the plugin
+2. Build: `nx build nx-toolkit`
+3. Test executors: `nx run goodiebag:versions`
+4. Test commands: Install locally then run `nx versions`
