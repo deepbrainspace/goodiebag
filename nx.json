@@ -90,12 +90,12 @@
   "parallel": 5,
   "release": {
     "projectsRelationship": "independent",
+    "git": {
+      "commit": true,
+      "tag": false,
+      "push": false
+    },
     "version": {
-      "git": {
-        "commit": true,
-        "tag": false,
-        "push": false
-      },
       "conventionalCommits": {
         "types": {
           "docs": {
@@ -111,11 +111,6 @@
       "updateDependents": "never"
     },
     "changelog": {
-      "git": {
-        "commit": true,
-        "tag": false,
-        "push": false
-      },
       "automaticFromRef": true,
       "projectChangelogs": true,
       "workspaceChangelog": false
