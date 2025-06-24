@@ -1,5 +1,6 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "nxCloudId": "685a6ef81d4bbb41585c4298",
   "tasksRunnerOptions": {
     "default": {
       "runner": "nx/tasks-runners/default",
@@ -92,8 +93,8 @@
     "projectsRelationship": "independent",
     "git": {
       "commit": true,
-      "tag": false,
-      "push": false
+      "tag": true,
+      "push": true
     },
     "version": {
       "conventionalCommits": {
