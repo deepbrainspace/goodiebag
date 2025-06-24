@@ -1,6 +1,6 @@
 # Check lockfile sync before pushing
 echo "🔍 Testing frozen lockfile check..."
-pnpm install --frozen-lockfile --ignore-scripts 2>&1 | head -10
+pnpm install --frozen-lockfile --ignore-scripts
 EXIT_CODE=$?
 echo "Exit code: $EXIT_CODE"
 

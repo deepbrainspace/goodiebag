@@ -8,7 +8,7 @@
     "apps/*",
     "libs/*"
   ],
-  "packageManager": "pnpm@9.0.0",
+  "packageManager": "pnpm@10.12.2",
   "scripts": {
     "build": "nx run-many --target=build --all",
     "test": "nx run-many --target=test --all",

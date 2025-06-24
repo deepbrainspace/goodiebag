@@ -117,13 +117,9 @@ jobs:
 
           # Check if release branch already exists
           if git ls-remote --exit-code --heads origin "$BRANCH_NAME" >/dev/null 2>&1; then
-            echo "📋 Release branch exists, updating with latest changes"
+            echo "📋 Release branch exists, resetting to main with latest changes"
             git fetch origin "$BRANCH_NAME"
-            git checkout -B "$BRANCH_NAME" "origin/$BRANCH_NAME"
-            
-            # Merge main into release branch to get latest changes
-            echo "🔀 Merging main into release branch (preferring main's version on conflicts)"
-            git merge main --no-edit -X theirs
+            git checkout -B "$BRANCH_NAME" main  # Reset to main, don't merge
           else
             echo "📋 Creating new release branch"
             git checkout -b "$BRANCH_NAME"
