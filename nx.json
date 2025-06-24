@@ -179,7 +179,7 @@
     },
     {
       "plugin": "@goodiebag/nx-rust",
-      "exclude": ["goodiebag"]
+      "exclude": ["goodiebag", "nx-*"]
     }
   ]
 }
