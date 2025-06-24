@@ -1,4 +1,4 @@
-name: 🚀 Validate Release PR
+name: 🚀 Validate Release
 
 on:
   workflow_dispatch:
