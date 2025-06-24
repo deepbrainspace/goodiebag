@@ -31,38 +31,11 @@ jobs:
             echo "🔍 Regular branch detected: ${{ github.head_ref }}"
           fi
 
-  # Initialize build pipeline check
-  start-check:
-    name: 🏗️ Initialize Build Pipeline
-    runs-on: ubuntu-latest
-    needs: check-release
-    steps:
-      - name: Create CI build check
-        run: |
-          if [[ "${{ needs.check-release.outputs.is-release }}" == "true" ]]; then
-            summary="Release branch - validating release artifacts"
-            text="Checking for git tags and changelog instead of full build"
-          else
-            summary="Building affected packages and running tests"
-            text="View detailed build logs and individual job status"
-          fi
-
-          gh api repos/${{ github.repository }}/check-runs \
-            --method POST \
-            --field name="✅ CI Build" \
-            --field head_sha=${{ github.event.pull_request.head.sha }} \
-            --field status="in_progress" \
-            --field details_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            --field summary="$summary" \
-            --field text="$text"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   # Release branch validation (lightweight)
   validate-release:
     name: ✅ Validate Release
     runs-on: ubuntu-latest
-    needs: [check-release, start-check]
+    needs: check-release
     if: needs.check-release.outputs.is-release == 'true'
     steps:
       - name: Checkout repository
@@ -105,7 +78,7 @@ jobs:
   # Phase 1: Detection (only for non-release branches)
   detect-affected:
     name: 🔍 Detect Affected Packages
-    needs: [check-release, start-check]
+    needs: check-release
     if: needs.check-release.outputs.is-release == 'false'
     runs-on: ubuntu-latest
     outputs:
@@ -225,29 +198,26 @@ jobs:
           retention-days: 3
           if-no-files-found: error
 
-  # Summary and final check update
+  # Summary
   summary:
     name: ✅ Build Status
-    needs: [check-release, start-check, detect-affected, lint, test, build, validate-release]
+    needs: [check-release, detect-affected, lint, test, build, validate-release]
     if: always()
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check build status and update final check
+      - name: Report build status
         run: |
           # Determine overall result based on branch type
           if [[ "${{ needs.check-release.outputs.is-release }}" == "true" ]]; then
             # Release branch validation
             if [[ "${{ needs.validate-release.result }}" == "success" ]]; then
-              conclusion="success"
               echo "✅ Release validation completed successfully"
-              summary="Release branch validation passed"
-              text="Git tags, changelog, and version updates validated"
+              echo "📋 Git tags, changelog, and version updates validated"
             else
-              conclusion="failure"
               echo "❌ Release validation failed"
-              summary="Release branch validation failed"
-              text="Missing git tags, changelog updates, or version bumps"
+              echo "📋 Missing git tags, changelog updates, or version bumps"
+              exit 1
             fi
           else
             # Regular branch build validation
@@ -255,15 +225,12 @@ jobs:
                   ("${{ needs.lint.result }}" == "success" || "${{ needs.lint.result }}" == "skipped") && 
                   ("${{ needs.test.result }}" == "success" || "${{ needs.test.result }}" == "skipped") && 
                   ("${{ needs.build.result }}" == "success" || "${{ needs.build.result }}" == "skipped") ]]; then
-              conclusion="success"
               echo "✅ Build pipeline completed successfully"
-              summary="CI build completed with success"
-              text="All affected packages passed lint, test, and build"
+              echo "📋 All affected packages passed lint, test, and build"
             else
-              conclusion="failure" 
               echo "❌ Build pipeline failed"
-              summary="CI build completed with failure"
-              text="One or more packages failed lint, test, or build"
+              echo "📋 One or more packages failed lint, test, or build"
+              exit 1
             fi
 
             if [[ "${{ needs.detect-affected.outputs.has-packages }}" == "true" ]]; then
@@ -272,16 +239,3 @@ jobs:
               echo "ℹ️ No affected packages found - documentation or config changes only"
             fi
           fi
-
-          # Update the check run
-          gh api repos/${{ github.repository }}/check-runs \
-            --method POST \
-            --field name="✅ CI Build" \
-            --field head_sha=${{ github.event.pull_request.head.sha }} \
-            --field status="completed" \
-            --field conclusion="$conclusion" \
-            --field details_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            --field summary="$summary" \
-            --field text="$text"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
