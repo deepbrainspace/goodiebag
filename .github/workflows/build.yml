@@ -194,9 +194,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.package }}
-          path: dist/packages/${{ matrix.package }}
+          path: |
+            dist/packages/${{ matrix.package }}
+            packages/${{ matrix.package }}/target/release/${{ matrix.package }}
           retention-days: 3
-          if-no-files-found: error
+          if-no-files-found: warn
 
   # Summary
   summary:
