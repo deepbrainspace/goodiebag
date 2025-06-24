@@ -42,13 +42,7 @@ runs:
         restore-keys: |
           node-modules-${{ runner.os }}-node${{ inputs.node-version }}-
 
-    - name: Cache NX cache
-      uses: actions/cache@v4
-      with:
-        path: .nx/cache
-        key: nx-cache-${{ runner.os }}-${{ github.sha }}
-        restore-keys: |
-          nx-cache-${{ runner.os }}-
+    # NX Cloud distributed cache is used instead of local cache
 
     - name: Setup pnpm
       uses: pnpm/action-setup@v4
