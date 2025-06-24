@@ -1,3 +1,26 @@
+## 0.2.0 (2025-06-24)
+
+### 🚀 Features
+
+- enable NX Cloud distributed caching for CI and local development ([c84f0d6](https://github.com/deepbrainspace/goodiebag/commit/c84f0d6))
+- add smart release branch detection to build workflow ([5110d4a](https://github.com/deepbrainspace/goodiebag/commit/5110d4a))
+- ⚠️  simplify release system to use direct NX commands ([e0e7d86](https://github.com/deepbrainspace/goodiebag/commit/e0e7d86))
+
+### 🩹 Fixes
+
+- turn off husky for release pushes + add instructions ([b29b972](https://github.com/deepbrainspace/goodiebag/commit/b29b972))
+- rename summary job to match branch protection requirement ([3e2cca1](https://github.com/deepbrainspace/goodiebag/commit/3e2cca1))
+- handle different build output paths for Rust and TypeScript packages ([3810a2b](https://github.com/deepbrainspace/goodiebag/commit/3810a2b))
+- resolve NX release configuration and workflow commit parsing ([22eb9e3](https://github.com/deepbrainspace/goodiebag/commit/22eb9e3))
+
+### ⚠️  Breaking Changes
+
+- Automated release workflows removed, now requires manual nx release commands
+
+### ❤️ Thank You
+
+- DeepBrain
+
 ## 0.1.1 (2025-06-24)
 
 This was a version bump only for goodiebag to align it with other projects, there were no code changes.

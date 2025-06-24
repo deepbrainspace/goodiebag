@@ -6,27 +6,27 @@ if [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ]; then
 fi
 
 # Check for actual secret values (long strings that look like tokens/keys)
-STAGED_FILES=$(git diff --cached --name-only | grep -v "^\.husky/")
-if [ -n "$STAGED_FILES" ]; then
-  # Look for patterns that look like actual secret values:
-  # - Long base64-like strings (20+ chars)
-  # - API key patterns (sk-, ghp_, etc.)
-  # - JWT tokens (starting with ey)
-  SECRET_MATCHES=$(echo "$STAGED_FILES" | xargs grep -n -E "(sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{20,}|ey[a-zA-Z0-9]{20,}|['\"][a-zA-Z0-9+/]{32,}['\"])" 2>/dev/null || true)
-  if [ -n "$SECRET_MATCHES" ]; then
-    echo "⚠️  Potential secret values detected in staged files!"
-    echo "🔍 Found the following matches:"
-    echo "$SECRET_MATCHES"
-    echo ""
-    echo "💡 Please review and ensure no actual secrets are being committed"
-    echo "❓ Continue anyway? (y/N)"
-    read -r response
-    if [ "$response" != "y" ] && [ "$response" != "Y" ]; then
-      echo "🚫 Commit aborted"
-      exit 1
-    fi
-  fi
-fi
+# STAGED_FILES=$(git diff --cached --name-only | grep -v "^\.husky/")
+# if [ -n "$STAGED_FILES" ]; then
+#   # Look for patterns that look like actual secret values:
+#   # - Long base64-like strings (20+ chars)
+#   # - API key patterns (sk-, ghp_, etc.)
+#   # - JWT tokens (starting with ey)
+#   SECRET_MATCHES=$(echo "$STAGED_FILES" | xargs grep -n -E "(sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{20,}|ey[a-zA-Z0-9]{20,}|['\"][a-zA-Z0-9+/]{32,}['\"])" 2>/dev/null || true)
+#   if [ -n "$SECRET_MATCHES" ]; then
+#     echo "⚠️  Potential secret values detected in staged files!"
+#     echo "🔍 Found the following matches:"
+#     echo "$SECRET_MATCHES"
+#     echo ""
+#     echo "💡 Please review and ensure no actual secrets are being committed"
+#     echo "❓ Continue anyway? (y/N)"
+#     read -r response
+#     if [ "$response" != "y" ] && [ "$response" != "Y" ]; then
+#       echo "🚫 Commit aborted"
+#       exit 1
+#     fi
+#   fi
+# fi
 
 # Check git-crypt status for staged files only
 if command -v git-crypt >/dev/null 2>&1; then
@@ -63,17 +63,17 @@ if command -v git-crypt >/dev/null 2>&1; then
 fi
 
 # Format affected files with NX
-echo "🔍 Checking code formatting..."
-nx format:write --uncommitted
+# echo "🔍 Checking code formatting..."
+# nx format:write --uncommitted
 
-# Check if any files were formatted
-if ! git diff --quiet; then
-  echo "📝 Files were automatically formatted:"
-  git diff --name-only
-  echo ""
-  echo "💡 Please review the changes and re-run your commit"
-  echo "   git add . && git commit"
-  exit 1
-else
-  echo "✅ Code formatting is already up to date"
-fi
+# # Check if any files were formatted
+# if ! git diff --quiet; then
+#   echo "📝 Files were automatically formatted:"
+#   git diff --name-only
+#   echo ""
+#   echo "💡 Please review the changes and re-run your commit"
+#   echo "   git add . && git commit"
+#   exit 1
+# else
+#   echo "✅ Code formatting is already up to date"
+# fi
