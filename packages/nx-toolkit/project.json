@@ -23,6 +23,11 @@
             "input": "./packages/nx-toolkit",
             "glob": "executors.json",
             "output": "."
+          },
+          {
+            "input": "./packages/nx-toolkit",
+            "glob": "commands.json",
+            "output": "."
           }
         ]
       }

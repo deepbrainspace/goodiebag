@@ -48,8 +48,8 @@
       },
       "outputs": ["{workspaceRoot}/dist/packages/goodiebag"]
     },
-    "release": {
-      "executor": "@goodiebag/nx-toolkit:release",
+    "release-please": {
+      "executor": "@goodiebag/nx-toolkit:release-please",
       "options": {
         "createReleaseBranch": true,
         "specifier": "minor",

@@ -1,0 +1,8 @@
+{
+  "commands": {
+    "versions": {
+      "implementation": "./src/commands/versions",
+      "description": "Display current versions of all packages in the workspace"
+    }
+  }
+}
