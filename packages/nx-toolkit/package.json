@@ -1,7 +1,7 @@
 {
-  "name": "@deepbrainspace/nx-release-please",
+  "name": "@goodiebag/nx-toolkit",
   "version": "0.1.0",
-  "description": "NX plugin for enhanced release workflow with branch creation and PR automation",
+  "description": "NX toolkit plugin with useful executors including release management and version tools",
   "main": "src/index.js",
   "executors": "./executors.json",
   "dependencies": {

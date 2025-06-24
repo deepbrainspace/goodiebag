@@ -1,9 +1,0 @@
-{
-  "executors": {
-    "release-please": {
-      "implementation": "./src/executors/release-please/executor",
-      "schema": "./src/executors/release-please/schema.json",
-      "description": "Release workflow with branch creation and PR automation"
-    }
-  }
-}
