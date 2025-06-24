@@ -1,8 +1,8 @@
 # Goodie-Bag 🎒
 
-[![Build](https://github.com/deepbrainspace/goodiebag/actions/workflows/build.yml/badge.svg)](https://github.com/deepbrainspace/goodiebag/actions/workflows/build.yml)
-[![Prepare Release](https://github.com/deepbrainspace/goodiebag/actions/workflows/prepare.yml/badge.svg)](https://github.com/deepbrainspace/goodiebag/actions/workflows/prepare.yml)
-[![Release](https://github.com/deepbrainspace/goodiebag/actions/workflows/release.yml/badge.svg)](https://github.com/deepbrainspace/goodiebag/actions/workflows/release.yml)
+[![Build Status](https://github.com/deepbrainspace/goodiebag/actions/workflows/build.yml/badge.svg)](https://github.com/deepbrainspace/goodiebag/actions/workflows/build.yml)
+[![npm version](https://img.shields.io/npm/v/@deepbrainspace/goodiebag)](https://www.npmjs.com/package/@deepbrainspace/goodiebag)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A streamlined monorepo of developer utilities, NX plugins, MCP servers, and
 tools - featuring intelligent CI/CD, comprehensive testing, and production-ready
@@ -120,37 +120,50 @@ pnpm lint
 
 ### Automated Development Workflow (Husky)
 
-This repository uses **Husky Git hooks** to automate code quality, security, and workflow management:
+This repository uses **Husky Git hooks** to automate code quality, security, and
+workflow management:
 
 #### Pre-commit Automation 🛡️
+
 - **🚫 Main Branch Protection**: Blocks direct commits to main branch
 - **🔍 Secret Detection**: Scans for potential API keys, tokens, and secrets
-- **🔐 Git-crypt Validation**: Ensures encrypted files aren't committed unencrypted
+- **🔐 Git-crypt Validation**: Ensures encrypted files aren't committed
+  unencrypted
 - **✨ Auto-formatting**: Runs `nx format:write --uncommitted` on staged files
 
 #### Commit Message Validation 📝
-- **📋 Conventional Commits**: Enforces `type: description` or `type(scope): description` format
+
+- **📋 Conventional Commits**: Enforces `type: description` or
+  `type(scope): description` format
 - **🎯 Valid Types**: `feat`, `fix`, `chore`, `docs`, `test`, `refactor`
 - **⚡ Auto-versioning**: Enables semantic versioning in CI/CD pipeline
 
 #### Push-time Automation 🚀
-- **📦 Lockfile Sync**: Automatically updates and commits `pnpm-lock.yaml` if out of sync
-- **🔄 Zero Manual Intervention**: Lockfile changes are committed automatically with `--amend`
+
+- **📦 Lockfile Sync**: Automatically updates and commits `pnpm-lock.yaml` if
+  out of sync
+- **🔄 Zero Manual Intervention**: Lockfile changes are committed automatically
+  with `--amend`
 
 #### Branch Management 🌿
-- **📥 Auto-install**: Runs `pnpm install` when switching branches with dependency changes
-- **⚡ Smart Detection**: Only installs when `package.json` or workspace files change
+
+- **📥 Auto-install**: Runs `pnpm install` when switching branches with
+  dependency changes
+- **⚡ Smart Detection**: Only installs when `package.json` or workspace files
+  change
 
 #### What This Means for Developers
 
 **Just code normally!** The automation handles:
+
 - ✅ Code formatting and consistency
-- ✅ Commit message validation  
+- ✅ Commit message validation
 - ✅ Security scanning
 - ✅ Dependency synchronization
 - ✅ Workflow protection
 
-**No manual steps needed** for formatting, linting setup, or lockfile management.
+**No manual steps needed** for formatting, linting setup, or lockfile
+management.
 
 ### Intelligent Monorepo Design
 
@@ -357,23 +370,32 @@ distribution channels and backup options.
 
 ### Merge Policy: Regular Merges Only
 
-**⚠️ Important**: This repository uses **regular merges** instead of squash merges to preserve granular conventional commit history for proper semantic versioning.
+**⚠️ Important**: This repository uses **regular merges** instead of squash
+merges to preserve granular conventional commit history for proper semantic
+versioning.
 
 **Why Regular Merges?**
-- **Preserves individual commits** with proper conventional commit prefixes (`feat:`, `fix:`, `perf:`)
-- **Enables accurate semantic versioning** - NX can detect version-worthy changes per package
-- **Maintains audit trail** - each logical change has its own commit with proper scope
-- **Prevents version detection issues** - squash merges collapse multiple semantic changes into single commits
+
+- **Preserves individual commits** with proper conventional commit prefixes
+  (`feat:`, `fix:`, `perf:`)
+- **Enables accurate semantic versioning** - NX can detect version-worthy
+  changes per package
+- **Maintains audit trail** - each logical change has its own commit with proper
+  scope
+- **Prevents version detection issues** - squash merges collapse multiple
+  semantic changes into single commits
 
 **Conventional Commit Examples:**
+
 ```bash
 feat(claude-code-toolkit): add new sync functionality
-fix(nx-surrealdb): resolve connection timeout issue  
+fix(nx-surrealdb): resolve connection timeout issue
 perf(claude-code-toolkit): optimize binary size by 62%
 docs(README): update contribution guidelines
 ```
 
 **Branch Strategy:**
+
 ```bash
 # ✅ Good - individual commits preserved
 git checkout -b feat/add-sync-feature
@@ -382,11 +404,12 @@ git commit -m "test(claude-code-toolkit): add sync service tests"
 git commit -m "docs(claude-code-toolkit): document sync functionality"
 # PR merged with regular merge → NX detects feat: for minor version bump
 
-# ❌ Problematic - squash merge loses granular history  
+# ❌ Problematic - squash merge loses granular history
 # Multiple semantic changes → single "docs:" commit → no version bump detected
 ```
 
-When reviewing PRs, maintainers will use **"Create a merge commit"** option to preserve the individual commit history essential for automated versioning.
+When reviewing PRs, maintainers will use **"Create a merge commit"** option to
+preserve the individual commit history essential for automated versioning.
 
 ### Goodie-Bag Standards
 

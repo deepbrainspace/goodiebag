@@ -3,6 +3,15 @@
   "version": "0.1.0",
   "description": "GoodieBag of tools and libraries for DeepBrain projects",
   "type": "module",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepbrainspace/goodiebag.git"
+  },
+  "license": "MIT",
   "workspaces": [
     "packages/*",
     "apps/*",
@@ -18,7 +27,7 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "@goodiebag/nx-rust": "^3.0.2",
+    "@goodiebag/nx-rust": "3.0.2",
     "@nx/esbuild": "21.2.0",
     "@nx/jest": "21.2.0",
     "@nx/js": "21.2.0",
