@@ -115,15 +115,9 @@ jobs:
           BRANCH_NAME="release/${{ matrix.package }}"
           echo "🌿 Target branch: $BRANCH_NAME"
 
-          # Check if release branch already exists
-          if git ls-remote --exit-code --heads origin "$BRANCH_NAME" >/dev/null 2>&1; then
-            echo "📋 Release branch exists, resetting to main with latest changes"
-            git fetch origin "$BRANCH_NAME"
-            git checkout -B "$BRANCH_NAME" main  # Reset to main, don't merge
-          else
-            echo "📋 Creating new release branch"
-            git checkout -b "$BRANCH_NAME"
-          fi
+          # Create or reset release branch to main
+          echo "📋 Creating/resetting release branch to main"
+          git checkout -B "$BRANCH_NAME" main
 
           VERSION_INPUT="${{ github.event.inputs.version }}"
           if [ -z "$VERSION_INPUT" ] || [ "$VERSION_INPUT" = "auto" ]; then
