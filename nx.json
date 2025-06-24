@@ -3,16 +3,7 @@
   "tasksRunnerOptions": {
     "default": {
       "runner": "nx/tasks-runners/default",
-      "options": {
-        "cacheableOperations": [
-          "build",
-          "lint",
-          "test",
-          "e2e",
-          "check",
-          "package"
-        ]
-      }
+      "options": { "cacheableOperations": ["build", "lint", "test", "e2e", "check", "package"] }
     }
   },
   "namedInputs": {
@@ -35,75 +26,35 @@
       "inputs": ["production", "^production"],
       "cache": true
     },
-    "test": {
-      "dependsOn": ["lint"],
-      "inputs": ["default", "^production"],
-      "cache": true
-    },
-    "lint": {
-      "inputs": ["default"],
-      "cache": true
-    },
+    "test": { "dependsOn": ["lint"], "inputs": ["default", "^production"], "cache": true },
+    "lint": { "inputs": ["default"], "cache": true },
     "nx-release-publish": {
       "dependsOn": ["build"],
-      "options": {
-        "packageRoot": "dist/packages/{projectName}"
-      },
-      "env": {
-        "NPM_TOKEN": "{env.NPM_TOKEN}"
-      }
+      "options": { "packageRoot": "dist/packages/{projectName}" },
+      "env": { "NPM_TOKEN": "{env.NPM_TOKEN}" }
     },
-    "check": {
-      "inputs": ["default"],
-      "cache": true
-    },
-    "package": {
-      "dependsOn": ["build"],
-      "inputs": ["production", "^production"],
-      "cache": true
-    },
-    "clean": {
-      "inputs": ["default"],
-      "cache": false
-    },
-    "publish": {
-      "dependsOn": ["package"],
-      "cache": false
-    },
-    "publish-dry-run": {
-      "dependsOn": ["package"],
-      "cache": true
-    },
+    "check": { "inputs": ["default"], "cache": true },
+    "package": { "dependsOn": ["build"], "inputs": ["production", "^production"], "cache": true },
+    "clean": { "inputs": ["default"], "cache": false },
+    "publish": { "dependsOn": ["package"], "cache": false },
+    "publish-dry-run": { "dependsOn": ["package"], "cache": true },
     "@nx/esbuild:esbuild": {
       "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
     }
   },
-  "generators": {
-    "@nx/plugin": {
-      "plugin": {
-        "linter": "eslint"
-      }
-    }
-  },
+  "generators": { "@nx/plugin": { "plugin": { "linter": "eslint" } } },
   "parallel": 5,
   "release": {
     "projectsRelationship": "independent",
-    "git": {
-      "commit": true,
-      "tag": false,
-      "push": false
-    },
+    "git": { "commit": true, "tag": false, "push": false },
     "version": {
       "conventionalCommits": {
         "types": {
           "docs": {
             "semverBump": "patch",
-            "changelog": {
-              "title": "📖 Documentation",
-              "hidden": false
-            }
+            "changelog": { "title": "📖 Documentation", "hidden": false }
           }
         }
       },
@@ -118,26 +69,16 @@
     "groups": {
       "workspace": {
         "projects": ["goodiebag"],
-        "changelog": {
-          "automaticFromRef": true,
-          "file": "{workspaceRoot}/CHANGELOG.md"
-        },
-        "publish": {
-          "registry": "https://registry.npmjs.org/"
-        }
+        "changelog": { "automaticFromRef": true, "file": "{workspaceRoot}/CHANGELOG.md" },
+        "publish": { "registry": "https://registry.npmjs.org/" }
       },
       "nx-plugins": {
         "projects": ["nx-*"],
         "changelog": {
           "automaticFromRef": true,
-          "projectChangelogs": {
-            "createRelease": "github",
-            "file": true
-          }
+          "projectChangelogs": { "createRelease": "github", "file": true }
         },
-        "publish": {
-          "registry": "https://registry.npmjs.org/"
-        }
+        "publish": { "registry": "https://registry.npmjs.org/" }
       },
       "rust-packages": {
         "projects": ["claude-code-toolkit"],
@@ -146,10 +87,7 @@
             "types": {
               "docs": {
                 "semverBump": "patch",
-                "changelog": {
-                  "title": "📖 Documentation",
-                  "hidden": false
-                }
+                "changelog": { "title": "📖 Documentation", "hidden": false }
               }
             }
           },
@@ -157,29 +95,15 @@
         },
         "changelog": {
           "automaticFromRef": true,
-          "projectChangelogs": {
-            "createRelease": "github",
-            "file": true
-          }
+          "projectChangelogs": { "createRelease": "github", "file": true }
         },
-        "publish": {
-          "options": {
-            "packageRoot": "packages/{projectName}"
-          }
-        }
+        "publish": { "options": { "packageRoot": "packages/{projectName}" } }
       }
     }
   },
   "plugins": [
-    {
-      "plugin": "@nx/jest/plugin",
-      "options": {
-        "targetName": "jest:test"
-      }
-    },
-    {
-      "plugin": "@goodiebag/nx-rust",
-      "exclude": ["goodiebag", "nx-*"]
-    }
-  ]
+    { "plugin": "@nx/jest/plugin", "options": { "targetName": "jest:test" } },
+    { "plugin": "@goodiebag/nx-rust", "exclude": ["goodiebag", "nx-*"] }
+  ],
+  "nxCloudId": "685a6ef81d4bbb41585c4298"
 }
