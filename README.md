@@ -221,119 +221,75 @@ goodiebag/
 
 ## CI/CD Pipeline
 
-Our GitHub Actions pipeline demonstrates production-grade monorepo CI/CD with
-intelligent package detection:
-
-> 📖
-> **[View Complete Release Process Documentation →](./docs/RELEASE-PROCESS.md)**
+Our GitHub Actions pipeline provides simple, focused validation:
 
 ```
-   dependencies
-       ├── lint ──┐
-       └── test ──┼── build ──┬── npm-publish
-                  │           └── github-release
+PR opened → lint, test, build (affected packages only)
 ```
 
-**🧠 Intelligent Package Detection:**
+**🧠 Intelligent Build Validation:**
 
-- **Affected Analysis**: Only processes packages/apps that changed
-- **Independent Lifecycles**: Each package gets its own version and release
-  cycle
-- **Parallel Processing**: Multiple packages can publish/deploy simultaneously
-- **Smart Tagging**: Individual releases: `nx-surrealdb-v1.0.0`,
-  `goodiebag-dev-v2.1.0`
-- **Future AI**: Automated semantic version detection through diff analysis
+- **Affected Analysis**: Only lints, tests, and builds packages that changed
+- **PR Validation**: Ensures code quality before merge
+- **Parallel Processing**: Multiple packages validated simultaneously
 
-### Intelligent Pipeline Stages
+### Simple Release Process
 
-1. **`dependencies`** - Install pnpm and workspace dependencies
-2. **`lint` + `test`** - Run in parallel on affected packages only
-   - **lint**: ESLint checks with zero-warning policy
-   - **test**: Jest tests with coverage requirements
-3. **`build`** - Compile only affected packages (requires both lint and test)
-4. **`npm-publish` + `github-release`** - Publish affected packages in parallel
-   - **npm-publish**: Independent versioning and publishing per package
-   - **github-release**: Individual GitHub releases with package-specific tags
+We've simplified the release process to focus on what matters: **build
+validation via CI** and **manual publishing via NX commands**.
 
-### Release Triggers
-
-- **Production Release**: Push package-specific tag
-
-  ```bash
-  git tag nx-surrealdb-v1.2.0 && git push origin nx-surrealdb-v1.2.0
-  git tag mcp-server-claude-v2.1.0 && git push origin mcp-server-claude-v2.1.0
-  git tag goodiebag-dev-v1.0.0 && git push origin goodiebag-dev-v1.0.0
-  ```
-
-  - Only publishes the specific package mentioned in the tag
-  - Sets exact version from tag
-  - Creates GitHub release with package-specific tag
-
-- **Beta Release**: Merge to `main` branch
-  - Auto-bumps patch version for affected packages only
-  - Publishes affected packages to npm with `beta` tag
-  - Creates GitHub prereleases for each affected package
-
-### Performance & Efficiency Benefits
-
-- **~50% faster CI** through parallel execution and affected-only builds
-- **Massive Resource Savings**: Only process what actually changed (packages +
-  apps)
-- **Independent Lifecycles**: Update website without affecting NX plugins
-- **Rapid Iteration**: Change MCP server without rebuilding documentation site
-- **Infinite Scalability**: Add 100+ packages/apps without slowing down CI
-- **Smart Failure Isolation**: One package/app failure doesn't block others
-- **Multi-Channel Distribution**: npm packages + app deployments + GitHub
-  releases
-- **Future AI Efficiency**: Autonomous releases eliminate manual version
-  management overhead
-
-### Manual Release Process
-
-For testing artifacts before CI/CD or emergency releases:
+#### Publishing Packages
 
 ```bash
-# 1. Build specific package
-nx build package-name
+# Single command does everything: version, changelog, tag, publish
+nx release --projects=package-name
 
-# 2. Navigate to package directory
-cd packages/package-name
-
-# 3. Create and test tarball locally
-npm pack
-tar -tzf *.tgz  # Inspect contents
-
-# 4. Test installation locally
-cd /tmp && npm init -y
-npm install /path/to/goodie-bag/packages/package-name/*.tgz
-
-# 5. Manual publish (if needed)
-npm login
-npm publish                    # Production
-npm publish --tag beta        # Beta release
-
-# 6. Create package-specific tag for CI/CD
-git tag package-name-v1.0.0
-git push origin package-name-v1.0.0  # Triggers automated release
-
-# 7. Or manual GitHub release
-gh release create package-name-v1.0.0 *.tgz \
-  --title "Release package-name v1.0.0" \
-  --notes "Manual release description"
+# Always preview first with dry-run
+nx release --projects=package-name --dry-run
 ```
 
-### Release Examples
+**Example: Publishing nx-surrealdb**
 
 ```bash
-# Release NX plugin
-git tag nx-surrealdb-v1.2.0 && git push origin nx-surrealdb-v1.2.0
+# Preview first (recommended)
+nx release --projects=nx-surrealdb --dry-run
 
-# Release MCP server
-git tag mcp-server-claude-v2.1.0 && git push origin mcp-server-claude-v2.1.0
+# Release with interactive version selection
+nx release --projects=nx-surrealdb
 
-# Release website
-git tag goodiebag-dev-v1.0.0 && git push origin goodiebag-dev-v1.0.0
+# Or with specific version bump
+nx release minor --projects=nx-surrealdb
 ```
+
+**Example: Publishing multiple packages**
+
+```bash
+# Preview affected packages
+nx release --dry-run
+
+# Release all affected packages
+nx release
+```
+
+### What NX Release Does
+
+**`nx release` (complete release):**
+
+- Analyzes conventional commits to determine version bump
+- Updates package.json version
+- Generates/updates CHANGELOG.md
+- Creates git tag and commits changes
+- Builds the package (if needed)
+- Publishes to npm registry
+- All in one command!
+
+### Performance Benefits
+
+- **~50% faster CI** through affected-only validation
+- **Simple Developer Experience**: Two commands to release
+- **Independent Lifecycles**: Each package maintains its own version
+- **Smart Failure Isolation**: One package failure doesn't block others
+- **Local Control**: Test and validate before publishing
 
 ### Environment Variables
 
