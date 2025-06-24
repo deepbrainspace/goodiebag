@@ -94,45 +94,67 @@ nx release --projects=package-name
 
 ## 📋 Publishing Examples
 
+**⚠️ IMPORTANT**: All releases must use the **release branch workflow** for
+proper branch protection and CI validation.
+
 ### Single Package Release
 
 ```bash
-# Release nx-surrealdb with automatic version detection
-nx release --projects=nx-surrealdb
-nx release publish --projects=nx-surrealdb
+# 1. Create release branch from main
+git checkout main && git pull
+git checkout -b release/nx-surrealdb-v1.2.3
 
-# Or specify version bump type
-nx release minor --projects=nx-surrealdb
-nx release publish --projects=nx-surrealdb
+# 2. Preview the release (always recommended)
+nx release --projects=nx-surrealdb --dry-run
+
+# 3. Execute release (commits, tags, publishes)
+nx release --projects=nx-surrealdb
+
+# 4. Push release branch and create PR
+git push -u origin release/nx-surrealdb-v1.2.3
+gh pr create --title "Release nx-surrealdb v1.2.3" --body "Auto-generated release"
+
+# 5. Merge PR with "Create a merge commit" (preserves tags)
 ```
 
 ### Multiple Package Release
 
 ```bash
-# Release all affected packages
-nx release
-nx release publish
+# 1. Create release branch
+git checkout main && git pull
+git checkout -b release/multi-package-v2024.1.0
 
-# Or specify multiple packages
-nx release --projects=nx-surrealdb,claude-code-toolkit
-nx release publish --projects=nx-surrealdb,claude-code-toolkit
+# 2. Preview all affected packages
+nx release --dry-run
+
+# 3. Execute release for all affected packages
+nx release
+
+# 4. Push and create PR
+git push -u origin release/multi-package-v2024.1.0
+gh pr create --title "Release multiple packages" --body "Auto-generated multi-package release"
 ```
 
 ### What Each Command Does
 
-**`nx release` (prepare):**
+**`nx release` (complete release):**
 
 - Analyzes conventional commits to determine version bump
 - Updates package.json version
 - Generates/updates CHANGELOG.md
-- Creates git tag
-- Commits changes and pushes
-
-**`nx release publish`:**
-
+- **Commits changes to git**
+- **Creates git tag** (e.g., `package-name@1.2.3`)
+- **Pushes commits and tags to remote**
 - Builds the package (if needed)
 - Publishes to npm/cargo registry
-- Uses credentials from environment variables
+- All in one atomic operation!
+
+**Why This Works for Release Branches:**
+
+- The release commit with tags gets created on the release branch
+- When the release PR is merged with "Create a merge commit", the tags are
+  preserved in main's history
+- Branch protection rules validate the release through CI before allowing merge
 
 ## 🎯 Version Strategy
 
@@ -152,26 +174,23 @@ NX analyzes conventional commit messages:
 
 ## 🛠️ Available Commands
 
-### Release Commands
+### Release Commands (All from Release Branch)
 
 ```bash
-# Prepare release with interactive version selection
+# Complete release with automatic version detection
 nx release --projects=package-name
 
-# Prepare release with specific version bump
+# Complete release with specific version bump
 nx release patch --projects=package-name
 nx release minor --projects=package-name
 nx release major --projects=package-name
 
-# Prepare release for all affected packages
+# Complete release for all affected packages
 nx release
 
-# Publish prepared packages
-nx release publish --projects=package-name
-nx release publish  # publishes all prepared packages
-
-# Combined release and publish
-nx release --projects=package-name && nx release publish --projects=package-name
+# Preview any release before executing (recommended)
+nx release --projects=package-name --dry-run
+nx release --dry-run  # preview all affected packages
 ```
 
 ### Validation Commands

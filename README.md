@@ -232,27 +232,27 @@ git push -u origin release/package-name-v1.2.3
 gh pr create --title "Release package-name v1.2.3"
 ```
 
-**Direct Release (Alternative):**
-
-```bash
-# From main branch - single command does everything
-nx release --projects=package-name
-
-# Always preview first
-nx release --projects=package-name --dry-run
-```
+**⚠️ IMPORTANT**: All releases must use the **release branch workflow** for
+proper branch protection and CI validation.
 
 **Example: Publishing nx-surrealdb**
 
 ```bash
-# Release branch approach
+# 1. Start from main and create release branch
+git checkout main && git pull
 git checkout -b release/nx-surrealdb-v1.2.3
-nx release --projects=nx-surrealdb --dry-run  # Preview
-nx release --projects=nx-surrealdb           # Execute
-git push -u origin release/nx-surrealdb-v1.2.3
 
-# Or direct approach (from main)
+# 2. Preview the release
+nx release --projects=nx-surrealdb --dry-run
+
+# 3. Execute release (commits, tags, publishes)
 nx release --projects=nx-surrealdb
+
+# 4. Push and create PR
+git push -u origin release/nx-surrealdb-v1.2.3
+gh pr create --title "Release nx-surrealdb v1.2.3"
+
+# 5. Merge with "Create a merge commit" (NOT squash)
 ```
 
 **Example: Publishing multiple packages**
