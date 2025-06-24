@@ -92,8 +92,8 @@
     "projectsRelationship": "independent",
     "git": {
       "commit": true,
-      "tag": false,
-      "push": false
+      "tag": true,
+      "push": true
     },
     "version": {
       "conventionalCommits": {

@@ -32,38 +32,11 @@ This repository demonstrates next-generation monorepo management with:
 
 ## The Goodie-Bag Collection
 
-| Package/App                                               | Type      | Version                                                           | Description                                    |
-| --------------------------------------------------------- | --------- | ----------------------------------------------------------------- | ---------------------------------------------- |
-| [`@deepbrainspace/nx-surrealdb`](./packages/nx-surrealdb) | NX Plugin | ![npm](https://img.shields.io/npm/v/@deepbrainspace/nx-surrealdb) | SurrealDB migrations with modular architecture |
-
-### Coming Soon to the Goodie-Bag 🎒
-
-**📦 Packages (Publishable to npm):**
-
-- `@deepbrainspace/mcp-server-*` - Model Context Protocol servers
-- `@deepbrainspace/cli-*` - Command-line utilities and tools
-- `@deepbrainspace/nx-*` - Additional NX plugins for various databases/services
-- `@deepbrainspace/shared-*` - Reusable utility libraries
-
-**🚀 Apps (Deployable Applications):**
-
-- `goodiebag-dev` - Main website showcasing all tools
-- `membership` - Developer membership and community portal
-- `docs` - Comprehensive documentation site
-- `admin-dashboard` - Management interface for tools and users
-
-**🔧 Libs (Internal Shared Libraries):**
-
-- `ui-components` - Reusable React/Vue components
-- `brand-assets` - Logos, icons, design system
-- `shared-utils` - Common utilities across packages/apps
-- `shared-types` - TypeScript definitions for the ecosystem
-
-**🤖 Planned Innovation:**
-
-- **AI Release Agent** - Autonomous version management through diff analysis
-- **Inter-Package Intelligence** - Smart dependency updates across the monorepo
-- **Usage Analytics** - Understanding how developers use the goodie-bag tools
+| Package/App                                               | Type      | Version                                                           | Description                                               |
+| --------------------------------------------------------- | --------- | ----------------------------------------------------------------- | --------------------------------------------------------- |
+| [`@deepbrainspace/nx-surrealdb`](./packages/nx-surrealdb) | NX Plugin | ![npm](https://img.shields.io/npm/v/@deepbrainspace/nx-surrealdb) | SurrealDB migrations with modular architecture            |
+| [`@goodiebag/nx-rust`](./packages/nx-rust)                | NX Plugin | ![npm](https://img.shields.io/npm/v/@goodiebag/nx-rust)           | NX plugin for Rust projects with comprehensive tooling    |
+| [`claude-code-toolkit`](./packages/claude-code-toolkit)   | CLI Tool  | ![crates.io](https://img.shields.io/crates/v/claude-code-toolkit) | Claude Code management for credential sync and monitoring |
 
 ### @deepbrainspace/goodiebag
 
