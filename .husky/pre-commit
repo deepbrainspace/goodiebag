@@ -63,7 +63,7 @@ if command -v git-crypt >/dev/null 2>&1; then
 fi
 
 # Format affected files with NX
-echo "🎨 Checking code formatting..."
+echo "🔍 Checking code formatting..."
 nx format:write --uncommitted
 
 # Check if any files were formatted
