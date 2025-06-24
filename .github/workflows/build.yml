@@ -202,7 +202,7 @@ jobs:
 
   # Summary
   summary:
-    name: ✅ Build Status
+    name: ✅ CI Build
     needs: [check-release, detect-affected, lint, test, build, validate-release]
     if: always()
     runs-on: ubuntu-latest
@@ -223,21 +223,29 @@ jobs:
             fi
           else
             # Regular branch build validation
-            if [[ "${{ needs.detect-affected.result }}" == "success" && 
-                  ("${{ needs.lint.result }}" == "success" || "${{ needs.lint.result }}" == "skipped") && 
-                  ("${{ needs.test.result }}" == "success" || "${{ needs.test.result }}" == "skipped") && 
-                  ("${{ needs.build.result }}" == "success" || "${{ needs.build.result }}" == "skipped") ]]; then
-              echo "✅ Build pipeline completed successfully"
-              echo "📋 All affected packages passed lint, test, and build"
+            # Check that detection ran and other jobs either succeeded or were skipped appropriately
+            if [[ "${{ needs.detect-affected.result }}" == "success" ]]; then
+              # If we have packages, check that build pipeline succeeded
+              if [[ "${{ needs.detect-affected.outputs.has-packages }}" == "true" ]]; then
+                if [[ ("${{ needs.lint.result }}" == "success") && 
+                      ("${{ needs.test.result }}" == "success") && 
+                      ("${{ needs.build.result }}" == "success") ]]; then
+                  echo "✅ Build pipeline completed successfully"
+                  echo "📋 All affected packages passed lint, test, and build"
+                  echo "📦 Packages: ${{ needs.detect-affected.outputs.packages }}"
+                else
+                  echo "❌ Build pipeline failed"
+                  echo "📋 One or more packages failed lint, test, or build"
+                  echo "🔍 Lint: ${{ needs.lint.result }}, Test: ${{ needs.test.result }}, Build: ${{ needs.build.result }}"
+                  exit 1
+                fi
+              else
+                echo "✅ No packages affected - documentation or config changes only"
+                echo "📋 Validation completed successfully"
+              fi
             else
-              echo "❌ Build pipeline failed"
-              echo "📋 One or more packages failed lint, test, or build"
+              echo "❌ Failed to detect affected packages"
+              echo "📋 Detection job failed: ${{ needs.detect-affected.result }}"
               exit 1
-            fi
-
-            if [[ "${{ needs.detect-affected.outputs.has-packages }}" == "true" ]]; then
-              echo "📦 Packages: ${{ needs.detect-affected.outputs.packages }}"
-            else
-              echo "ℹ️ No affected packages found - documentation or config changes only"
             fi
           fi
