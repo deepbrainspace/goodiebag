@@ -20,10 +20,12 @@ This will show you exactly what changes will be made without actually applying t
 - Changelog entries are accurate
 - No unexpected changes
 
-### Step 3: Execute the Release
+### Step 3: Build, Execute the Release
 If the dry run looks good, run the actual release:
 ```bash
-nx release --yes --projects=<package-name>
+nx build <package-name>
+nx release publish --yes --projects=<package-name>
+
 ```
 
 This will:
