@@ -86,7 +86,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_PAT }}
 
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
@@ -222,7 +222,7 @@ jobs:
             --title "🚀 Release Request for ${{ matrix.package }}@${VERSION}" \
             --body "$PR_BODY"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 
   no-packages:
     name: ℹ️ No Release Needed
