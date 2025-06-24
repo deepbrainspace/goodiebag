@@ -84,18 +84,6 @@ importers:
         specifier: ~5.8.2
         version: 5.8.3
 
-  packages/nx-release-please:
-    dependencies:
-      '@nx/devkit':
-        specifier: 21.2.1
-        version: 21.2.1(nx@21.2.1(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17)))
-      nx:
-        specifier: '>= 16 <= 22'
-        version: 21.2.1(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17))
-      tslib:
-        specifier: ^2.3.0
-        version: 2.8.1
-
   packages/nx-rust:
     dependencies:
       '@ltd/j-toml':
@@ -226,6 +214,18 @@ importers:
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
+
+  packages/nx-toolkit:
+    dependencies:
+      '@nx/devkit':
+        specifier: 21.2.1
+        version: 21.2.1(nx@21.2.1(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17)))
+      nx:
+        specifier: '>= 16 <= 22'
+        version: 21.2.1(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17))
+      tslib:
+        specifier: ^2.3.0
+        version: 2.8.1
 
 packages:
 
