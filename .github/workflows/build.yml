@@ -167,7 +167,7 @@ jobs:
   # Summary and final check update
   summary:
     name: ✅ Build Status
-    needs: [start-check, detect-affected, lint, test, build, no-packages]
+    needs: [start-check, detect-affected, lint, test, build]
     if: always()
     runs-on: ubuntu-latest
 
@@ -204,16 +204,3 @@ jobs:
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # No affected packages notification
-  no-packages:
-    name: ℹ️ No Packages Affected
-    needs: detect-affected
-    if: needs.detect-affected.outputs.has-packages == 'false'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Report status
-        run: |
-          echo "ℹ️ No packages with publish targets were affected by this PR."
-          echo "The changes appear to be documentation, configuration, or non-publishable code."

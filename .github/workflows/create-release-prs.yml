@@ -86,7 +86,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_PAT }}
 
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
@@ -115,19 +115,9 @@ jobs:
           BRANCH_NAME="release/${{ matrix.package }}"
           echo "🌿 Target branch: $BRANCH_NAME"
 
-          # Check if release branch already exists
-          if git ls-remote --exit-code --heads origin "$BRANCH_NAME" >/dev/null 2>&1; then
-            echo "📋 Release branch exists, updating with latest changes"
-            git fetch origin "$BRANCH_NAME"
-            git checkout -B "$BRANCH_NAME" "origin/$BRANCH_NAME"
-            
-            # Merge main into release branch to get latest changes
-            echo "🔀 Merging main into release branch (preferring main's version on conflicts)"
-            git merge main --no-edit -X theirs
-          else
-            echo "📋 Creating new release branch"
-            git checkout -b "$BRANCH_NAME"
-          fi
+          # Create or reset release branch to main
+          echo "📋 Creating/resetting release branch to main"
+          git checkout -B "$BRANCH_NAME" main
 
           VERSION_INPUT="${{ github.event.inputs.version }}"
           if [ -z "$VERSION_INPUT" ] || [ "$VERSION_INPUT" = "auto" ]; then
@@ -222,7 +212,7 @@ jobs:
             --title "🚀 Release Request for ${{ matrix.package }}@${VERSION}" \
             --body "$PR_BODY"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 
   no-packages:
     name: ℹ️ No Release Needed
