@@ -23,8 +23,9 @@ This will show you exactly what changes will be made without actually applying t
 ### Step 3: Build, Execute the Release
 If the dry run looks good, run the actual release:
 ```bash
+nx release --projects=nx-rust  --yes
 nx build <package-name>
-nx release publish --yes --projects=<package-name>
+nx release publish --projects=<package-name>
 
 ```
 

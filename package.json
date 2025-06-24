@@ -27,7 +27,7 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "@goodiebag/nx-rust": "3.0.2",
+    "@goodiebag/nx-rust": "3.1.0",
     "@nx/esbuild": "21.2.0",
     "@nx/jest": "21.2.0",
     "@nx/js": "21.2.0",
