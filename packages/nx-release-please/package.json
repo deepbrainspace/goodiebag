@@ -1,0 +1,17 @@
+{
+  "name": "@deepbrainspace/nx-release-please",
+  "version": "0.1.0",
+  "description": "NX plugin for enhanced release workflow with branch creation and PR automation",
+  "main": "src/index.js",
+  "executors": "./executors.json",
+  "dependencies": {
+    "@nx/devkit": "21.2.1",
+    "tslib": "^2.3.0"
+  },
+  "peerDependencies": {
+    "nx": ">= 16 <= 22"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -47,6 +47,14 @@
         ]
       },
       "outputs": ["{workspaceRoot}/dist/packages/goodiebag"]
+    },
+    "release-please": {
+      "executor": "@deepbrainspace/nx-release-please:release-please",
+      "options": {
+        "createReleaseBranch": true,
+        "specifier": "minor",
+        "ensureCleanBase": false
+      }
     }
   },
   "implicitDependencies": [],
