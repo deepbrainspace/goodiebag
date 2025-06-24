@@ -64,14 +64,32 @@ gh pr merge --merge  # Use regular merge to preserve conventional commits
 
 ### 3. Manual Release & Publish
 
-When ready to release, use the two-command NX release process:
+**Release Branch Workflow (Recommended):**
 
 ```bash
-# 1. Prepare release (creates version, changelog, tags)
+# 1. Create release branch
+git checkout -b release/package-name-v1.2.3
+
+# 2. Preview release
+nx release --projects=package-name --dry-run
+
+# 3. Execute release (commits, tags, publishes)
 nx release --projects=package-name
 
-# 2. Publish to registry
-nx release publish --projects=package-name
+# 4. Push release branch
+git push -u origin release/package-name-v1.2.3
+
+# 5. Create PR for review
+gh pr create --title "Release package-name v1.2.3" --body "Release notes..."
+
+# 6. Merge with "Create a merge commit" (preserves tags)
+```
+
+**Direct Release (Alternative):**
+
+```bash
+# From main branch - one command does everything
+nx release --projects=package-name
 ```
 
 ## 📋 Publishing Examples

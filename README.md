@@ -213,35 +213,54 @@ validation via CI** and **manual publishing via NX commands**.
 
 #### Publishing Packages
 
+**Release Branch Workflow (Recommended):**
+
 ```bash
-# Single command does everything: version, changelog, tag, publish
+# 1. Create release branch
+git checkout -b release/package-name-v1.2.3
+
+# 2. Preview release
+nx release --projects=package-name --dry-run
+
+# 3. Execute release (commits, tags, publishes)
 nx release --projects=package-name
 
-# Always preview first with dry-run
+# 4. Push release branch
+git push -u origin release/package-name-v1.2.3
+
+# 5. Create PR and merge with "Create a merge commit" (NOT squash)
+gh pr create --title "Release package-name v1.2.3"
+```
+
+**Direct Release (Alternative):**
+
+```bash
+# From main branch - single command does everything
+nx release --projects=package-name
+
+# Always preview first
 nx release --projects=package-name --dry-run
 ```
 
 **Example: Publishing nx-surrealdb**
 
 ```bash
-# Preview first (recommended)
-nx release --projects=nx-surrealdb --dry-run
+# Release branch approach
+git checkout -b release/nx-surrealdb-v1.2.3
+nx release --projects=nx-surrealdb --dry-run  # Preview
+nx release --projects=nx-surrealdb           # Execute
+git push -u origin release/nx-surrealdb-v1.2.3
 
-# Release with interactive version selection
+# Or direct approach (from main)
 nx release --projects=nx-surrealdb
-
-# Or with specific version bump
-nx release minor --projects=nx-surrealdb
 ```
 
 **Example: Publishing multiple packages**
 
 ```bash
-# Preview affected packages
-nx release --dry-run
-
 # Release all affected packages
-nx release
+nx release --dry-run  # Preview
+nx release           # Execute
 ```
 
 ### What NX Release Does
@@ -251,10 +270,18 @@ nx release
 - Analyzes conventional commits to determine version bump
 - Updates package.json version
 - Generates/updates CHANGELOG.md
-- Creates git tag and commits changes
+- **Commits changes to git**
+- **Creates git tag** (e.g., `package-name@1.2.3`)
+- **Pushes commits and tags to remote**
 - Builds the package (if needed)
 - Publishes to npm registry
-- All in one command!
+- All in one atomic operation!
+
+### Important: Merge Strategy
+
+**CRITICAL:** When merging release PRs, always use **"Create a merge commit"**
+to preserve the release commit and tag in main's git history. **Never use
+"Squash and merge"** as it would orphan the git tags.
 
 ### Performance Benefits
 
