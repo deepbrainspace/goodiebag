@@ -1,7 +1,7 @@
 {
-  "name": "nx-release-please",
+  "name": "nx-toolkit",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/nx-release-please/src",
+  "sourceRoot": "packages/nx-toolkit/src",
   "projectType": "library",
   "tags": ["type:plugin", "scope:nx"],
   "targets": {
@@ -9,19 +9,24 @@
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/packages/nx-release-please",
-        "main": "packages/nx-release-please/src/index.ts",
-        "tsConfig": "packages/nx-release-please/tsconfig.lib.json",
+        "outputPath": "dist/packages/nx-toolkit",
+        "main": "packages/nx-toolkit/src/index.ts",
+        "tsConfig": "packages/nx-toolkit/tsconfig.lib.json",
         "assets": [
-          "packages/nx-release-please/*.md",
+          "packages/nx-toolkit/*.md",
           {
-            "input": "./packages/nx-release-please/src",
+            "input": "./packages/nx-toolkit/src",
             "glob": "**/!(*.ts)",
             "output": "./src"
           },
           {
-            "input": "./packages/nx-release-please",
+            "input": "./packages/nx-toolkit",
             "glob": "executors.json",
+            "output": "."
+          },
+          {
+            "input": "./packages/nx-toolkit",
+            "glob": "commands.json",
             "output": "."
           }
         ]
@@ -31,14 +36,14 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "packages/nx-release-please/jest.config.ts"
+        "jestConfig": "packages/nx-toolkit/jest.config.ts"
       }
     },
     "lint": {
       "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/nx-release-please/**/*.ts"]
+        "lintFilePatterns": ["packages/nx-toolkit/**/*.ts"]
       }
     }
   }

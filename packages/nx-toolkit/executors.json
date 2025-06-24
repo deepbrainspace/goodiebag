@@ -4,6 +4,11 @@
       "implementation": "./src/executors/release-please/executor",
       "schema": "./src/executors/release-please/schema.json",
       "description": "Release workflow with branch creation and PR automation"
+    },
+    "versions": {
+      "implementation": "./src/executors/versions/executor",
+      "schema": "./src/executors/versions/schema.json",
+      "description": "Display current versions of all packages in the workspace"
     }
   }
 }

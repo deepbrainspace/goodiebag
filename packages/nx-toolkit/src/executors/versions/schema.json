@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "version": 2,
+  "title": "Versions executor",
+  "description": "Display current versions of all packages in the workspace",
+  "type": "object",
+  "properties": {
+    "verbose": {
+      "type": "boolean",
+      "description": "Show additional information and help text",
+      "default": false
+    }
+  }
+}

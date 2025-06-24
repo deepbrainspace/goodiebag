@@ -49,11 +49,17 @@
       "outputs": ["{workspaceRoot}/dist/packages/goodiebag"]
     },
     "release-please": {
-      "executor": "@deepbrainspace/nx-release-please:release-please",
+      "executor": "@goodiebag/nx-toolkit:release-please",
       "options": {
         "createReleaseBranch": true,
         "specifier": "minor",
         "ensureCleanBase": false
+      }
+    },
+    "versions": {
+      "executor": "@goodiebag/nx-toolkit:versions",
+      "options": {
+        "verbose": true
       }
     }
   },
