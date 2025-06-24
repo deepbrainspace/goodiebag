@@ -1,10 +1,17 @@
 export default {
   displayName: 'nx-release-please',
-  preset: '../../jest.preset.cjs',
+  preset: 'ts-jest',
   testEnvironment: 'node',
   transform: {
-    '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
+    '^.+\\.ts$': [
+      'ts-jest',
+      {
+        tsconfig: '<rootDir>/tsconfig.spec.json',
+      },
+    ],
   },
-  moduleFileExtensions: ['ts', 'js', 'html'],
-  coverageDirectory: '../../coverage/packages/nx-release-please',
+  moduleFileExtensions: ['ts', 'js'],
+  coverageDirectory: './coverage',
+  collectCoverageFrom: ['src/**/*.ts', '!src/**/files/**', '!jest.config.ts'],
+  testMatch: ['<rootDir>/src/**/*.spec.ts'],
 };

@@ -23,17 +23,11 @@ const runExecutor: PromiseExecutor<ReleaseExecutorSchema> = async (
     firstRelease = false,
     skipPublish = false,
     affected = false,
-    base,
-    head,
     ensureCleanBase = true,
     yes = false,
     groups,
     projects,
     preid,
-    gitRemote = 'origin',
-    gitCommitMessage,
-    gitTagMessage,
-    stageChanges = true,
   } = options;
 
   try {
@@ -71,7 +65,7 @@ const runExecutor: PromiseExecutor<ReleaseExecutorSchema> = async (
           logger.info(`${logPrefix}Starting from commit: ${latestCommit}`);
         }
       } catch (error) {
-        logger.error(`Failed to ensure clean base branch: ${error.message}`);
+        logger.error(`Failed to ensure clean base branch: ${(error as Error).message}`);
         return { success: false };
       }
     }
@@ -192,7 +186,7 @@ const runExecutor: PromiseExecutor<ReleaseExecutorSchema> = async (
       try {
         execSync(`gh ${prArgs.join(' ')}`, { stdio: 'inherit' });
         logger.info('✅ PR created successfully!');
-      } catch (error) {
+      } catch {
         logger.warn(
           '⚠️ Failed to create PR. You may need to install GitHub CLI or check authentication.'
         );
@@ -211,7 +205,7 @@ const runExecutor: PromiseExecutor<ReleaseExecutorSchema> = async (
     return { success: true };
   } catch (error) {
     logger.error('❌ Release workflow failed:');
-    logger.error(error.message);
+    logger.error((error as Error).message);
     return { success: false };
   }
 };
