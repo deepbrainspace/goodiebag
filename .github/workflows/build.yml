@@ -1,4 +1,4 @@
-name: ⚙️ Build Feature PR
+name: ⚙️ Build
 
 on:
   workflow_dispatch:
