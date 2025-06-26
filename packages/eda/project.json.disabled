@@ -91,5 +91,5 @@
       "options": {}
     }
   },
-  "tags": ["rust", "ai", "memory", "claude", "performance"]
+  "tags": ["rust", "ai", "memory", "claude", "performance", "wip", "skip-ci"]
 }

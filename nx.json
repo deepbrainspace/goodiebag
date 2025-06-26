@@ -177,6 +177,15 @@
       }
     }
   },
+  "defaultProject": "goodiebag",
+  "projects": {
+    "eda": {
+      "exclude": true
+    },
+    "eda-py": {
+      "exclude": true
+    }
+  },
   "plugins": [
     {
       "plugin": "@nx/jest/plugin",
@@ -186,7 +195,7 @@
     },
     {
       "plugin": "@goodiebag/nx-rust",
-      "exclude": ["goodiebag", "nx-*"]
+      "exclude": ["goodiebag", "nx-*", "eda", "eda-py"]
     },
     "@goodiebag/nx-toolkit"
   ]
