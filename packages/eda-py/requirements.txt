@@ -1,0 +1,23 @@
+# EDA Python Dependencies - Latest Versions via Context7
+surrealdb>=0.4.0              # Latest SurrealDB Python SDK
+watchdog>=5.0.3               # Latest filesystem monitoring
+anthropic>=0.40.0             # Latest Claude API client
+numpy>=2.0.0                  # Latest numerical computing
+scikit-learn>=1.5.0           # Latest ML library
+fastapi>=0.115.0              # Latest web framework
+uvicorn>=0.32.0               # Latest ASGI server
+pydantic>=2.10.0              # Latest data validation
+python-dotenv>=1.0.1          # Latest environment management
+
+# For MCP GraphQL server
+strawberry-graphql>=0.250.0   # Modern GraphQL library
+graphql-core>=3.2.5           # GraphQL implementation
+
+# For embeddings (Cloudflare Workers AI)
+httpx>=0.28.0                 # Modern HTTP client
+aiofiles>=24.1.0              # Async file operations
+
+# For testing and development
+pytest>=8.3.3                # Latest testing framework
+pytest-asyncio>=0.24.0       # Async test support
+pytest-cov>=6.0.0            # Coverage reporting

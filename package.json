@@ -17,14 +17,15 @@
     "apps/*",
     "libs/*"
   ],
-  "packageManager": "pnpm@10.12.2",
+  "packageManager": "pnpm@10.12.3",
   "scripts": {
     "build": "nx run-many --target=build --all",
     "test": "nx run-many --target=test --all",
     "lint": "nx run-many --target=lint --all",
     "release": "nx release",
     "release:dry-run": "nx release --dry-run",
-    "prepare": "husky"
+    "prepare": "husky",
+    "install:dotfiles": "cd dotfiles && ./install.sh"
   },
   "devDependencies": {
     "@goodiebag/nx-rust": "3.1.0",

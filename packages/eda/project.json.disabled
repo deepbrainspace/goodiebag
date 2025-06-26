@@ -1,0 +1,95 @@
+{
+  "name": "eda",
+  "projectType": "library",
+  "sourceRoot": "packages/eda/src",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo build --release",
+        "cwd": "packages/eda"
+      },
+      "configurations": {
+        "development": {
+          "command": "cargo build",
+          "cwd": "packages/eda"
+        }
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo test",
+        "cwd": "packages/eda"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo clippy -- -D warnings",
+        "cwd": "packages/eda"
+      }
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo fmt",
+        "cwd": "packages/eda"
+      }
+    },
+    "format-check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo fmt -- --check",
+        "cwd": "packages/eda"
+      }
+    },
+    "bench": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo bench",
+        "cwd": "packages/eda"
+      }
+    },
+    "doc": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo doc --no-deps --open",
+        "cwd": "packages/eda"
+      }
+    },
+    "audit": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo audit",
+        "cwd": "packages/eda"
+      }
+    },
+    "run-server": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo run --bin eda-server",
+        "cwd": "packages/eda"
+      }
+    },
+    "run-cli": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo run --bin eda-cli",
+        "cwd": "packages/eda"
+      }
+    },
+    "watch": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo watch -x 'run --bin eda-server'",
+        "cwd": "packages/eda"
+      }
+    },
+    "release": {
+      "executor": "nx-release:release",
+      "options": {}
+    }
+  },
+  "tags": ["rust", "ai", "memory", "claude", "performance", "wip", "skip-ci"]
+}
