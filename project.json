@@ -6,6 +6,7 @@
     "default": [
       "{workspaceRoot}/.github/**/*",
       "{workspaceRoot}/docs/**/*",
+      "{workspaceRoot}/dotfiles/**/*",
       "{workspaceRoot}/*.md",
       "{workspaceRoot}/nx.json",
       "{workspaceRoot}/package.json",
@@ -41,6 +42,7 @@
           "nx graph --file=dist/packages/goodiebag/dependency-graph.json",
           "cp -r .github dist/packages/goodiebag/",
           "cp -r docs dist/packages/goodiebag/",
+          "cp -r dotfiles dist/packages/goodiebag/",
           "cp -r .husky dist/packages/goodiebag/",
           "cp README.md CHANGELOG.md package.json nx.json project.json dist/packages/goodiebag/",
           "echo '✅ Workspace build completed'"
