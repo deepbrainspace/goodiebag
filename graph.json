@@ -1,0 +1,918 @@
+{
+  "graph": {
+    "nodes": {
+      "claude-code-toolkit": {
+        "name": "claude-code-toolkit",
+        "type": "app",
+        "data": {
+          "root": "packages/claude-code-toolkit",
+          "name": "claude-code-toolkit",
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "{projectRoot}/src",
+          "projectType": "application",
+          "tags": [
+            "type:cli-tool",
+            "lang:rust",
+            "domain:automation",
+            "scope:publishable",
+            "runtime:native",
+            "daemon"
+          ],
+          "targets": {
+            "format": {
+              "executor": "@goodiebag/nx-rust:fmt",
+              "options": {
+                "toolchain": "stable",
+                "target-dir": "./target"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "executor": "@goodiebag/nx-rust:lint",
+              "options": {
+                "toolchain": "stable",
+                "target-dir": "./target"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": ["default"],
+              "cache": true
+            },
+            "test": {
+              "executor": "@goodiebag/nx-rust:test",
+              "dependsOn": ["lint"],
+              "options": {
+                "toolchain": "stable",
+                "target-dir": "./target"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": ["default", "^production"],
+              "cache": true
+            },
+            "build": {
+              "executor": "@goodiebag/nx-rust:build",
+              "dependsOn": ["test"],
+              "outputs": ["{projectRoot}/target/release/claude-code-toolkit"],
+              "options": {
+                "toolchain": "stable",
+                "release": true,
+                "target-dir": "./target"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": ["production", "^production"],
+              "cache": true
+            },
+            "build-dev": {
+              "executor": "@goodiebag/nx-rust:build",
+              "dependsOn": ["test"],
+              "outputs": ["{projectRoot}/target/debug/claude-code-toolkit"],
+              "options": {
+                "toolchain": "stable",
+                "release": false,
+                "target-dir": "./target"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "run": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "cargo run --",
+                "cwd": "packages/claude-code-toolkit"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "install": {
+              "executor": "nx:run-commands",
+              "dependsOn": ["build"],
+              "options": {
+                "commands": [
+                  "echo '🔧 Installing claude-code-toolkit binary...'",
+                  "echo 'Working directory: $(pwd)'",
+                  "mkdir -p ~/.cargo/bin",
+                  "cp ./target/release/claude-code-toolkit ~/.cargo/bin/claude-code-toolkit",
+                  "chmod +x ~/.cargo/bin/claude-code-toolkit",
+                  "echo '🔍 Checking installation...'",
+                  "which claude-code-toolkit || echo 'WARNING: claude-code-toolkit not found in PATH'",
+                  "ls -la ~/.cargo/bin/claude-code-toolkit || echo 'WARNING: Binary not found in ~/.cargo/bin'",
+                  "echo '✅ claude-code-toolkit installed to ~/.cargo/bin/claude-code-toolkit'",
+                  "echo '📝 Next steps:'",
+                  "echo '  1. Add organizations: claude-code-toolkit org add <org-name>'",
+                  "echo '  2. Add repositories: claude-code-toolkit repo add <owner/repo>'",
+                  "echo '  3. Install daemon service: claude-code-toolkit service install'",
+                  "echo '  4. Check status: claude-code-toolkit status'"
+                ],
+                "cwd": "packages/claude-code-toolkit",
+                "parallel": false
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "package": {
+              "executor": "nx:run-commands",
+              "dependsOn": ["build"],
+              "outputs": ["{projectRoot}/target/package"],
+              "options": {
+                "command": "cargo package --target-dir ./target",
+                "cwd": "packages/claude-code-toolkit"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": ["production", "^production"],
+              "cache": true
+            },
+            "nx-release-publish": {
+              "executor": "@goodiebag/nx-rust:release-publish",
+              "dependsOn": ["build", "test", "lint"],
+              "options": {
+                "toolchain": "stable",
+                "packageRoot": "packages/claude-code-toolkit"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "env": {
+                "NPM_TOKEN": "{env.NPM_TOKEN}"
+              }
+            },
+            "check": {
+              "executor": "@goodiebag/nx-rust:check",
+              "options": {
+                "toolchain": "stable"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": ["default"],
+              "cache": true
+            },
+            "clean": {
+              "executor": "@goodiebag/nx-rust:clean",
+              "options": {
+                "toolchain": "stable",
+                "target-dir": "./target"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": ["default"],
+              "cache": false
+            },
+            "quality": {
+              "executor": "nx:run-commands",
+              "dependsOn": ["fmt", "lint", "test"],
+              "options": {
+                "command": "echo '✅ All quality checks passed'",
+                "cwd": "packages/claude-code-toolkit"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "ci": {
+              "executor": "nx:run-commands",
+              "dependsOn": ["quality", "build"],
+              "options": {
+                "command": "echo '🚀 CI pipeline completed successfully'",
+                "cwd": "packages/claude-code-toolkit"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "implicitDependencies": []
+        }
+      },
+      "exponentials.tv/db": {
+        "name": "exponentials.tv/db",
+        "type": "lib",
+        "data": {
+          "root": "apps/exponentials.tv/db",
+          "name": "exponentials.tv/db",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "targets": {
+            "migrate": {
+              "executor": "@deepbrainspace/nx-surrealdb:migrate",
+              "options": {
+                "url": "${SURREALDB_URL}",
+                "user": "${SURREALDB_ROOT_USER}",
+                "pass": "${SURREALDB_ROOT_PASS}",
+                "namespace": "${SURREALDB_NAMESPACE}",
+                "database": "${SURREALDB_DATABASE}",
+                "initPath": "apps/exponentials.tv/db"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "rollback": {
+              "executor": "@deepbrainspace/nx-surrealdb:rollback",
+              "options": {
+                "url": "${SURREALDB_URL}",
+                "user": "${SURREALDB_ROOT_USER}",
+                "pass": "${SURREALDB_ROOT_PASS}",
+                "namespace": "${SURREALDB_NAMESPACE}",
+                "database": "${SURREALDB_DATABASE}",
+                "initPath": "apps/exponentials.tv/db"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "status": {
+              "executor": "@deepbrainspace/nx-surrealdb:status",
+              "options": {
+                "url": "${SURREALDB_URL}",
+                "user": "${SURREALDB_ROOT_USER}",
+                "pass": "${SURREALDB_ROOT_PASS}",
+                "namespace": "${SURREALDB_NAMESPACE}",
+                "database": "${SURREALDB_DATABASE}",
+                "initPath": "apps/exponentials.tv/db"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "reset": {
+              "executor": "@deepbrainspace/nx-surrealdb:reset",
+              "options": {
+                "url": "${SURREALDB_URL}",
+                "user": "${SURREALDB_ROOT_USER}",
+                "pass": "${SURREALDB_ROOT_PASS}",
+                "namespace": "${SURREALDB_NAMESPACE}",
+                "database": "${SURREALDB_DATABASE}"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "executor": "@deepbrainspace/nx-surrealdb:lint",
+              "options": {
+                "initPath": "apps/exponentials.tv/db"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": ["default"],
+              "cache": true
+            },
+            "test": {
+              "executor": "@deepbrainspace/nx-surrealdb:test",
+              "options": {
+                "initPath": "apps/exponentials.tv/db"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": ["lint"],
+              "inputs": ["default", "^production"],
+              "cache": true
+            }
+          },
+          "implicitDependencies": [],
+          "tags": []
+        }
+      },
+      "nx-surrealdb": {
+        "name": "nx-surrealdb",
+        "type": "lib",
+        "data": {
+          "root": "packages/nx-surrealdb",
+          "targets": {
+            "jest:test": {
+              "options": {
+                "cwd": "packages/nx-surrealdb",
+                "env": {
+                  "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node10\",\"module\":\"commonjs\",\"customConditions\":null}"
+                },
+                "command": "jest"
+              },
+              "metadata": {
+                "technologies": ["jest"],
+                "description": "Run Jest Tests",
+                "help": {
+                  "command": "pnpm exec jest --help",
+                  "example": {
+                    "options": {
+                      "coverage": true
+                    }
+                  }
+                }
+              },
+              "cache": true,
+              "inputs": [
+                "default",
+                "^production",
+                {
+                  "externalDependencies": ["jest", "ts-jest"]
+                }
+              ],
+              "outputs": ["{projectRoot}/coverage"],
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": ["^nx-release-publish", "build"],
+              "options": {
+                "packageRoot": "dist/packages/nx-surrealdb"
+              },
+              "env": {
+                "NPM_TOKEN": "{env.NPM_TOKEN}"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "format": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "prettier --write src/**/*.{ts,js,json}",
+                "cwd": "packages/nx-surrealdb"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "install": {
+              "executor": "nx:run-commands",
+              "outputs": [],
+              "cache": true,
+              "options": {
+                "commands": [
+                  {
+                    "command": "pnpm install --frozen-lockfile",
+                    "forwardAllArgs": false
+                  }
+                ],
+                "cwd": "packages/nx-surrealdb",
+                "parallel": false
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": ["{options.outputPath}"],
+              "dependsOn": ["test"],
+              "cache": true,
+              "options": {
+                "outputPath": "dist/packages/nx-surrealdb",
+                "main": "packages/nx-surrealdb/src/index.ts",
+                "tsConfig": "packages/nx-surrealdb/tsconfig.lib.json",
+                "assets": [
+                  "packages/nx-surrealdb/*.json",
+                  "packages/nx-surrealdb/*.md",
+                  {
+                    "input": "packages/nx-surrealdb/src",
+                    "glob": "**/schema.json",
+                    "output": "src"
+                  },
+                  {
+                    "input": "packages/nx-surrealdb/src",
+                    "glob": "**/files/**",
+                    "output": "src"
+                  },
+                  {
+                    "input": "packages/nx-surrealdb/src",
+                    "glob": "**/*.surql",
+                    "output": "src"
+                  }
+                ]
+              },
+              "configurations": {
+                "production": {}
+              },
+              "parallelism": true,
+              "inputs": ["production", "^production"]
+            },
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "options": {
+                "lintFilePatterns": [
+                  "packages/nx-surrealdb/src/**/*.ts",
+                  "packages/nx-surrealdb/src/**/*.js"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": ["default"],
+              "cache": true
+            },
+            "test": {
+              "executor": "nx:run-commands",
+              "dependsOn": ["lint"],
+              "outputs": ["{projectRoot}/coverage"],
+              "cache": false,
+              "options": {
+                "commands": [
+                  {
+                    "command": "npx jest --config=jest.config.js",
+                    "forwardAllArgs": false
+                  }
+                ],
+                "cwd": "packages/nx-surrealdb",
+                "parallel": false
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": ["default", "^production"]
+            },
+            "version": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "nx release version --projects=nx-surrealdb",
+                "cwd": ""
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "nx-surrealdb",
+          "tags": [
+            "npm:public",
+            "npm:nx",
+            "npm:plugin",
+            "npm:surrealdb",
+            "npm:migrations",
+            "npm:database",
+            "type:nx-plugin",
+            "lang:typescript",
+            "domain:database",
+            "scope:publishable",
+            "runtime:node"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "description": "NX plugin for SurrealDB migrations with modular architecture",
+            "js": {
+              "packageName": "@deepbrainspace/nx-surrealdb",
+              "packageExports": {
+                ".": "./src/index.js",
+                "./package.json": "./package.json"
+              },
+              "packageMain": "./src/index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "sourceRoot": "packages/nx-surrealdb/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "nx-toolkit": {
+        "name": "nx-toolkit",
+        "type": "lib",
+        "data": {
+          "root": "packages/nx-toolkit",
+          "targets": {
+            "jest:test": {
+              "options": {
+                "cwd": "packages/nx-toolkit",
+                "env": {
+                  "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node10\",\"module\":\"commonjs\",\"customConditions\":null}"
+                },
+                "command": "jest"
+              },
+              "metadata": {
+                "technologies": ["jest"],
+                "description": "Run Jest Tests",
+                "help": {
+                  "command": "pnpm exec jest --help",
+                  "example": {
+                    "options": {
+                      "coverage": true
+                    }
+                  }
+                }
+              },
+              "cache": true,
+              "inputs": [
+                "default",
+                "^production",
+                {
+                  "externalDependencies": ["jest", "ts-jest"]
+                }
+              ],
+              "outputs": ["{projectRoot}/coverage"],
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": ["^nx-release-publish", "build"],
+              "options": {
+                "packageRoot": "dist/packages/nx-toolkit"
+              },
+              "env": {
+                "NPM_TOKEN": "{env.NPM_TOKEN}"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": ["{options.outputPath}"],
+              "options": {
+                "outputPath": "dist/packages/nx-toolkit",
+                "main": "packages/nx-toolkit/src/index.ts",
+                "tsConfig": "packages/nx-toolkit/tsconfig.lib.json",
+                "assets": [
+                  "packages/nx-toolkit/*.md",
+                  {
+                    "input": "./packages/nx-toolkit/src",
+                    "glob": "**/!(*.ts)",
+                    "output": "./src"
+                  },
+                  {
+                    "input": "./packages/nx-toolkit",
+                    "glob": "executors.json",
+                    "output": "."
+                  },
+                  {
+                    "input": "./packages/nx-toolkit",
+                    "glob": "commands.json",
+                    "output": "."
+                  }
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": ["^build", "test"],
+              "inputs": ["production", "^production"],
+              "cache": true
+            },
+            "test": {
+              "executor": "@nx/jest:jest",
+              "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+              "options": {
+                "jestConfig": "packages/nx-toolkit/jest.config.ts"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": ["lint"],
+              "inputs": ["default", "^production"],
+              "cache": true
+            },
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "outputs": ["{options.outputFile}"],
+              "options": {
+                "lintFilePatterns": ["packages/nx-toolkit/**/*.ts"]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": ["default"],
+              "cache": true
+            }
+          },
+          "name": "nx-toolkit",
+          "tags": ["npm:public", "type:plugin", "scope:nx"],
+          "metadata": {
+            "targetGroups": {},
+            "description": "NX toolkit plugin with useful executors including release management and version tools",
+            "js": {
+              "packageName": "@goodiebag/nx-toolkit",
+              "packageMain": "src/index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "packages/nx-toolkit/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "nx-rust": {
+        "name": "nx-rust",
+        "type": "lib",
+        "data": {
+          "root": "packages/nx-rust",
+          "targets": {
+            "jest:test": {
+              "options": {
+                "cwd": "packages/nx-rust",
+                "env": {
+                  "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node10\",\"module\":\"commonjs\",\"customConditions\":null}"
+                },
+                "command": "jest"
+              },
+              "metadata": {
+                "technologies": ["jest"],
+                "description": "Run Jest Tests",
+                "help": {
+                  "command": "pnpm exec jest --help",
+                  "example": {
+                    "options": {
+                      "coverage": true
+                    }
+                  }
+                }
+              },
+              "cache": true,
+              "inputs": [
+                "default",
+                "^production",
+                {
+                  "externalDependencies": ["jest", "ts-jest"]
+                }
+              ],
+              "outputs": ["{projectRoot}/coverage"],
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": ["^nx-release-publish", "build"],
+              "options": {
+                "packageRoot": "dist/packages/nx-rust"
+              },
+              "env": {
+                "NPM_TOKEN": "{env.NPM_TOKEN}"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "format": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "prettier --write src/**/*.{ts,js,json}",
+                "cwd": "packages/nx-rust"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "outputs": ["{options.outputFile}"],
+              "options": {
+                "lintFilePatterns": [
+                  "packages/nx-rust/src/**/*.ts",
+                  "packages/nx-rust/src/**/*.js"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": ["default"],
+              "cache": true
+            },
+            "test": {
+              "executor": "@nx/jest:jest",
+              "outputs": ["{projectRoot}"],
+              "options": {
+                "jestConfig": "packages/nx-rust/jest.config.ts"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": ["lint"],
+              "inputs": ["default", "^production"],
+              "cache": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": ["{options.outputPath}"],
+              "cache": false,
+              "options": {
+                "outputPath": "dist/packages/nx-rust",
+                "main": "packages/nx-rust/src/index.ts",
+                "tsConfig": "packages/nx-rust/tsconfig.lib.json",
+                "assets": [
+                  "packages/nx-rust/*.json",
+                  "packages/nx-rust/*.md",
+                  {
+                    "input": "packages/nx-rust/src",
+                    "glob": "**/!(*.ts)",
+                    "output": "./src"
+                  },
+                  {
+                    "input": "packages/nx-rust/src",
+                    "glob": "**/*.d.ts",
+                    "output": "./src"
+                  }
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": ["^build", "test"],
+              "inputs": ["production", "^production"]
+            }
+          },
+          "name": "nx-rust",
+          "tags": [
+            "npm:public",
+            "type:nx-plugin",
+            "lang:typescript",
+            "domain:build-system",
+            "scope:publishable",
+            "runtime:node"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@goodiebag/nx-rust",
+              "packageExports": {
+                ".": "./src/index.js",
+                "./release": "./src/release/index.js",
+                "./package.json": "./package.json"
+              },
+              "packageMain": "./src/index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "{projectRoot}/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "goodiebag": {
+        "name": "goodiebag",
+        "type": "lib",
+        "data": {
+          "root": ".",
+          "name": "goodiebag",
+          "tags": ["npm:public", "workspace", "infrastructure"],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "release",
+                "release:dry-run",
+                "prepare",
+                "install:dotfiles"
+              ]
+            },
+            "description": "GoodieBag of tools and libraries for DeepBrain projects",
+            "js": {
+              "packageName": "@deepbrainspace/goodiebag",
+              "isInPackageManagerWorkspaces": false
+            }
+          },
+          "targets": {
+            "release": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "release"
+              },
+              "metadata": {
+                "scriptContent": "nx release",
+                "runCommand": "pnpm run release"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "release:dry-run": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "release:dry-run"
+              },
+              "metadata": {
+                "scriptContent": "nx release --dry-run",
+                "runCommand": "pnpm run release:dry-run"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "prepare": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "prepare"
+              },
+              "metadata": {
+                "scriptContent": "husky",
+                "runCommand": "pnpm run prepare"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "install:dotfiles": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "install:dotfiles"
+              },
+              "metadata": {
+                "scriptContent": "cd dotfiles && ./install.sh",
+                "runCommand": "pnpm run install:dotfiles"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": ["^nx-release-publish", "build"],
+              "options": {
+                "packageRoot": "dist/packages/goodiebag"
+              },
+              "env": {
+                "NPM_TOKEN": "{env.NPM_TOKEN}"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "executor": "nx:run-commands",
+              "options": {
+                "commands": [
+                  "prettier --check .github/**/*.{yml,yaml} *.md docs/**/*.md || echo 'ℹ️  Some workspace files could benefit from formatting'"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": ["default"],
+              "cache": true
+            },
+            "test": {
+              "executor": "nx:run-commands",
+              "options": {
+                "commands": [
+                  "echo '🧪 Testing workspace configuration...'",
+                  "nx graph --file=temp-graph.json > /dev/null && rm -f temp-graph.json",
+                  "echo '✅ Workspace configuration is valid'"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": ["lint"],
+              "inputs": ["default", "^production"],
+              "cache": true
+            },
+            "build": {
+              "executor": "nx:run-commands",
+              "options": {
+                "commands": [
+                  "echo '🏗️  Building workspace artifacts...'",
+                  "mkdir -p dist/packages/goodiebag",
+                  "nx graph --file=dist/packages/goodiebag/dependency-graph.json",
+                  "cp -r .github dist/packages/goodiebag/",
+                  "cp -r docs dist/packages/goodiebag/",
+                  "cp -r dotfiles dist/packages/goodiebag/",
+                  "cp -r .husky dist/packages/goodiebag/",
+                  "cp README.md CHANGELOG.md package.json nx.json project.json dist/packages/goodiebag/",
+                  "echo '✅ Workspace build completed'"
+                ]
+              },
+              "outputs": ["{workspaceRoot}/dist/packages/goodiebag"],
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": ["^build", "test"],
+              "inputs": ["production", "^production"],
+              "cache": true
+            },
+            "release-please": {
+              "executor": "@goodiebag/nx-toolkit:release-please",
+              "options": {
+                "createReleaseBranch": true,
+                "specifier": "minor",
+                "ensureCleanBase": false
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "versions": {
+              "executor": "@goodiebag/nx-toolkit:versions",
+              "configurations": {},
+              "options": {
+                "verbose": true
+              },
+              "parallelism": true
+            }
+          },
+          "projectType": "library",
+          "sourceRoot": ".",
+          "implicitDependencies": [],
+          "namedInputs": {
+            "default": [
+              "{workspaceRoot}/.github/**/*",
+              "{workspaceRoot}/docs/**/*",
+              "{workspaceRoot}/dotfiles/**/*",
+              "{workspaceRoot}/*.md",
+              "{workspaceRoot}/nx.json",
+              "{workspaceRoot}/package.json",
+              "{workspaceRoot}/pnpm-lock.yaml",
+              "{workspaceRoot}/.husky/**/*"
+            ]
+          }
+        }
+      }
+    },
+    "dependencies": {
+      "claude-code-toolkit": [],
+      "exponentials.tv/db": [],
+      "nx-surrealdb": [],
+      "nx-toolkit": [],
+      "nx-rust": [],
+      "goodiebag": [
+        {
+          "source": "goodiebag",
+          "target": "nx-surrealdb",
+          "type": "static"
+        },
+        {
+          "source": "goodiebag",
+          "target": "nx-rust",
+          "type": "static"
+        },
+        {
+          "source": "goodiebag",
+          "target": "nx-toolkit",
+          "type": "static"
+        }
+      ]
+    }
+  }
+}

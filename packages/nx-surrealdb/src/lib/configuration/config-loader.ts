@@ -11,6 +11,7 @@ export interface ModuleConfig {
 
 export interface MigrationsConfig {
   modules: Record<string, ModuleConfig>;
+  environments?: string[];
   settings?: {
     configFormat?: 'json' | 'yaml';
     useTransactions?: boolean;

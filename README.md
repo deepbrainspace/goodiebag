@@ -168,22 +168,27 @@ nx affected --target=test    # Only tests affected packages
 
 ```
 goodiebag/
-goodiebag/
-├── packages/              # 📦 Publishable to npm
-│   ├── nx-surrealdb/     # NX plugin for SurrealDB migrations
-│   ├── mcp-server-*/     # Model Context Protocol servers
-│   ├── cli-*/            # Command-line utilities
-│   └── shared-*/         # Reusable libraries
-├── apps/                 # 🚀 Deployable applications
-│   ├── goodiebag-dev/    # Main showcase website
-│   ├── membership/       # Developer community portal
-│   ├── docs/             # Documentation site
-│   └── admin-dashboard/  # Management interface
-└── libs/                 # 🔧 Internal shared code
-    ├── ui-components/    # React/Vue components
-    ├── brand-assets/     # Design system & assets
-    ├── shared-utils/     # Common utilities
-    └── shared-types/     # TypeScript definitions
+├── .env                 # 🔐 Environment variables (git-crypt encrypted)
+├── .github/             # 🔄 GitHub Actions CI/CD workflows
+├── .husky/              # 🪝 Git hooks for automation
+├── packages/            # 📦 Publishable to npm
+│   ├── nx-surrealdb/   # NX plugin for SurrealDB migrations  
+│   ├── nx-rust/        # NX plugin for Rust projects
+│   ├── nx-toolkit/     # Development utilities & release management
+│   └── claude-code-toolkit/ # Claude Code management CLI
+├── apps/               # 🚀 Deployable applications
+│   ├── exponentials.tv/ # Trading platform
+│   │   ├── .claude/    # Planning & development docs
+│   │   ├── db/         # Shared SurrealDB migrations
+│   │   ├── frontend/   # Public website (Next.js)
+│   │   └── admin/      # Admin dashboard (Next.js)
+│   └── README.md       # Apps documentation
+├── docs/               # 📚 Project documentation
+├── dotfiles/           # ⚙️ Development environment setup
+├── nx.json             # 🏗️ NX workspace configuration
+├── package.json        # 📦 Root package configuration
+├── pnpm-workspace.yaml # 🔧 Workspace definition
+└── tsconfig.base.json  # 📄 TypeScript base configuration
 ```
 
 **🏗️ Quality Standards:**

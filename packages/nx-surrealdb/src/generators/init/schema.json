@@ -4,12 +4,22 @@
   "properties": {
     "name": {
       "type": "string",
-      "description": "Name of the database project",
+      "description": "Name of the database project (will be used as namespace)",
       "default": "database",
       "$default": {
         "$source": "argv",
         "index": 0
       }
+    },
+    "path": {
+      "type": "string",
+      "description": "Base directory where the project will be created",
+      "default": "."
+    },
+    "db-path": {
+      "type": "string",
+      "description": "Database folder name within the project",
+      "default": ""
     },
     "url": {
       "type": "string",
@@ -18,8 +28,12 @@
     },
     "namespace": {
       "type": "string",
-      "description": "SurrealDB namespace",
-      "default": "development"
+      "description": "SurrealDB namespace (auto-derived from project name if not specified)"
+    },
+    "environments": {
+      "type": "string",
+      "description": "Comma-separated list of environment databases to create",
+      "default": "development,staging,production"
     },
     "database": {
       "type": "string",
