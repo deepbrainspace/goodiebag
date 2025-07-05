@@ -18,10 +18,11 @@
       "dependencies": ["010_auth"]
     }
   },
+  "environments": ["development", "staging", "production"],
   "settings": {
     "configFormat": "json",
     "useTransactions": true,
-    "defaultNamespace": "development",
+    "defaultNamespace": "exponentials.tv",
     "defaultDatabase": "main"
   }
 }

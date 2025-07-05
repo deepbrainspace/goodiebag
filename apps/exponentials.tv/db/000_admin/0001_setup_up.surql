@@ -4,14 +4,20 @@
 -- Created: Starter template for database initialization
 
 -- System Administration Setup
--- Uncomment and customize the following for your database:
+
+-- Always ensure namespace exists
+DEFINE NAMESPACE `exponentials.tv` IF NOT EXISTS;
+
+-- Create environment databases
+DEFINE DATABASE development ON NAMESPACE `exponentials.tv` IF NOT EXISTS;
+DEFINE DATABASE staging ON NAMESPACE `exponentials.tv` IF NOT EXISTS;
+DEFINE DATABASE production ON NAMESPACE `exponentials.tv` IF NOT EXISTS;
+
+-- Note: USE NS/DB commands added automatically by nx-surrealdb
+-- based on SURREALDB_NAMESPACE and SURREALDB_DATABASE env vars
 
 -- Create admin users and basic permissions
--- DEFINE USER admin ON ROOT PASSWORD 'your-admin-password' ROLES OWNER;
-
--- Set up basic database structure
--- USE NS development;
--- USE DB main;
+-- DEFINE USER admin ON ROOT PASSWORD 'CHANGE_THIS_PASSWORD' ROLES OWNER;
 
 -- Define authentication scopes
 -- DEFINE SCOPE user SESSION 24h

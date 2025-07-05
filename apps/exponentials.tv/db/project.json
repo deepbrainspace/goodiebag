@@ -1,6 +1,6 @@
 {
-  "name": "exponentials.tv/db",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "exponentials.tv",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "targets": {
     "migrate": {
       "executor": "@deepbrainspace/nx-surrealdb:migrate",
@@ -10,7 +10,7 @@
         "pass": "${SURREALDB_ROOT_PASS}",
         "namespace": "${SURREALDB_NAMESPACE}",
         "database": "${SURREALDB_DATABASE}",
-        "initPath": "exponentials.tv/db"
+        "initPath": "apps/exponentials.tv/db"
       }
     },
     "rollback": {
@@ -21,7 +21,7 @@
         "pass": "${SURREALDB_ROOT_PASS}",
         "namespace": "${SURREALDB_NAMESPACE}",
         "database": "${SURREALDB_DATABASE}",
-        "initPath": "exponentials.tv/db"
+        "initPath": "apps/exponentials.tv/db"
       }
     },
     "status": {
@@ -32,7 +32,7 @@
         "pass": "${SURREALDB_ROOT_PASS}",
         "namespace": "${SURREALDB_NAMESPACE}",
         "database": "${SURREALDB_DATABASE}",
-        "initPath": "exponentials.tv/db"
+        "initPath": "apps/exponentials.tv/db"
       }
     },
     "reset": {

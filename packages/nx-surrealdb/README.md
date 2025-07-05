@@ -9,13 +9,13 @@ NX plugin for SurrealDB migrations with modular architecture and dependency reso
 npm install @deepbrainspace/nx-surrealdb --save-dev
 
 # Initialize database project
-nx g @deepbrainspace/nx-surrealdb:init apps/my-app/db --name="my-app/db"
+nx g @deepbrainspace/nx-surrealdb:init myproject --path="apps"
 
 # Run migrations
-nx run my-app/db:migrate
+nx run myproject:migrate
 
 # Check status
-nx run my-app/db:status
+nx run myproject:status
 ```
 
 ## Essential Commands
@@ -94,123 +94,134 @@ nx list @deepbrainspace/nx-surrealdb
 
 ## Quick Start
 
-### 1. Create a Database Project
+### 1. Initialize Database Project
 
 ```bash
-# Generate a new database project
-nx g @nx/node:application database --bundler=webpack --framework=none
+# Generate database project with clean path structure
+nx g @deepbrainspace/nx-surrealdb:init myproject --path="apps"
+# Creates: apps/myproject/db/
 
-# Or add to existing project by updating project.json
+# Customize base path and database folder name
+nx g @deepbrainspace/nx-surrealdb:init exponentials.tv --path="apps" --db-path="database"
+# Creates: apps/exponentials.tv/database/
+
+# Default location (project root)
+nx g @deepbrainspace/nx-surrealdb:init myproject
+# Creates: myproject/db/
 ```
 
-### 2. Configure Project Targets
+The `init` generator automatically creates:
+- Complete directory structure with modules (000_admin, 010_auth, 020_schema)
+- Rich configuration file with environment support
+- NX project configuration with all executors
+- Starter migration templates
+- Comprehensive README with usage instructions
 
-Update your `database/project.json`:
+### 2. Set Up Environment Variables
 
-```json
-{
-  "name": "database",
-  "targets": {
-    "migrate": {
-      "executor": "@deepbrainspace/nx-surrealdb:migrate",
-      "options": {
-        "url": "${SURREALDB_URL}",
-        "user": "${SURREALDB_ROOT_USER}",
-        "pass": "${SURREALDB_ROOT_PASS}",
-        "namespace": "${SURREALDB_NAMESPACE}",
-        "database": "${SURREALDB_DATABASE}",
-        "initPath": "database"
-      }
-    },
-    "rollback": {
-      "executor": "@deepbrainspace/nx-surrealdb:rollback",
-      "options": {
-        "url": "${SURREALDB_URL}",
-        "user": "${SURREALDB_ROOT_USER}",
-        "pass": "${SURREALDB_ROOT_PASS}",
-        "namespace": "${SURREALDB_NAMESPACE}",
-        "database": "${SURREALDB_DATABASE}",
-        "initPath": "database"
-      }
-    },
-    "status": {
-      "executor": "@deepbrainspace/nx-surrealdb:status",
-      "options": {
-        "url": "${SURREALDB_URL}",
-        "user": "${SURREALDB_ROOT_USER}",
-        "pass": "${SURREALDB_ROOT_PASS}",
-        "namespace": "${SURREALDB_NAMESPACE}",
-        "database": "${SURREALDB_DATABASE}",
-        "initPath": "database"
-      }
-    }
-  }
-}
-```
-
-### 3. Set Up Environment Variables
-
-Create `.env` in your workspace root:
+The `init` generator automatically configures project targets. Create `.env` in your workspace root:
 
 ```bash
 # SurrealDB Connection
-SURREALDB_URL=ws://localhost:8000
+SURREALDB_URL=ws://localhost:8000/rpc
 SURREALDB_ROOT_USER=root
 SURREALDB_ROOT_PASS=root
-SURREALDB_NAMESPACE=myapp
-SURREALDB_DATABASE=main
+SURREALDB_NAMESPACE=myproject
+SURREALDB_DATABASE=development
 ```
 
-### 4. Create Module Configuration
+### 3. Start Using Your Database
 
-Create `database/config.json`:
+The `init` generator creates everything you need:
 
+**Rich Configuration (`config.json`)**:
 ```json
 {
   "modules": {
     "000_admin": {
       "name": "System Administration",
-      "description": "Core system setup and administrative functions",
-      "depends": []
+      "description": "Core database setup and administrative functions",
+      "dependencies": [],
+      "locked": true,
+      "lockReason": "Critical system module - contains core admin setup and permissions"
     },
     "010_auth": {
       "name": "Authentication & Users",
       "description": "User authentication and authorization system",
-      "depends": ["000_admin"]
+      "dependencies": ["000_admin"]
     },
     "020_schema": {
       "name": "Application Schema",
       "description": "Core application data models and relationships",
-      "depends": ["010_auth"]
+      "dependencies": ["010_auth"]
     }
   },
+  "environments": ["development", "staging", "production"],
   "settings": {
     "configFormat": "json",
     "useTransactions": true,
-    "defaultNamespace": "myapp",
-    "defaultDatabase": "main"
+    "defaultNamespace": "myproject",
+    "defaultDatabase": "development"
   }
 }
 ```
 
-### 5. Create Migration Directory Structure
-
+**Complete Directory Structure**:
 ```
-database/
+apps/myproject/db/
 ├── 000_admin/
 │   ├── 0001_setup_up.surql
 │   └── 0001_setup_down.surql
 ├── 010_auth/
 │   ├── 0001_users_up.surql
-│   ├── 0001_users_down.surql
-│   ├── 0002_sessions_up.surql
-│   └── 0002_sessions_down.surql
+│   └── 0001_users_down.surql
 ├── 020_schema/
-│   └── ...
-└── config.json
+│   ├── 0001_tables_up.surql
+│   └── 0001_tables_down.surql
+├── config.json
+├── project.json (auto-configured)
+└── README.md
 ```
 
 ## Usage
+
+### Initialize Database Projects
+
+The `init` generator provides flexible project setup with clean parameter design:
+
+#### Basic Usage
+```bash
+# Project identity and location are separate
+nx g @deepbrainspace/nx-surrealdb:init projectName --path="apps"
+# ✅ Creates: apps/projectName/db/
+# ✅ Project identity: "projectName" (used for namespace)
+# ✅ NX project name: "projectName"
+```
+
+#### Advanced Options
+```bash
+# Custom database folder name
+nx g @deepbrainspace/nx-surrealdb:init myapp --path="apps" --db-path="database"
+# ✅ Creates: apps/myapp/database/
+
+# Root installation (no path)
+nx g @deepbrainspace/nx-surrealdb:init myapp
+# ✅ Creates: myapp/db/
+
+# Complex project names work perfectly
+nx g @deepbrainspace/nx-surrealdb:init exponentials.tv --path="apps"
+# ✅ Creates: apps/exponentials.tv/db/
+# ✅ Namespace: "exponentials.tv"
+```
+
+#### What Gets Generated
+Every `init` command creates:
+- 📁 **Complete module structure** (000_admin, 010_auth, 020_schema)
+- ⚙️ **Rich config.json** with environments and detailed module info
+- 🎯 **NX project.json** with all executors pre-configured
+- 📝 **Starter migrations** ready for customization
+- 📖 **README.md** with usage instructions
+- 🔒 **Module lock protection** for critical modules
 
 ### Generate New Migrations
 
