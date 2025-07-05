@@ -12,7 +12,8 @@ if [ -n "$STAGED_FILES" ]; then
   # - Long base64-like strings (20+ chars)
   # - API key patterns (sk-, ghp_, etc.)
   # - JWT tokens (starting with ey)
-  SECRET_MATCHES=$(echo "$STAGED_FILES" | xargs grep -n -E "(sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{20,}|ey[a-zA-Z0-9]{20,}|['\"][a-zA-Z0-9+/]{32,}['\"])" 2>/dev/null || true)
+  # Exclude pnpm lockfile integrity hashes
+  SECRET_MATCHES=$(echo "$STAGED_FILES" | xargs grep -n -E "(sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{20,}|ey[a-zA-Z0-9]{20,}|['\"][a-zA-Z0-9+/]{32,}['\"])" 2>/dev/null | grep -v "pnpm-lock.yaml.*integrity: sha" || true)
   if [ -n "$SECRET_MATCHES" ]; then
     echo "⚠️  Potential secret values detected in staged files!"
     echo "🔍 Found the following matches:"
