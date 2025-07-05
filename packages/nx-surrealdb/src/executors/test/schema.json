@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "type": "object",
+  "properties": {
+    "initPath": {
+      "type": "string",
+      "description": "Path to the migrations directory",
+      "default": "database"
+    }
+  },
+  "required": ["initPath"]
+}

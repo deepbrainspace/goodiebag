@@ -1,6 +1,6 @@
 {
-  "name": "exponentials.tv/db",
-  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "name": "test-config",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
   "targets": {
     "migrate": {
       "executor": "@deepbrainspace/nx-surrealdb:migrate",
@@ -10,7 +10,7 @@
         "pass": "${SURREALDB_ROOT_PASS}",
         "namespace": "${SURREALDB_NAMESPACE}",
         "database": "${SURREALDB_DATABASE}",
-        "initPath": "apps/exponentials.tv/db"
+        "initPath": "test-config"
       },
       "cache": false
     },
@@ -22,7 +22,7 @@
         "pass": "${SURREALDB_ROOT_PASS}",
         "namespace": "${SURREALDB_NAMESPACE}",
         "database": "${SURREALDB_DATABASE}",
-        "initPath": "apps/exponentials.tv/db"
+        "initPath": "test-config"
       },
       "cache": false
     },
@@ -34,7 +34,7 @@
         "pass": "${SURREALDB_ROOT_PASS}",
         "namespace": "${SURREALDB_NAMESPACE}",
         "database": "${SURREALDB_DATABASE}",
-        "initPath": "apps/exponentials.tv/db",
+        "initPath": "test-config",
         "detailed": true
       },
       "cache": false
@@ -53,7 +53,7 @@
     "lint": {
       "executor": "@deepbrainspace/nx-surrealdb:lint",
       "options": {
-        "initPath": "apps/exponentials.tv/db"
+        "initPath": "test-config"
       },
       "cache": true,
       "inputs": ["default"]
@@ -61,7 +61,7 @@
     "test": {
       "executor": "@deepbrainspace/nx-surrealdb:test",
       "options": {
-        "initPath": "apps/exponentials.tv/db"
+        "initPath": "test-config"
       },
       "cache": true,
       "dependsOn": ["lint"],

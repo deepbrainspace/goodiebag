@@ -1,11 +1,4 @@
-import {
-  Tree,
-  formatFiles,
-  generateFiles,
-  addProjectConfiguration,
-  ProjectConfiguration,
-  installPackagesTask,
-} from '@nx/devkit';
+import { Tree, formatFiles, generateFiles, installPackagesTask, workspaceRoot } from '@nx/devkit';
 import { MigrationsConfig } from '../../lib/configuration/config-loader';
 import * as path from 'path';
 
@@ -24,7 +17,7 @@ export interface InitGeneratorSchema {
 
 export default async function (tree: Tree, options: InitGeneratorSchema) {
   const { name } = options;
-  
+
   // Calculate installation path
   const basePath = options.path || '.';
   const dbPath = options.dbPath || options['db-path'] || '';
@@ -64,11 +57,11 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
   // Derive namespace from project name if not provided
   // Strip component suffix (e.g., "exponentials.tv/db" -> "exponentials.tv")
   const derivedNamespace = name.includes('/') ? name.split('/')[0] : name;
-  
+
   // Parse environments from comma-separated string
   const environmentsString = options.environments || 'development,staging,production';
   const environments = environmentsString.split(',').map(env => env.trim());
-  
+
   // Set defaults using the same pattern as the library
   const config = {
     name,
@@ -110,71 +103,21 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
     },
   };
 
-  // Generate the database project structure
+  // Calculate the relative path for the schema
+  const schemaPath = path.relative(
+    projectPath,
+    path.join(workspaceRoot, 'node_modules/nx/schemas/project-schema.json')
+  );
+
+  // Generate the database project structure including project.json from template
   generateFiles(tree, path.join(__dirname, 'files'), projectPath, {
     ...config,
     template: '',
     moduleConfig: JSON.stringify(moduleConfig, null, 2),
-  });
-
-  // Add NX project configuration
-  const projectConfig: ProjectConfiguration = {
     name,
-    root: projectPath,
-    targets: {
-      migrate: {
-        executor: '@deepbrainspace/nx-surrealdb:migrate',
-        options: {
-          url: '${SURREALDB_URL}',
-          user: '${SURREALDB_ROOT_USER}',
-          pass: '${SURREALDB_ROOT_PASS}',
-          namespace: '${SURREALDB_NAMESPACE}',
-          database: '${SURREALDB_DATABASE}',
-          initPath: projectPath,
-        },
-      },
-      rollback: {
-        executor: '@deepbrainspace/nx-surrealdb:rollback',
-        options: {
-          url: '${SURREALDB_URL}',
-          user: '${SURREALDB_ROOT_USER}',
-          pass: '${SURREALDB_ROOT_PASS}',
-          namespace: '${SURREALDB_NAMESPACE}',
-          database: '${SURREALDB_DATABASE}',
-          initPath: projectPath,
-        },
-      },
-      status: {
-        executor: '@deepbrainspace/nx-surrealdb:status',
-        options: {
-          url: '${SURREALDB_URL}',
-          user: '${SURREALDB_ROOT_USER}',
-          pass: '${SURREALDB_ROOT_PASS}',
-          namespace: '${SURREALDB_NAMESPACE}',
-          database: '${SURREALDB_DATABASE}',
-          initPath: projectPath,
-        },
-      },
-      reset: {
-        executor: '@deepbrainspace/nx-surrealdb:reset',
-        options: {
-          url: '${SURREALDB_URL}',
-          user: '${SURREALDB_ROOT_USER}',
-          pass: '${SURREALDB_ROOT_PASS}',
-          namespace: '${SURREALDB_NAMESPACE}',
-          database: '${SURREALDB_DATABASE}',
-        },
-      },
-      lint: {
-        command: "echo 'Database project - no linting required'",
-      },
-      test: {
-        command: "echo 'Database project - no testing required'",
-      },
-    },
-  };
-
-  addProjectConfiguration(tree, name, projectConfig);
+    initPath: projectPath,
+    schemaPath,
+  });
 
   await formatFiles(tree);
 

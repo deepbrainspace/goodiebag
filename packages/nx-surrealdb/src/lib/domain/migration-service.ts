@@ -729,10 +729,11 @@ export class MigrationService {
     };
   }
 
-  private async findModuleMigrations(
+  async findModuleMigrations(
     moduleId: string,
     direction: 'up' | 'down',
-    basePath: string
+    basePath: string,
+    includeContent: boolean = true
   ): Promise<MigrationFile[]> {
     const modulePath = path.join(basePath, moduleId);
 
@@ -748,13 +749,19 @@ export class MigrationService {
 
       for (const filename of migrationFiles) {
         const filePath = path.join(modulePath, filename);
-        const content = await fs.readFile(filePath, 'utf-8');
-        const checksum = crypto.createHash('sha256').update(content).digest('hex');
 
         const fileParts = filename.match(/^(\d+)_(.+)_(up|down)\.surql$/);
         if (!fileParts) continue;
 
         const [, number, name] = fileParts;
+
+        let content = '';
+        let checksum = '';
+
+        if (includeContent) {
+          content = await fs.readFile(filePath, 'utf-8');
+          checksum = crypto.createHash('sha256').update(content).digest('hex');
+        }
 
         migrations.push({
           number,

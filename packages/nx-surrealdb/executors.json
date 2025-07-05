@@ -19,6 +19,16 @@
       "implementation": "./src/executors/reset/executor.js",
       "schema": "./src/executors/reset/schema.json",
       "description": "Reset migration tracking table and clear all migration history"
+    },
+    "lint": {
+      "implementation": "./src/executors/lint/executor.js",
+      "schema": "./src/executors/lint/schema.json",
+      "description": "Lint SurrealDB migration files for syntax and best practices"
+    },
+    "test": {
+      "implementation": "./src/executors/test/executor.js",
+      "schema": "./src/executors/test/schema.json",
+      "description": "Test SurrealDB migrations (guidance and future implementation)"
     }
   }
 }

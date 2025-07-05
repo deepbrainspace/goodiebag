@@ -123,6 +123,33 @@ export class MigrationFileProcessor {
     }
   }
 
+  static async getAllMigrationFiles(basePath: string): Promise<string[]> {
+    const migrationFiles: string[] = [];
+
+    try {
+      const modules = await this.discoverModules(basePath);
+
+      for (const module of modules) {
+        const moduleFiles = await fs.readdir(module.modulePath);
+
+        for (const file of moduleFiles) {
+          if (file.endsWith('.surql')) {
+            // Return relative path from basePath (module/file.surql)
+            migrationFiles.push(path.join(module.moduleId, file));
+          }
+        }
+      }
+    } catch (error) {
+      // If directory doesn't exist, return empty array
+      if (error.code === 'ENOENT') {
+        return [];
+      }
+      throw error;
+    }
+
+    return migrationFiles.sort();
+  }
+
   static generateModuleId(name: string, existingModules: Array<{ moduleId: string }>): string {
     // Find the next available module number with gapped numbering
     const existingNumbers = existingModules

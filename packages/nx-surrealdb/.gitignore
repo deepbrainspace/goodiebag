@@ -19,7 +19,6 @@ coverage/
 # Build outputs
 dist/
 build/
-lib/
 
 # Optional npm cache directory
 .npm
