@@ -6,20 +6,17 @@ yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
 
-# pnpm
-.pnpm-store/
-
 # TypeScript
 *.tsbuildinfo
-
-# Coverage
-coverage/
-*.lcov
 
 # Build outputs
 dist/
 build/
 lib/
+
+# Coverage
+coverage/
+*.lcov
 
 # Optional npm cache directory
 .npm
