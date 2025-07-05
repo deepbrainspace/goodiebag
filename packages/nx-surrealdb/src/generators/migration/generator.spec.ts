@@ -1,6 +1,6 @@
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import { Tree } from '@nx/devkit';
-import { migrationGenerator } from './generator';
+import migrationGenerator from './generator';
 
 // Simple test for modular migration generator
 describe('migration generator - modular', () => {
@@ -25,9 +25,9 @@ describe('migration generator - modular', () => {
     });
 
     // Should create 000_admin module with migration files
-    expect(tree.exists('database/migrations/000_admin')).toBe(true);
+    expect(tree.exists('database/000_admin')).toBe(true);
 
-    const moduleFiles = tree.children('database/migrations/000_admin');
+    const moduleFiles = tree.children('database/000_admin');
     const migrationFiles = moduleFiles.filter(f => f.endsWith('.surql'));
 
     expect(migrationFiles.length).toBe(2);
@@ -53,14 +53,8 @@ describe('migration generator - modular', () => {
     );
 
     // Create existing module with existing migration
-    tree.write(
-      'database/migrations/010_auth/0001_authentication_up.surql',
-      '-- existing migration'
-    );
-    tree.write(
-      'database/migrations/010_auth/0001_authentication_down.surql',
-      '-- existing migration'
-    );
+    tree.write('database/010_auth/0001_authentication_up.surql', '-- existing migration');
+    tree.write('database/010_auth/0001_authentication_down.surql', '-- existing migration');
 
     await migrationGenerator(tree, {
       name: 'add-user-roles',
@@ -68,7 +62,7 @@ describe('migration generator - modular', () => {
       module: '010_auth',
     });
 
-    const moduleFiles = tree.children('database/migrations/010_auth');
+    const moduleFiles = tree.children('database/010_auth');
     const migrationFiles = moduleFiles.filter(f => f.endsWith('.surql'));
 
     expect(migrationFiles.length).toBe(4); // 2 existing + 2 new
@@ -86,7 +80,7 @@ describe('migration generator - modular', () => {
     );
 
     // Create existing module to test numbering
-    tree.write('database/migrations/010_auth/.gitkeep', '');
+    tree.write('database/010_auth/.gitkeep', '');
 
     await migrationGenerator(tree, {
       name: 'create-schema',
@@ -96,9 +90,9 @@ describe('migration generator - modular', () => {
     });
 
     // Should create 020_schema module (next available gapped number)
-    expect(tree.exists('database/migrations/020_schema')).toBe(true);
+    expect(tree.exists('database/020_schema')).toBe(true);
 
-    const moduleFiles = tree.children('database/migrations/020_schema');
+    const moduleFiles = tree.children('database/020_schema');
     const migrationFiles = moduleFiles.filter(f => f.endsWith('.surql'));
 
     expect(migrationFiles.length).toBe(2);
