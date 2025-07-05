@@ -7,7 +7,7 @@ inputs:
     default: '20'
   pnpm-version:
     description: 'pnpm version to use'
-    default: '10.12.3'
+    default: '10.12.4'
   fetch-depth:
     description: 'Git fetch depth for checkout'
     default: '0'
