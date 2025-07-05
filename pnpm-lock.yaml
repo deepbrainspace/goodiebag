@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@deepbrainspace/nx-surrealdb':
+        specifier: 0.3.4
+        version: 0.3.4(nx@21.2.1(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17)))(typescript@5.8.3)
       '@goodiebag/nx-rust':
         specifier: 3.1.0
         version: 3.1.0(nx@21.2.1(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17)))
@@ -845,6 +848,9 @@ packages:
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
+
+  '@deepbrainspace/nx-surrealdb@0.3.4':
+    resolution: {integrity: sha512-EQz1y07Z0fOaVslb5nj+Fr8HKvUyv19LUa02POLH4xQHU7dPUi46yBhks101v3jvR/Us4xDo9AxSZaBMUpn0OA==}
 
   '@emnapi/core@1.4.3':
     resolution: {integrity: sha512-4m62DuCE07lw01soJwPiBGC0nAww0Q+RY70VZ+n49yDIO13yyinhbWCeNnaob0lakDtWQzSdtNWzJeOJt2ma+g==}
@@ -4152,6 +4158,18 @@ snapshots:
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
+
+  '@deepbrainspace/nx-surrealdb@0.3.4(nx@21.2.1(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17)))(typescript@5.8.3)':
+    dependencies:
+      '@nx/devkit': 21.2.1(nx@21.2.1(@swc-node/register@1.9.2(@swc/core@1.5.29(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.5.29(@swc/helpers@0.5.17)))
+      dotenv: 16.5.0
+      picocolors: 1.1.1
+      surrealdb: 1.3.2(tslib@2.8.1)(typescript@5.8.3)(ws@8.18.2)
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - nx
+      - typescript
+      - ws
 
   '@emnapi/core@1.4.3':
     dependencies:

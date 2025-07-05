@@ -27,6 +27,7 @@
     "install:dotfiles": "cd dotfiles && ./install.sh"
   },
   "devDependencies": {
+    "@deepbrainspace/nx-surrealdb": "0.3.4",
     "@goodiebag/nx-rust": "3.1.0",
     "@goodiebag/nx-toolkit": "0.2.0",
     "@nx/esbuild": "21.2.0",
@@ -53,5 +54,10 @@
     "ts-node": "10.9.1",
     "tslib": "^2.3.0",
     "typescript": "~5.8.2"
+  },
+  "dependencies": {
+    "surrealdb": "^1.3.2",
+    "dotenv": "^16.5.0",
+    "picocolors": "^1.1.1"
   }
 }
