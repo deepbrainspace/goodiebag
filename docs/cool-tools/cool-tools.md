@@ -11,3 +11,7 @@ https://github.com/JamesIves/github-pages-deploy-action
 https://github.com/squidfunk/mkdocs-material - make documentatiovns
 
 https://github.com/TheYkk/git-switcher - git switcher
+
+https://zbd.gg/z/about - payment by bitcoin lightning
+
+fish audio - for tts etc. - also https://www.allvoicelab.com/ 600mins for free

@@ -6,7 +6,8 @@
       "Bash",
       "WebFetch",
       "mcp__ccusage__daily",
-      "mcp__firecrawl__firecrawl_search"
+      "mcp__firecrawl__firecrawl_search",
+      "mcp__firecrawl__firecrawl_scrape"
     ],
     "deny": []
   }

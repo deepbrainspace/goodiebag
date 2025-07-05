@@ -6,20 +6,18 @@ yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
 
-# pnpm
-.pnpm-store/
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
-# TypeScript
-*.tsbuildinfo
-
-# Coverage
+# Coverage directory used by tools like istanbul
 coverage/
 *.lcov
 
-# Build outputs
-dist/
-build/
-lib/
+# TypeScript
+*.tsbuildinfo
 
 # Optional npm cache directory
 .npm
@@ -30,8 +28,10 @@ lib/
 # Optional stylelint cache
 .stylelintcache
 
-# Test artifacts
-.nyc_output
+# Build outputs
+dist/
+build/
+lib/
 
 # IDE
 .vscode/
@@ -43,3 +43,6 @@ lib/
 # OS
 .DS_Store
 Thumbs.db
+
+# Test artifacts
+.nyc_output
