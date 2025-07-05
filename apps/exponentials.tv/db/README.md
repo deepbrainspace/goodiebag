@@ -1,6 +1,6 @@
-# exponentials.tv - SurrealDB Migrations
+# exponentials.tv/db - SurrealDB Migrations
 
-This directory contains the SurrealDB migrations for the exponentials.tv
+This directory contains the SurrealDB migrations for the exponentials.tv/db
 project.
 
 ## Getting Started
@@ -23,20 +23,20 @@ The project uses a modular architecture. Create your first migration:
 
 ```bash
 # Generate a migration for a specific module
-nx g @deepbrainspace/nx-surrealdb:migration --name=init --module=000_admin --project=exponentials.tv
+nx g @deepbrainspace/nx-surrealdb:migration --name=init --module=000_admin --project=exponentials.tv/db
 ```
 
 Or import pre-built modules (coming soon):
 
 ```bash
 # Import admin module
-nx g @deepbrainspace/nx-surrealdb:import-module --module=@deepbrainspace/surrealdb-module-admin --project=exponentials.tv
+nx g @deepbrainspace/nx-surrealdb:import-module --module=@deepbrainspace/surrealdb-module-admin --project=exponentials.tv/db
 ```
 
 ## Structure
 
 ```
-exponentials.tv/
+exponentials.tv/db/
 ├── config.json             # Module configuration
 ├── project.json            # NX project configuration
 ├── 000_admin/              # System administration module
@@ -48,19 +48,19 @@ exponentials.tv/
 
 ```bash
 # Generate a new migration
-nx g @deepbrainspace/nx-surrealdb:migration --name=my-migration --module=000_admin --project=exponentials.tv
+nx g @deepbrainspace/nx-surrealdb:migration --name=my-migration --module=000_admin --project=exponentials.tv/db
 
 # Run migrations
-nx run exponentials.tv:migrate
+nx run exponentials.tv/db:migrate
 
 # Check migration status
-nx run exponentials.tv:status
+nx run exponentials.tv/db:status
 
 # Rollback migrations
-nx run exponentials.tv:rollback
+nx run exponentials.tv/db:rollback
 
 # Reset all migrations (WARNING: destructive)
-nx run exponentials.tv:reset
+nx run exponentials.tv/db:reset
 ```
 
 ## Troubleshooting

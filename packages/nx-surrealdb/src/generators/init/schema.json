@@ -19,7 +19,7 @@
     "db-path": {
       "type": "string",
       "description": "Database folder name within the project",
-      "default": "db"
+      "default": ""
     },
     "url": {
       "type": "string",

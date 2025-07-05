@@ -1,5 +1,5 @@
 {
-  "name": "exponentials.tv-db",
+  "name": "exponentials.tv/db",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "targets": {
     "migrate": {
@@ -44,12 +44,6 @@
         "namespace": "${SURREALDB_NAMESPACE}",
         "database": "${SURREALDB_DATABASE}"
       }
-    },
-    "lint": {
-      "command": "echo 'Database project - no linting required'"
-    },
-    "test": {
-      "command": "echo 'Database project - no testing required'"
     }
   }
 }

@@ -27,8 +27,8 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
   
   // Calculate installation path
   const basePath = options.path || '.';
-  const dbPath = options.dbPath || options['db-path'] || 'db';
-  const projectPath = path.join(basePath, name, dbPath);
+  const dbPath = options.dbPath || options['db-path'] || '';
+  const projectPath = dbPath ? path.join(basePath, name, dbPath) : path.join(basePath, name);
 
   // Auto-install required dependencies
   const packageJson = tree.read('package.json');
@@ -62,7 +62,8 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
   }
 
   // Derive namespace from project name if not provided
-  const derivedNamespace = name; // e.g., "myproject"
+  // Strip component suffix (e.g., "exponentials.tv/db" -> "exponentials.tv")
+  const derivedNamespace = name.includes('/') ? name.split('/')[0] : name;
   
   // Parse environments from comma-separated string
   const environmentsString = options.environments || 'development,staging,production';
