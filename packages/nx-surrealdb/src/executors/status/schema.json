@@ -63,7 +63,7 @@
     "detailed": {
       "type": "boolean",
       "description": "Show detailed migration information including file names and checksums",
-      "default": false
+      "default": true
     },
     "json": {
       "type": "boolean",

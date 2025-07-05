@@ -163,6 +163,20 @@ describe('Status Executor', () => {
         totalPending: 1,
       });
 
+      // Mock findPendingMigrations for the enhanced non-detailed output
+      mockEngine.findPendingMigrations.mockResolvedValue([
+        {
+          number: '0002',
+          name: 'roles',
+          direction: 'up',
+          filename: '0002_roles_up.surql',
+          filePath: '/path/to/010_auth/0002_roles_up.surql',
+          moduleId: '010_auth',
+          content: '-- create roles',
+          checksum: 'def456',
+        },
+      ]);
+
       const result = await executor(defaultOptions, context);
 
       expect(result.success).toBe(true);
@@ -181,7 +195,11 @@ describe('Status Executor', () => {
       });
       expect(mockEngine.getMigrationStatus).toHaveBeenCalledWith(undefined);
       expect(mockEngine.close).toHaveBeenCalled();
-      expect(logger.info).toHaveBeenCalledWith('1 migration(s) pending, 3 applied');
+
+      // Test the enhanced non-detailed output format
+      expect(logger.info).toHaveBeenCalledWith('1 migration(s) pending, 3 applied\n');
+      expect(logger.info).toHaveBeenCalledWith('📦 010_auth: 1 pending');
+      expect(logger.info).toHaveBeenCalledWith('   🔄 0002_roles_up.surql');
     });
 
     it('should handle empty migration modules', async () => {
@@ -335,13 +353,26 @@ describe('Status Executor', () => {
       expect(logger.info).toHaveBeenCalledWith('        • 0003_permissions_up.surql');
     });
 
-    it('should not call findPendingMigrations when detailed is false', async () => {
+    it('should call findPendingMigrations for enhanced non-detailed output when there are pending migrations', async () => {
       mockEngine.getMigrationStatus.mockResolvedValue(mockStatusData);
+      mockEngine.findPendingMigrations.mockResolvedValue([
+        {
+          number: '0002',
+          name: 'roles',
+          direction: 'up',
+          filename: '0002_roles_up.surql',
+          filePath: '/path/to/010_auth/0002_roles_up.surql',
+          moduleId: '010_auth',
+          content: '-- create roles',
+          checksum: 'def456',
+        },
+      ]);
 
       const options = { ...defaultOptions, detailed: false };
       await executor(options, context);
 
-      expect(mockEngine.findPendingMigrations).not.toHaveBeenCalled();
+      // Enhanced non-detailed output now calls findPendingMigrations to show specific pending files
+      expect(mockEngine.findPendingMigrations).toHaveBeenCalledWith(['010_auth']);
     });
   });
 

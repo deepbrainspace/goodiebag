@@ -1,0 +1,28 @@
+{
+  "modules": {
+    "000_admin": {
+      "name": "System Administration",
+      "description": "Core database setup and administrative functions",
+      "dependencies": [],
+      "locked": true,
+      "lockReason": "Critical system module - contains core admin setup and permissions"
+    },
+    "010_auth": {
+      "name": "Authentication & Users",
+      "description": "User authentication and authorization system",
+      "dependencies": ["000_admin"]
+    },
+    "020_schema": {
+      "name": "Application Schema",
+      "description": "Core application data models and relationships",
+      "dependencies": ["010_auth"]
+    }
+  },
+  "environments": ["development", "staging", "production"],
+  "settings": {
+    "configFormat": "json",
+    "useTransactions": true,
+    "defaultNamespace": "apps",
+    "defaultDatabase": "main"
+  }
+}

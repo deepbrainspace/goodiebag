@@ -37,6 +37,18 @@
         "verbose": true
       }
     },
+    "@deepbrainspace/nx-surrealdb:migrate": {
+      "cache": false
+    },
+    "@deepbrainspace/nx-surrealdb:rollback": {
+      "cache": false
+    },
+    "@deepbrainspace/nx-surrealdb:status": {
+      "cache": false
+    },
+    "@deepbrainspace/nx-surrealdb:reset": {
+      "cache": false
+    },
     "build": {
       "dependsOn": ["^build", "test"],
       "inputs": ["production", "^production"],

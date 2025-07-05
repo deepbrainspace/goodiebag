@@ -138,79 +138,50 @@ describe('export-module generator', () => {
     jest.resetAllMocks();
   });
 
-  it('should export module with default options', async () => {
-    await generator(tree, options);
+  it('should export module as simple tar archive', async () => {
+    const callback = await generator(tree, options);
 
-    // Check that package.json was created
-    const packageJsonPath = 'test-exports/010_auth/package.json';
-    expect(tree.exists(packageJsonPath)).toBeTruthy();
+    // Execute the callback to create the tar archive
+    callback();
 
-    const packageJson = JSON.parse(tree.read(packageJsonPath, 'utf-8'));
-    expect(packageJson.name).toBe('@migrations/010_auth');
-    expect(packageJson.version).toBe('1.0.0');
-    expect(packageJson.metadata.moduleName).toBe('010_auth');
+    // Check that tar command was called to create simple archive
+    expect(execSync).toHaveBeenCalledWith('tar -czf 010_auth.tar.gz -C database 010_auth', {
+      stdio: 'inherit',
+    });
   });
 
-  it('should create README.md with module information', async () => {
-    await generator(tree, options);
+  it('should find module directory correctly', async () => {
+    const callback = await generator(tree, options);
 
-    const readmePath = 'test-exports/010_auth/README.md';
-    expect(tree.exists(readmePath)).toBeTruthy();
+    // Should have found the module and not thrown an error
+    expect(callback).toBeInstanceOf(Function);
 
-    const readme = tree.read(readmePath, 'utf-8');
-    expect(readme).toContain('# Migration Module: 010_auth');
-    expect(readme).toContain('Authentication');
-    expect(readme).toContain('0001_authentication_up.surql');
-  });
-
-  it('should create module configuration file', async () => {
-    const optionsWithConfig = { ...options, includeConfig: true };
-    await generator(tree, optionsWithConfig);
-
-    const configPath = 'test-exports/010_auth/module.config.json';
-    expect(tree.exists(configPath)).toBeTruthy();
-
-    const config = JSON.parse(tree.read(configPath, 'utf-8'));
-    expect(config['010_auth']).toBeDefined();
-    expect(config['010_auth'].name).toBe('Authentication');
-  });
-
-  it('should create import script', async () => {
-    await generator(tree, options);
-
-    const scriptPath = 'test-exports/010_auth/import.sh';
-    expect(tree.exists(scriptPath)).toBeTruthy();
-
-    const script = tree.read(scriptPath, 'utf-8');
-    expect(script).toContain('#!/bin/bash');
-    expect(script).toContain('010_auth');
-    expect(script).toContain('mkdir -p');
-  });
-
-  it('should copy migration files', async () => {
-    await generator(tree, options);
-
-    const migrationPath = 'test-exports/010_auth/migrations/0001_authentication_up.surql';
-    expect(tree.exists(migrationPath)).toBeTruthy();
-
-    const content = tree.read(migrationPath, 'utf-8');
-    expect(content).toBe('DEFINE TABLE users;');
+    // Check that TreeUtils.findMatchingSubdirectory was called
+    expect(TreeUtils.findMatchingSubdirectory).toHaveBeenCalledWith(tree, 'database', '010_auth');
   });
 
   it('should handle module by number', async () => {
     const numericOptions = { ...options, module: 10 };
-    await generator(tree, numericOptions);
+    const callback = await generator(tree, numericOptions);
 
-    const packageJsonPath = 'test-exports/010_auth/package.json';
-    expect(tree.exists(packageJsonPath)).toBeTruthy();
+    expect(callback).toBeInstanceOf(Function);
+    callback();
+
+    expect(execSync).toHaveBeenCalledWith('tar -czf 010_auth.tar.gz -C database 010_auth', {
+      stdio: 'inherit',
+    });
   });
 
   it('should handle module by name', async () => {
     const nameOptions = { ...options, module: 'auth' };
-    await generator(tree, nameOptions);
+    const callback = await generator(tree, nameOptions);
 
-    const packageJsonPath = 'test-exports/010_auth/package.json';
-    expect(tree.exists(packageJsonPath)).toBeTruthy();
+    expect(callback).toBeInstanceOf(Function);
+    callback();
+
+    expect(execSync).toHaveBeenCalledWith('tar -czf 010_auth.tar.gz -C database 010_auth', {
+      stdio: 'inherit',
+    });
   });
 
   it('should handle missing module configuration gracefully', async () => {
@@ -224,13 +195,14 @@ describe('export-module generator', () => {
       return false;
     });
 
-    await generator(tree, options);
+    const callback = await generator(tree, options);
 
-    const packageJsonPath = 'test-exports/010_auth/package.json';
-    expect(tree.exists(packageJsonPath)).toBeTruthy();
+    expect(callback).toBeInstanceOf(Function);
+    callback();
 
-    const packageJson = JSON.parse(tree.read(packageJsonPath, 'utf-8'));
-    expect(packageJson.description).toContain('Migration module: 010_auth');
+    expect(execSync).toHaveBeenCalledWith('tar -czf 010_auth.tar.gz -C database 010_auth', {
+      stdio: 'inherit',
+    });
   });
 
   it('should throw error for non-existent module', async () => {
@@ -247,20 +219,13 @@ describe('export-module generator', () => {
     );
   });
 
-  it('should handle custom output path', async () => {
-    const customOptions = { ...options, outputPath: 'custom/exports' };
-    await generator(tree, customOptions);
+  it('should create tar archive without version', async () => {
+    const callback = await generator(tree, options);
 
-    const packageJsonPath = 'custom/exports/010_auth/package.json';
-    expect(tree.exists(packageJsonPath)).toBeTruthy();
-  });
+    callback();
 
-  it('should include dependencies in package metadata', async () => {
-    await generator(tree, options);
-
-    const packageJsonPath = 'test-exports/010_auth/package.json';
-    const packageJson = JSON.parse(tree.read(packageJsonPath, 'utf-8'));
-
-    expect(packageJson.dependencies).toEqual(['000_admin']);
+    expect(execSync).toHaveBeenCalledWith('tar -czf 010_auth.tar.gz -C database 010_auth', {
+      stdio: 'inherit',
+    });
   });
 });

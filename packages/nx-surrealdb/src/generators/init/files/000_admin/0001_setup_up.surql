@@ -4,14 +4,18 @@
 -- Created: Starter template for database initialization
 
 -- System Administration Setup
--- Uncomment and customize the following for your database:
+
+-- Always ensure namespace exists
+DEFINE NAMESPACE `<%= namespace %>` IF NOT EXISTS;
+
+-- Create environment databases<% environments.forEach(function(env) { %>
+DEFINE DATABASE <%= env %> ON NAMESPACE `<%= namespace %>` IF NOT EXISTS;<% }); %>
+
+-- Note: USE NS/DB commands added automatically by nx-surrealdb
+-- based on SURREALDB_NAMESPACE and SURREALDB_DATABASE env vars
 
 -- Create admin users and basic permissions
--- DEFINE USER admin ON ROOT PASSWORD 'your-admin-password' ROLES OWNER;
-
--- Set up basic database structure
--- USE NS <%= namespace %>;
--- USE DB <%= database %>;
+-- DEFINE USER admin ON ROOT PASSWORD 'CHANGE_THIS_PASSWORD' ROLES OWNER;
 
 -- Define authentication scopes
 -- DEFINE SCOPE user SESSION 24h

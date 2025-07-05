@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "version": 2,
+  "title": "Destroy Database Project",
+  "description": "Remove SurrealDB database project and clean up NX workspace configuration",
+  "type": "object",
+  "properties": {
+    "projectName": {
+      "type": "string",
+      "description": "Name of the database project to destroy",
+      "$default": {
+        "$source": "argv",
+        "index": 0
+      }
+    },
+    "force": {
+      "type": "boolean",
+      "description": "Force deletion without confirmation prompt",
+      "default": false
+    },
+    "confirmed": {
+      "type": "boolean",
+      "description": "Confirm deletion of the project",
+      "default": false,
+      "x-prompt": {
+        "message": "⚠️  This will permanently delete the database project and all its files. Are you sure?",
+        "type": "confirm"
+      }
+    }
+  },
+  "required": ["projectName"],
+  "additionalProperties": false
+}

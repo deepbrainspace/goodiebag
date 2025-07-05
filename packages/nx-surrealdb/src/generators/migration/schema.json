@@ -19,7 +19,7 @@
     "migrationsDir": {
       "type": "string",
       "description": "Path to migrations directory",
-      "default": "migrations"
+      "default": ""
     },
     "createModule": {
       "type": "boolean",

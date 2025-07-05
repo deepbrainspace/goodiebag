@@ -18,6 +18,7 @@
       "dependencies": ["010_auth"]
     }
   },
+  "environments": <%- JSON.stringify(environments) %>,
   "settings": {
     "configFormat": "json",
     "useTransactions": true,

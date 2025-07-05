@@ -240,10 +240,29 @@ Example .env file:
       return { success: true };
     }
 
-    // Default: Minimal summary (unless detailed or debug flag is used)
+    // Non-detailed output: Show pending migrations list
     if (!options.detailed && !options.debug) {
       if (status.totalPending > 0) {
-        logger.info(`${status.totalPending} migration(s) pending, ${status.totalApplied} applied`);
+        logger.info(
+          `${status.totalPending} migration(s) pending, ${status.totalApplied} applied\n`
+        );
+
+        // Show which migrations are pending
+        for (const module of status.modules) {
+          if (module.pendingMigrations > 0) {
+            logger.info(`📦 ${module.moduleId}: ${module.pendingMigrations} pending`);
+
+            // Get and show pending migration files for this module
+            const pendingMigrations = await engine.findPendingMigrations([module.moduleId]);
+            const modulePendingFiles = pendingMigrations.filter(
+              m => m.moduleId === module.moduleId
+            );
+
+            for (const migration of modulePendingFiles) {
+              logger.info(`   🔄 ${migration.filename}`);
+            }
+          }
+        }
       } else {
         logger.info(`All migrations up to date (${status.totalApplied} applied)`);
       }

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "type": "object",
+  "properties": {
+    "initPath": {
+      "type": "string",
+      "description": "Path to the migrations directory",
+      "default": "database"
+    },
+    "configPath": {
+      "type": "string",
+      "description": "Path to the config file (auto-detected if not specified)"
+    },
+    "fix": {
+      "type": "boolean",
+      "description": "Automatically fix issues where possible",
+      "default": false
+    }
+  },
+  "required": ["initPath"]
+}

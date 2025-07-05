@@ -1,25 +1,15 @@
-import {
-  Tree,
-  formatFiles,
-  generateFiles,
-  addProjectConfiguration,
-  ProjectConfiguration,
-  installPackagesTask,
-} from '@nx/devkit';
+import { Tree, formatFiles, generateFiles, installPackagesTask, workspaceRoot } from '@nx/devkit';
 import { MigrationsConfig } from '../../lib/configuration/config-loader';
+import { InitGeneratorSchema } from './schema';
 import * as path from 'path';
-
-export interface InitGeneratorSchema {
-  name: string;
-  url?: string;
-  namespace?: string;
-  database?: string;
-  user?: string;
-  pass?: string;
-}
 
 export default async function (tree: Tree, options: InitGeneratorSchema) {
   const { name } = options;
+
+  // Calculate installation path
+  const basePath = options.path || '.';
+  const dbPath = options.dbPath || options['db-path'] || '';
+  const projectPath = dbPath ? path.join(basePath, name, dbPath) : path.join(basePath, name);
 
   // Auto-install required dependencies
   const packageJson = tree.read('package.json');
@@ -52,12 +42,21 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
     }
   }
 
+  // Derive namespace from project name if not provided
+  // Strip component suffix (e.g., "exponentials.tv/db" -> "exponentials.tv")
+  const derivedNamespace = name.includes('/') ? name.split('/')[0] : name;
+
+  // Parse environments from comma-separated string
+  const environmentsString = options.environments || 'development,staging,production';
+  const environments = environmentsString.split(',').map(env => env.trim());
+
   // Set defaults using the same pattern as the library
   const config = {
     name,
     url: options.url || 'ws://localhost:8000/rpc',
-    namespace: options.namespace || 'development',
-    database: options.database || 'main',
+    namespace: options.namespace || derivedNamespace,
+    environments,
+    database: options.database || environments[0], // Use first environment as default
     user: options.user || 'root',
     pass: options.pass || 'root',
   };
@@ -83,6 +82,7 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
         dependencies: ['010_auth'],
       },
     },
+    environments: config.environments,
     settings: {
       configFormat: 'json',
       useTransactions: true,
@@ -91,65 +91,21 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
     },
   };
 
-  // Generate the database project structure
-  generateFiles(tree, path.join(__dirname, 'files'), name, {
+  // Calculate the relative path for the schema
+  const schemaPath = path.relative(
+    projectPath,
+    path.join(workspaceRoot, 'node_modules/nx/schemas/project-schema.json')
+  );
+
+  // Generate the database project structure including project.json from template
+  generateFiles(tree, path.join(__dirname, 'files'), projectPath, {
     ...config,
     template: '',
     moduleConfig: JSON.stringify(moduleConfig, null, 2),
-  });
-
-  // Add NX project configuration
-  const projectConfig: ProjectConfiguration = {
     name,
-    root: name,
-    targets: {
-      migrate: {
-        executor: '@deepbrainspace/nx-surrealdb:migrate',
-        options: {
-          url: '${SURREALDB_URL}',
-          user: '${SURREALDB_ROOT_USER}',
-          pass: '${SURREALDB_ROOT_PASS}',
-          namespace: '${SURREALDB_NAMESPACE}',
-          database: '${SURREALDB_DATABASE}',
-          initPath: name,
-        },
-      },
-      rollback: {
-        executor: '@deepbrainspace/nx-surrealdb:rollback',
-        options: {
-          url: '${SURREALDB_URL}',
-          user: '${SURREALDB_ROOT_USER}',
-          pass: '${SURREALDB_ROOT_PASS}',
-          namespace: '${SURREALDB_NAMESPACE}',
-          database: '${SURREALDB_DATABASE}',
-          initPath: name,
-        },
-      },
-      status: {
-        executor: '@deepbrainspace/nx-surrealdb:status',
-        options: {
-          url: '${SURREALDB_URL}',
-          user: '${SURREALDB_ROOT_USER}',
-          pass: '${SURREALDB_ROOT_PASS}',
-          namespace: '${SURREALDB_NAMESPACE}',
-          database: '${SURREALDB_DATABASE}',
-          initPath: name,
-        },
-      },
-      reset: {
-        executor: '@deepbrainspace/nx-surrealdb:reset',
-        options: {
-          url: '${SURREALDB_URL}',
-          user: '${SURREALDB_ROOT_USER}',
-          pass: '${SURREALDB_ROOT_PASS}',
-          namespace: '${SURREALDB_NAMESPACE}',
-          database: '${SURREALDB_DATABASE}',
-        },
-      },
-    },
-  };
-
-  addProjectConfiguration(tree, name, projectConfig);
+    initPath: projectPath,
+    schemaPath,
+  });
 
   await formatFiles(tree);
 
@@ -166,14 +122,14 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
    - SURREALDB_DATABASE=${config.database}
 
 2. Review and customize the starter migrations:
-   - ${name}/000_admin/0001_setup_*.surql (System setup)
-   - ${name}/010_auth/0001_users_*.surql (User authentication)
-   - ${name}/020_schema/0001_tables_*.surql (Application schema)
+   - ${projectPath}/000_admin/0001_setup_*.surql (System setup)
+   - ${projectPath}/010_auth/0001_users_*.surql (User authentication)
+   - ${projectPath}/020_schema/0001_tables_*.surql (Application schema)
 
 3. Uncomment and customize the migration code, then run:
    nx run ${name}:migrate
 
-For more info, see ${name}/README.md
+For more info, see ${projectPath}/README.md
   `);
 
   // Auto-install packages

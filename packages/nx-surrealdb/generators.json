@@ -1,24 +1,29 @@
 {
   "generators": {
     "init": {
-      "factory": "./dist/src/generators/init/generator.js",
-      "schema": "./dist/src/generators/init/schema.json",
+      "factory": "./src/generators/init/generator.js",
+      "schema": "./src/generators/init/schema.json",
       "description": "Initialize a new SurrealDB database project with module structure"
     },
     "migration": {
-      "factory": "./dist/src/generators/migration/generator.js",
-      "schema": "./dist/src/generators/migration/schema.json",
+      "factory": "./src/generators/migration/generator.js",
+      "schema": "./src/generators/migration/schema.json",
       "description": "Generate a new SurrealDB migration"
     },
     "export-module": {
-      "factory": "./dist/src/generators/export-module/generator.js",
-      "schema": "./dist/src/generators/export-module/schema.json",
+      "factory": "./src/generators/export-module/generator.js",
+      "schema": "./src/generators/export-module/schema.json",
       "description": "Export a migration module as a reusable package"
     },
     "import-module": {
-      "factory": "./dist/src/generators/import-module/generator.js",
-      "schema": "./dist/src/generators/import-module/schema.json",
+      "factory": "./src/generators/import-module/generator.js",
+      "schema": "./src/generators/import-module/schema.json",
       "description": "Import a migration module package into the current project"
+    },
+    "destroy": {
+      "factory": "./src/generators/destroy/generator.js",
+      "schema": "./src/generators/destroy/schema.json",
+      "description": "Remove SurrealDB database project and clean up NX workspace configuration"
     }
   }
 }

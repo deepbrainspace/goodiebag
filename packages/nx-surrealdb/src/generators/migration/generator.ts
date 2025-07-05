@@ -1,15 +1,7 @@
 import { Tree, formatFiles, joinPathFragments, readProjectConfiguration } from '@nx/devkit';
 import { MigrationFileProcessor } from '../../lib/filesystem/migration-file-processor';
 import { TreeUtils } from '../../lib/filesystem/tree-utils';
-
-export interface MigrationGeneratorSchema {
-  name: string;
-  project: string;
-  module?: string | number;
-  migrationsDir?: string;
-  createModule?: boolean;
-  positionalArgs?: string[];
-}
+import { MigrationGeneratorSchema } from './schema';
 
 interface ModuleInfo {
   moduleId: string;
@@ -162,7 +154,7 @@ async function createNewModule(
   };
 }
 
-export async function migrationGenerator(
+export default async function migrationGenerator(
   tree: Tree,
   options: MigrationGeneratorSchema
 ): Promise<void> {
@@ -170,7 +162,7 @@ export async function migrationGenerator(
     ...options,
     name: options.name || options.positionalArgs?.[0] || '',
     project: options.project,
-    migrationsDir: options.migrationsDir || 'migrations',
+    migrationsDir: options.migrationsDir || '',
     module: options.module,
     createModule: options.createModule || false,
   };
