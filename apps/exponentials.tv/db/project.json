@@ -1,5 +1,5 @@
 {
-  "name": "exponentials.tv",
+  "name": "exponentials.tv-db",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "targets": {
     "migrate": {
