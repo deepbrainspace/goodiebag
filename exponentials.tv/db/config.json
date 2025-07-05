@@ -22,7 +22,7 @@
   "settings": {
     "configFormat": "json",
     "useTransactions": true,
-    "defaultNamespace": "apps",
+    "defaultNamespace": "exponentials.tv",
     "defaultDatabase": "main"
   }
 }

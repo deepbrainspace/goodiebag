@@ -6,12 +6,12 @@
 -- System Administration Setup
 
 -- Always ensure namespace exists
-DEFINE NAMESPACE `apps` IF NOT EXISTS;
+DEFINE NAMESPACE `exponentials.tv` IF NOT EXISTS;
 
 -- Create environment databases
-DEFINE DATABASE development ON NAMESPACE `apps` IF NOT EXISTS;
-DEFINE DATABASE staging ON NAMESPACE `apps` IF NOT EXISTS;
-DEFINE DATABASE production ON NAMESPACE `apps` IF NOT EXISTS;
+DEFINE DATABASE development ON NAMESPACE `exponentials.tv` IF NOT EXISTS;
+DEFINE DATABASE staging ON NAMESPACE `exponentials.tv` IF NOT EXISTS;
+DEFINE DATABASE production ON NAMESPACE `exponentials.tv` IF NOT EXISTS;
 
 -- Note: USE NS/DB commands added automatically by nx-surrealdb
 -- based on SURREALDB_NAMESPACE and SURREALDB_DATABASE env vars

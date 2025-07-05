@@ -1,6 +1,6 @@
-# apps/exponentials.tv/db - SurrealDB Migrations
+# exponentials.tv/db - SurrealDB Migrations
 
-This directory contains the SurrealDB migrations for the apps/exponentials.tv/db
+This directory contains the SurrealDB migrations for the exponentials.tv/db
 project.
 
 ## Getting Started
@@ -11,7 +11,7 @@ Add these to your `.env` file:
 
 ```bash
 SURREALDB_URL=ws://localhost:8000/rpc
-SURREALDB_NAMESPACE=apps
+SURREALDB_NAMESPACE=exponentials.tv
 SURREALDB_DATABASE=main
 SURREALDB_ROOT_USER=root
 SURREALDB_ROOT_PASS=root
@@ -23,20 +23,20 @@ The project uses a modular architecture. Create your first migration:
 
 ```bash
 # Generate a migration for a specific module
-nx g @deepbrainspace/nx-surrealdb:migration --name=init --module=000_admin --project=apps/exponentials.tv/db
+nx g @deepbrainspace/nx-surrealdb:migration --name=init --module=000_admin --project=exponentials.tv/db
 ```
 
 Or import pre-built modules (coming soon):
 
 ```bash
 # Import admin module
-nx g @deepbrainspace/nx-surrealdb:import-module --module=@deepbrainspace/surrealdb-module-admin --project=apps/exponentials.tv/db
+nx g @deepbrainspace/nx-surrealdb:import-module --module=@deepbrainspace/surrealdb-module-admin --project=exponentials.tv/db
 ```
 
 ## Structure
 
 ```
-apps/exponentials.tv/db/
+exponentials.tv/db/
 ├── config.json             # Module configuration
 ├── project.json            # NX project configuration
 ├── 000_admin/              # System administration module
@@ -48,19 +48,19 @@ apps/exponentials.tv/db/
 
 ```bash
 # Generate a new migration
-nx g @deepbrainspace/nx-surrealdb:migration --name=my-migration --module=000_admin --project=apps/exponentials.tv/db
+nx g @deepbrainspace/nx-surrealdb:migration --name=my-migration --module=000_admin --project=exponentials.tv/db
 
 # Run migrations
-nx run apps/exponentials.tv/db:migrate
+nx run exponentials.tv/db:migrate
 
 # Check migration status
-nx run apps/exponentials.tv/db:status
+nx run exponentials.tv/db:status
 
 # Rollback migrations
-nx run apps/exponentials.tv/db:rollback
+nx run exponentials.tv/db:rollback
 
 # Reset all migrations (WARNING: destructive)
-nx run apps/exponentials.tv/db:reset
+nx run exponentials.tv/db:reset
 ```
 
 ## Troubleshooting
