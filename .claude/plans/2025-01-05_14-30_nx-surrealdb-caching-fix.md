@@ -27,28 +27,28 @@ the primary test case.**
 - ✅ Add schema.d.ts to remaining generators (export, import, init)
 - ✅ Simplify export and import generators for simple tar archives
 
-### Step 1: Fix Failing Tests 📋 **CURRENT**
+### Step 1: Fix Failing Tests ✅ **COMPLETED**
 
 - ✅ Update export generator tests to expect simple tar archives (no
   package.json, README.md)
 - ✅ Update import generator tests to expect direct .surql file copying
 - ✅ Remove test expectations for complex package structures
 - ✅ Ensure all tests pass with simplified behavior
-- ⏳ Test export/import with real `exponentials.tv/db` project
-- ☐ Present results and request user approval for Step 1 completion
-- ☐ Git commit and push changes after user approval
+- ✅ Test export/import with real `exponentials.tv/db` project
+- ✅ Present results and request user approval for Step 1 completion
+- ✅ Git commit and push changes after user approval
 
-### Step 2: Create Destroy Generator 🔧
+### Step 2: Create Destroy Generator 🔧 **CURRENT**
 
-- ☐ Create destroy generator using `removeProjectConfiguration()` and
+- ✅ Create destroy generator using `removeProjectConfiguration()` and
   `tree.delete()`
-- ☐ Add proper schema.d.ts and schema.json files
-- ☐ Add generator to generators.json registry
-- ☐ Implement comprehensive tests for project removal
-- ☐ Test with `exponentials.tv/db` project: destroy → init cycle without
+- ✅ Add proper schema.d.ts and schema.json files
+- ✅ Add generator to generators.json registry
+- ✅ Implement comprehensive tests for project removal
+- ✅ Test with `exponentials.tv/db` project: destroy → init cycle without
   `nx reset`
-- ☐ Present results and request user approval for Step 2 completion
-- ☐ Git commit and push changes after user approval
+- ✅ Present results and request user approval for Step 2 completion
+- ⏳ Git commit and push changes after user approval
 
 ### Step 3: Comprehensive Testing 🧪
 

@@ -19,6 +19,11 @@
       "factory": "./src/generators/import-module/generator.js",
       "schema": "./src/generators/import-module/schema.json",
       "description": "Import a migration module package into the current project"
+    },
+    "destroy": {
+      "factory": "./src/generators/destroy/generator.js",
+      "schema": "./src/generators/destroy/schema.json",
+      "description": "Remove SurrealDB database project and clean up NX workspace configuration"
     }
   }
 }
