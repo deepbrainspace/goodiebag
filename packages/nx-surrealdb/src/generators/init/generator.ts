@@ -1,19 +1,7 @@
 import { Tree, formatFiles, generateFiles, installPackagesTask, workspaceRoot } from '@nx/devkit';
 import { MigrationsConfig } from '../../lib/configuration/config-loader';
+import { InitGeneratorSchema } from './schema';
 import * as path from 'path';
-
-export interface InitGeneratorSchema {
-  name: string;
-  path?: string;
-  'db-path'?: string;
-  dbPath?: string;
-  url?: string;
-  namespace?: string;
-  environments?: string;
-  database?: string;
-  user?: string;
-  pass?: string;
-}
 
 export default async function (tree: Tree, options: InitGeneratorSchema) {
   const { name } = options;

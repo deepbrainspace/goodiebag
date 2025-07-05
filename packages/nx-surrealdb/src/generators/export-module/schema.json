@@ -46,11 +46,6 @@
       "description": "Path to configuration file (config.json or config.yaml)",
       "default": ""
     },
-    "version": {
-      "type": "string",
-      "description": "Version for the exported module package",
-      "default": "1.0.0"
-    },
     "description": {
       "type": "string",
       "description": "Description for the exported module",
