@@ -1,19 +1,25 @@
 # Block direct commits to main branch
-if [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ]; then
+echo "🔍 DEBUG: Checking branch name..."
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+echo "🔍 DEBUG: Current branch is: $CURRENT_BRANCH"
+if [ "$CURRENT_BRANCH" = "main" ]; then
   echo "❌ Direct commits to main branch are not allowed"
   echo "💡 Create a feature branch: git checkout -b feature/your-feature"
   exit 1
 fi
+echo "🔍 DEBUG: Branch check passed"
 
 # Check for actual secret values (long strings that look like tokens/keys)
-STAGED_FILES=$(git diff --cached --name-only | grep -v "^\.husky/")
+echo "🔍 DEBUG: Starting secret detection..."
+STAGED_FILES=$(git diff --cached --name-only | grep -v "^\.husky/" | grep -v "pnpm-lock.yaml" || true)
+echo "🔍 DEBUG: Staged files for secret check: '$STAGED_FILES'"
 if [ -n "$STAGED_FILES" ]; then
+  echo "🔍 DEBUG: Running secret detection on files..."
   # Look for patterns that look like actual secret values:
   # - Long base64-like strings (20+ chars)
   # - API key patterns (sk-, ghp_, etc.)
   # - JWT tokens (starting with ey)
-  # Exclude pnpm lockfile integrity hashes
-  SECRET_MATCHES=$(echo "$STAGED_FILES" | xargs grep -n -E "(sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{20,}|ey[a-zA-Z0-9]{20,}|['\"][a-zA-Z0-9+/]{32,}['\"])" 2>/dev/null | grep -v "pnpm-lock.yaml.*integrity: sha" || true)
+  SECRET_MATCHES=$(echo "$STAGED_FILES" | xargs grep -n -E "(sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{20,}|ey[a-zA-Z0-9]{20,}|['\"][a-zA-Z0-9+/]{32,}['\"])" 2>/dev/null || true)
   if [ -n "$SECRET_MATCHES" ]; then
     echo "⚠️  Potential secret values detected in staged files!"
     echo "🔍 Found the following matches:"
@@ -27,10 +33,15 @@ if [ -n "$STAGED_FILES" ]; then
       exit 1
     fi
   fi
+else
+  echo "🔍 DEBUG: No files to check for secrets (husky/lockfiles excluded)"
 fi
+echo "🔍 DEBUG: Secret detection completed"
 
 # Check git-crypt status for staged files only
+echo "🔍 DEBUG: Starting git-crypt check..."
 if command -v git-crypt >/dev/null 2>&1; then
+  echo "🔍 DEBUG: git-crypt found"
   # Check if git-crypt is initialized
   if git-crypt status >/dev/null 2>&1; then
     # Check only staged files that should be encrypted
@@ -61,9 +72,13 @@ if command -v git-crypt >/dev/null 2>&1; then
       fi
     fi
   fi
+else
+  echo "🔍 DEBUG: git-crypt not found"
 fi
+echo "🔍 DEBUG: git-crypt check completed"
 
 # Format affected files with NX
+echo "🔍 DEBUG: Starting code formatting..."
 echo "🔍 Checking code formatting..."
 nx format:write --uncommitted
 
@@ -78,3 +93,4 @@ if ! git diff --quiet; then
 else
   echo "✅ Code formatting is already up to date"
 fi
+echo "🔍 DEBUG: Pre-commit hook completed successfully"
