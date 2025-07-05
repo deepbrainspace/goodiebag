@@ -73,7 +73,7 @@ nx run-many --target=deploy --projects="exponentials.tv/*"
 ```
 
 ## Dependencies & Prerequisites
-1. **nx-surrealdb package** v0.3.4 (install globally: `nx add @deepbrainspace/nx-surrealdb --global`)
+1. **nx-surrealdb package** v0.3.4 (already installed globally)
 2. **SurrealDB instance** running locally or cloud
 3. **Environment variables** in root .env file (shared across goodiebag apps)
 4. **Cloudflare account** for Pages deployments
