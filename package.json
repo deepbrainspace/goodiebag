@@ -14,8 +14,7 @@
   "license": "MIT",
   "workspaces": [
     "packages/*",
-    "apps/*",
-    "libs/*"
+    "apps/*"
   ],
   "packageManager": "pnpm@10.12.4",
   "scripts": {
