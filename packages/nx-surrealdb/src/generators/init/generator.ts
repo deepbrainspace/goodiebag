@@ -165,6 +165,12 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
           database: '${SURREALDB_DATABASE}',
         },
       },
+      lint: {
+        command: "echo 'Database project - no linting required'",
+      },
+      test: {
+        command: "echo 'Database project - no testing required'",
+      },
     },
   };
 
