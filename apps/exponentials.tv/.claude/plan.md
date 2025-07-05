@@ -27,10 +27,9 @@ apps/exponentials.tv/
 ## Task Breakdown
 
 ### Phase 1: Foundation Setup
-- [ ] **Task 1.1**: Build nx-surrealdb package (`nx build nx-surrealdb`)
-- [ ] **Task 1.2**: Create directory structure with project.json files
-- [ ] **Task 1.3**: Initialize shared database (`nx g @deepbrainspace/nx-surrealdb:init exponentials.tv/db`)
-- [ ] **Task 1.4**: Setup environment variables for SurrealDB connection
+- [ ] **Task 1.1**: Create directory structure with project.json files
+- [ ] **Task 1.2**: Initialize shared database (`nx g @deepbrainspace/nx-surrealdb:init apps/exponentials.tv/db --name="exponentials.tv/db"`)
+- [ ] **Task 1.3**: Verify SurrealDB environment variables in root .env file
 
 ### Phase 2: Database Layer
 - [ ] **Task 2.1**: Configure 010_auth module (customize users, roles, sessions tables)
@@ -55,6 +54,8 @@ apps/exponentials.tv/
 - [ ] **Task 6.1**: Update apps/README.md with exponentials.tv structure
 - [ ] **Task 6.2**: Document authentication flow and deployment process
 
+**Total: 17 tasks** across 6 phases for MVP with shared authentication infrastructure.
+
 ## Key Commands
 ```bash
 # Database operations
@@ -72,10 +73,15 @@ nx run-many --target=deploy --projects="exponentials.tv/*"
 ```
 
 ## Dependencies & Prerequisites
-1. **nx-surrealdb package** must be built first
+1. **nx-surrealdb package** v0.3.4 (install globally: `nx add @deepbrainspace/nx-surrealdb --global`)
 2. **SurrealDB instance** running locally or cloud
-3. **Environment variables** configured for database connection
+3. **Environment variables** in root .env file (shared across goodiebag apps)
 4. **Cloudflare account** for Pages deployments
+
+## Environment Strategy
+- **Current**: Use shared `.env` file at repository root for all SurrealDB connections
+- **Future**: When adding more apps, can optionally add app-specific `.env` files that override global settings
+- **Benefits**: Single database instance, shared authentication, easier development
 
 ## Success Criteria
 - [ ] Two independent websites deployed on Cloudflare Pages

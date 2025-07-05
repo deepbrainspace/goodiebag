@@ -1,67 +1,64 @@
 # nx-surrealdb
 
-_Part of the [GoodieBag](https://github.com/deepbrainspace/goodiebag) collection
-of tools and libraries_
+NX plugin for SurrealDB migrations with modular architecture and dependency resolution.
 
-A comprehensive SurrealDB toolkit for [Nx](https://nx.dev/) monorepos featuring
-migration management, dependency resolution, and extensible tooling
-architecture.
+## Quick Start
 
-## Features
+```bash
+# Install
+npm install @deepbrainspace/nx-surrealdb --save-dev
 
-### 🚀 **Migration Management**
+# Initialize database project
+nx g @deepbrainspace/nx-surrealdb:init apps/my-app/db --name="my-app/db"
 
-- **`migrate`**: Apply pending migrations with dependency resolution
-- **`rollback`**: Safe rollback with dependency conflict detection
-- **`status`**: Rich status visualization with dependency graphs
+# Run migrations
+nx run my-app/db:migrate
 
-### 🔧 **Extensible Architecture**
+# Check status
+nx run my-app/db:status
+```
 
-- **Modular Design**: Foundation for expanding SurrealDB tooling beyond
-  migrations
-- **Future Features**: Schema generators, seeder utilities, query builders, and
-  more
-- **Plugin Architecture**: Extensible framework for SurrealDB development
-  workflows
+## Essential Commands
 
-### 🔄 **Dependency Management**
+```bash
+# Migration operations
+nx run my-app/db:migrate                    # Apply all pending migrations
+nx run my-app/db:migrate --module auth     # Apply specific module
+nx run my-app/db:migrate --dry-run         # Preview changes
 
-- **Module Dependencies**: JSON/YAML configuration with explicit dependency
-  declarations
-- **Topological Sorting**: Automatic execution order based on dependency graphs
-- **Circular Detection**: Prevents circular dependency configurations
-- **Safety Validation**: Blocks unsafe rollbacks that would break dependent
-  modules
+# Status and monitoring  
+nx run my-app/db:status                     # Show migration status
+nx run my-app/db:status --detailed         # Show detailed status
+nx run my-app/db:status --json             # JSON output for CI/CD
 
-### 📊 **Rich Visualization**
+# Rollback operations
+nx run my-app/db:rollback --module auth    # Rollback specific module
+nx run my-app/db:rollback --dry-run        # Preview rollback
+nx run my-app/db:rollback --force          # Force rollback (bypass safety)
 
-- **ASCII Dependency Trees**: Beautiful console visualization of module
-  relationships
-- **Status Indicators**: Clear up-to-date vs pending migration states
-- **JSON Output**: Machine-readable output for automation and CI/CD integration
-- **Detailed Mode**: Show specific pending migration files and metadata
+# Generate new migrations
+nx g @deepbrainspace/nx-surrealdb:migration create-users --project my-app/db --module auth
+```
 
-### 🛡️ **Safety & Reliability**
+## Key Features
 
-- **Migration Tracking**: Complete history in `system_migrations` table with
-  checksums and timing
+### Migration Management
+- **Dependency Resolution**: Topological sorting ensures correct execution order
+- **Modular Architecture**: Organize schemas by modules (000_admin, 010_auth, 020_schema)
+- **Migration Tracking**: Complete history in `system_migrations` table with checksums
+
+### Safety & Reliability  
 - **Rollback Safety**: Pre-validation prevents dependency conflicts
-- **Force Override**: Bypass safety checks when needed for emergency situations
+- **Circular Detection**: Prevents circular dependency configurations
 - **Dry-Run Mode**: Preview operations without executing changes
-- **Transaction Control**: Optional transaction wrapping for atomicity
+- **Force Override**: Bypass safety checks for emergency situations
 
-### 🎯 **Developer Experience**
-
-- **Smart Module Targeting**: Reference modules by index (`1`), name (`auth`),
-  number (`10`), or full path (`010_auth`)
-- **Granular File Targeting**: Reference specific migration files by index
-  (`1`), name (`auth`), or full filename
-- **Multiple Reference Patterns**: Mix and match module and filename patterns in
-  a single command (`--module 0,auth,20 --filename 1,2`)
+### Developer Experience
+- **Smart Targeting**: Reference modules by index (`1`), name (`auth`), or pattern (`010_auth`)
+- **Multiple Patterns**: `--module 0,auth,20 --filename 1,2` 
+- **Rich Visualization**: ASCII dependency trees and status indicators
+- **JSON Output**: Machine-readable output for automation
 - **Environment Variables**: Full `.env` support with variable interpolation
-- **Rich Logging**: Emoji-enhanced console output with detailed execution
-  statistics
-- **Error Handling**: Comprehensive error messages with actionable guidance
 
 ## Prerequisites
 
@@ -72,33 +69,28 @@ architecture.
 
 ## Installation
 
-1. **Add the Plugin to Your Nx Workspace**:
+### Option 1: Global Installation (Recommended)
 
-   ```bash
-   npm install @deepbrainspace/nx-surrealdb --save-dev
-   # or
-   pnpm add -D @deepbrainspace/nx-surrealdb
-   ```
+```bash
+# Install globally using NX
+nx add @deepbrainspace/nx-surrealdb --global
+# or manually
+pnpm add -g @deepbrainspace/nx-surrealdb
+```
 
-2. **Alternative: GitHub Releases**
+### Option 2: Project-level Installation
 
-   Download packages directly from
-   [GitHub Releases](https://github.com/deepbrainspace/goodiebag/releases):
+```bash
+# Add to specific workspace
+nx add @deepbrainspace/nx-surrealdb
+# or manually  
+pnpm add -D @deepbrainspace/nx-surrealdb
+```
 
-   - **Production releases**: Tagged versions (e.g., `nx-surrealdb-v1.0.0`)
-   - **SHA-based releases**: Main branch builds with commit SHA (e.g.,
-     `nx-surrealdb-a59d989`)
-
-   ```bash
-   # Download and install from GitHub release
-   curl -L https://github.com/deepbrainspace/goodiebag/releases/download/nx-surrealdb-v1.0.0/deepbrainspace-nx-surrealdb-1.0.0.tgz -o package.tgz
-   npm install package.tgz
-   ```
-
-3. **Verify Installation**:
-   ```bash
-   nx list @deepbrainspace/nx-surrealdb
-   ```
+**Verify installation:**
+```bash
+nx list @deepbrainspace/nx-surrealdb
+```
 
 ## Quick Start
 
