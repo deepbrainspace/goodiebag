@@ -11,6 +11,12 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
   const dbPath = options.dbPath || options['db-path'] || '';
   const projectPath = dbPath ? path.join(basePath, name, dbPath) : path.join(basePath, name);
 
+  // Extract clean project name (remove any base path prefix if present)
+  const projectName =
+    basePath !== '.' && name.startsWith(basePath + '/')
+      ? name.substring(basePath.length + 1)
+      : name;
+
   // Auto-install required dependencies
   const packageJson = tree.read('package.json');
   if (packageJson) {
@@ -44,7 +50,7 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
 
   // Derive namespace from project name if not provided
   // Strip component suffix (e.g., "exponentials.tv/db" -> "exponentials.tv")
-  const derivedNamespace = name.includes('/') ? name.split('/')[0] : name;
+  const derivedNamespace = projectName.includes('/') ? projectName.split('/')[0] : projectName;
 
   // Parse environments from comma-separated string
   const environmentsString = options.environments || 'development,staging,production';
@@ -52,7 +58,7 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
 
   // Set defaults using the same pattern as the library
   const config = {
-    name,
+    name: projectName,
     url: options.url || 'ws://localhost:8000/rpc',
     namespace: options.namespace || derivedNamespace,
     environments,
@@ -102,7 +108,7 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
     ...config,
     template: '',
     moduleConfig: JSON.stringify(moduleConfig, null, 2),
-    name,
+    name: projectName,
     initPath: projectPath,
     schemaPath,
   });
@@ -111,7 +117,7 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
 
   // Log helpful next steps
   console.log(`
-✅ Database project '${name}' created successfully!
+✅ Database project '${projectName}' created successfully!
 
 📋 Next steps:
 1. Set up your environment variables in .env:
@@ -127,7 +133,7 @@ export default async function (tree: Tree, options: InitGeneratorSchema) {
    - ${projectPath}/020_schema/0001_tables_*.surql (Application schema)
 
 3. Uncomment and customize the migration code, then run:
-   nx run ${name}:migrate
+   nx run ${projectName}:migrate
 
 For more info, see ${projectPath}/README.md
   `);
