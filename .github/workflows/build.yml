@@ -56,7 +56,7 @@ jobs:
               FOUND_TAGS="$FOUND_TAGS $TAGS_FOR_SHA"
             fi
           done
-          
+
           if [ -n "$FOUND_TAGS" ]; then
             echo "✅ Found git tags for commits in branch:$FOUND_TAGS"
           else
@@ -112,10 +112,10 @@ jobs:
   lint:
     name: 🔍 Lint (${{ matrix.package }})
     needs: [check-release, detect-affected]
-    if: needs.check-release.outputs.is-release == 'false' && needs.detect-affected.outputs.has-packages == 'true'
+    if: needs.check-release.outputs.is-release == 'false' && needs.detect-affected.outputs.has-lint-packages == 'true'
     strategy:
       matrix:
-        package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
+        package: ${{ fromJSON(needs.detect-affected.outputs.lint-packages) }}
       fail-fast: false
     runs-on: ubuntu-latest
 
@@ -139,10 +139,10 @@ jobs:
   test:
     name: 🧪 Test (${{ matrix.package }})
     needs: [check-release, detect-affected]
-    if: needs.check-release.outputs.is-release == 'false' && needs.detect-affected.outputs.has-packages == 'true'
+    if: needs.check-release.outputs.is-release == 'false' && needs.detect-affected.outputs.has-test-packages == 'true'
     strategy:
       matrix:
-        package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
+        package: ${{ fromJSON(needs.detect-affected.outputs.test-packages) }}
       fail-fast: false
     runs-on: ubuntu-latest
 
@@ -174,10 +174,10 @@ jobs:
   build:
     name: 🏗️ Build (${{ matrix.package }})
     needs: [check-release, detect-affected, lint, test]
-    if: needs.check-release.outputs.is-release == 'false' && needs.detect-affected.outputs.has-packages == 'true'
+    if: needs.check-release.outputs.is-release == 'false' && needs.detect-affected.outputs.has-build-packages == 'true'
     strategy:
       matrix:
-        package: ${{ fromJSON(needs.detect-affected.outputs.packages) }}
+        package: ${{ fromJSON(needs.detect-affected.outputs.build-packages) }}
       fail-fast: false
     runs-on: ubuntu-latest
 
@@ -233,23 +233,44 @@ jobs:
             # Regular branch build validation
             # Check that detection ran and other jobs either succeeded or were skipped appropriately
             if [[ "${{ needs.detect-affected.result }}" == "success" ]]; then
-              # If we have packages, check that build pipeline succeeded
-              if [[ "${{ needs.detect-affected.outputs.has-packages }}" == "true" ]]; then
-                if [[ ("${{ needs.lint.result }}" == "success") && 
-                      ("${{ needs.test.result }}" == "success") && 
-                      ("${{ needs.build.result }}" == "success") ]]; then
-                  echo "✅ Build pipeline completed successfully"
-                  echo "📋 All affected packages passed lint, test, and build"
-                  echo "📦 Packages: ${{ needs.detect-affected.outputs.packages }}"
-                else
-                  echo "❌ Build pipeline failed"
-                  echo "📋 One or more packages failed lint, test, or build"
-                  echo "🔍 Lint: ${{ needs.lint.result }}, Test: ${{ needs.test.result }}, Build: ${{ needs.build.result }}"
-                  exit 1
+              # Check individual target results
+              lint_success="true"
+              test_success="true"
+              build_success="true"
+              
+              # Check lint results
+              if [[ "${{ needs.detect-affected.outputs.has-lint-packages }}" == "true" ]]; then
+                if [[ "${{ needs.lint.result }}" != "success" ]]; then
+                  lint_success="false"
                 fi
+              fi
+              
+              # Check test results  
+              if [[ "${{ needs.detect-affected.outputs.has-test-packages }}" == "true" ]]; then
+                if [[ "${{ needs.test.result }}" != "success" ]]; then
+                  test_success="false"
+                fi
+              fi
+              
+              # Check build results
+              if [[ "${{ needs.detect-affected.outputs.has-build-packages }}" == "true" ]]; then
+                if [[ "${{ needs.build.result }}" != "success" ]]; then
+                  build_success="false"
+                fi
+              fi
+              
+              # Overall success check
+              if [[ "$lint_success" == "true" && "$test_success" == "true" && "$build_success" == "true" ]]; then
+                echo "✅ Build pipeline completed successfully"
+                echo "📋 All affected packages passed their respective targets"
+                echo "🔍 Lint packages: ${{ needs.detect-affected.outputs.lint-packages }}"
+                echo "🧪 Test packages: ${{ needs.detect-affected.outputs.test-packages }}"
+                echo "🏗️ Build packages: ${{ needs.detect-affected.outputs.build-packages }}"
               else
-                echo "✅ No packages affected - documentation or config changes only"
-                echo "📋 Validation completed successfully"
+                echo "❌ Build pipeline failed"
+                echo "📋 One or more target groups failed"
+                echo "🔍 Lint: ${{ needs.lint.result }}, Test: ${{ needs.test.result }}, Build: ${{ needs.build.result }}"
+                exit 1
               fi
             else
               echo "❌ Failed to detect affected packages"

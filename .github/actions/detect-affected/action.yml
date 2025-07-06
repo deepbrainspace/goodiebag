@@ -20,6 +20,24 @@ outputs:
   package-groups:
     description: 'JSON object mapping packages to their groups'
     value: ${{ steps.detect.outputs.package-groups }}
+  lint-packages:
+    description: 'JSON array of affected packages with lint target'
+    value: ${{ steps.detect.outputs.lint-packages }}
+  has-lint-packages:
+    description: 'Whether any packages have lint target'
+    value: ${{ steps.detect.outputs.has-lint-packages }}
+  test-packages:
+    description: 'JSON array of affected packages with test target'
+    value: ${{ steps.detect.outputs.test-packages }}
+  has-test-packages:
+    description: 'Whether any packages have test target'
+    value: ${{ steps.detect.outputs.has-test-packages }}
+  build-packages:
+    description: 'JSON array of affected packages with build target'
+    value: ${{ steps.detect.outputs.build-packages }}
+  has-build-packages:
+    description: 'Whether any packages have build target'
+    value: ${{ steps.detect.outputs.has-build-packages }}
 
 runs:
   using: 'composite'
@@ -42,12 +60,30 @@ runs:
           echo "packages=[]" >> $GITHUB_OUTPUT
           echo "has-packages=false" >> $GITHUB_OUTPUT
           echo "package-count=0" >> $GITHUB_OUTPUT
+          echo "lint-packages=[]" >> $GITHUB_OUTPUT
+          echo "has-lint-packages=false" >> $GITHUB_OUTPUT
+          echo "test-packages=[]" >> $GITHUB_OUTPUT
+          echo "has-test-packages=false" >> $GITHUB_OUTPUT
+          echo "build-packages=[]" >> $GITHUB_OUTPUT
+          echo "has-build-packages=false" >> $GITHUB_OUTPUT
           echo "ℹ️ No affected packages found"
         else
           PACKAGE_COUNT=$(echo $AFFECTED | jq length)
           echo "packages=$AFFECTED" >> $GITHUB_OUTPUT
           echo "has-packages=true" >> $GITHUB_OUTPUT
           echo "package-count=$PACKAGE_COUNT" >> $GITHUB_OUTPUT
+          
+          # Create target-specific matrices
+          LINT_PACKAGES=$(nx show projects --affected --with-target lint --json || echo '[]')
+          TEST_PACKAGES=$(nx show projects --affected --with-target test --json || echo '[]')
+          BUILD_PACKAGES=$(nx show projects --affected --with-target build --json || echo '[]')
+          
+          echo "lint-packages=$LINT_PACKAGES" >> $GITHUB_OUTPUT
+          echo "has-lint-packages=$([ $(echo $LINT_PACKAGES | jq length) -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+          echo "test-packages=$TEST_PACKAGES" >> $GITHUB_OUTPUT
+          echo "has-test-packages=$([ $(echo $TEST_PACKAGES | jq length) -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+          echo "build-packages=$BUILD_PACKAGES" >> $GITHUB_OUTPUT
+          echo "has-build-packages=$([ $(echo $BUILD_PACKAGES | jq length) -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
           
           # Map packages to their groups from nx.json
           PACKAGE_GROUPS=$(jq -n '{}')
