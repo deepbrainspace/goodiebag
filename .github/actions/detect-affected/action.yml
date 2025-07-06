@@ -78,6 +78,10 @@ runs:
           TEST_PACKAGES=$(nx show projects --affected --with-target test --json || echo '[]')
           BUILD_PACKAGES=$(nx show projects --affected --with-target build --json || echo '[]')
           
+          echo "🔍 Lint packages: $LINT_PACKAGES"
+          echo "🧪 Test packages: $TEST_PACKAGES"
+          echo "🏗️ Build packages: $BUILD_PACKAGES"
+          
           echo "lint-packages=$LINT_PACKAGES" >> $GITHUB_OUTPUT
           echo "has-lint-packages=$([ $(echo $LINT_PACKAGES | jq length) -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
           echo "test-packages=$TEST_PACKAGES" >> $GITHUB_OUTPUT
