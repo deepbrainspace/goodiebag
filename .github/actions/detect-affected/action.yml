@@ -89,6 +89,7 @@ runs:
           echo "build-packages=$BUILD_PACKAGES" >> $GITHUB_OUTPUT
           echo "has-build-packages=$([ $(echo $BUILD_PACKAGES | jq length) -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
           
+
           # Map packages to their groups from nx.json
           PACKAGE_GROUPS=$(jq -n '{}')
           
@@ -114,6 +115,8 @@ runs:
           done
           
           echo "package-groups=$(echo $PACKAGE_GROUPS | jq -c .)" >> $GITHUB_OUTPUT
+          echo "🔍 github output: $GITHUB_OUTPUT"
+
           echo "🎯 Found $PACKAGE_COUNT affected packages"
           echo "📋 Packages: $AFFECTED"
           echo "🏷️ Package groups: $PACKAGE_GROUPS"
