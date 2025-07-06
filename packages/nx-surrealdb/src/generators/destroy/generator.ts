@@ -17,12 +17,16 @@ export default async function (tree: Tree, options: DestroyGeneratorSchema) {
   logger.info(`📁 Found project at: ${project.root}`);
 
   // Check if user confirmed destruction (either via --force or interactive prompt)
-  if (!normalizedOptions.force && !normalizedOptions.confirmed) {
-    logger.warn(`⚠️ This will permanently delete the project '${normalizedOptions.projectName}' and all its files.`);
-    logger.warn(`📂 Location: ${project.root}`);
-    logger.warn(`💡 Use --force to bypass this confirmation`);
-    
-    throw new Error(`Destruction cancelled. Use --force flag to proceed with deletion.`);
+  if (!normalizedOptions.force) {
+    if (!normalizedOptions.confirmed) {
+      logger.warn(
+        `⚠️ This will permanently delete the project '${normalizedOptions.projectName}' and all its files.`
+      );
+      logger.warn(`📂 Location: ${project.root}`);
+      logger.warn(`💡 Use --force to bypass this confirmation`);
+
+      throw new Error(`Destruction cancelled. Use --force flag to proceed with deletion.`);
+    }
   }
 
   // 1. Remove NX project configuration
@@ -57,7 +61,9 @@ export default async function (tree: Tree, options: DestroyGeneratorSchema) {
   }
 
   logger.info(`✅ Project '${normalizedOptions.projectName}' destroyed successfully!`);
-  logger.info(`🎯 You can now safely run: nx g @deepbrainspace/nx-surrealdb:init ${normalizedOptions.projectName}`);
+  logger.info(
+    `🎯 You can now safely run: nx g @deepbrainspace/nx-surrealdb:init ${normalizedOptions.projectName}`
+  );
 
   return () => {
     logger.info(`
