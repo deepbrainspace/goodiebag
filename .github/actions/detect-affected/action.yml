@@ -20,9 +20,9 @@ outputs:
   package-groups:
     description: 'JSON object mapping packages to their groups'
     value: ${{ steps.detect.outputs.package-groups }}
-  lint-packages:
+  lint:
     description: 'JSON array of affected packages with lint target'
-    value: ${{ steps.detect.outputs.lint-packages }}
+    value: ${{ steps.detect.outputs.lint }}
   has-lint-packages:
     description: 'Whether any packages have lint target'
     value: ${{ steps.detect.outputs.has-lint-packages }}
@@ -78,7 +78,7 @@ runs:
           TEST_PACKAGES=$(nx show projects --affected --with-target test --json || echo '[]')
           BUILD_PACKAGES=$(nx show projects --affected --with-target build --json || echo '[]')
 
-          echo "lint-packages=$LINT_PACKAGES" >> $GITHUB_OUTPUT
+          echo "lint=$LINT_PACKAGES" >> $GITHUB_OUTPUT
           echo "has-lint-packages=$([ $(echo $LINT_PACKAGES | jq length) -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
           echo "test-packages=$TEST_PACKAGES" >> $GITHUB_OUTPUT
           echo "has-test-packages=$([ $(echo $TEST_PACKAGES | jq length) -gt 0 ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
