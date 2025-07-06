@@ -112,7 +112,7 @@ jobs:
   lint:
     name: 🔍 Lint (${{ matrix.package }})
     needs: [check-release, detect-affected]
-    if: needs.check-release.outputs.is-release == 'false' && needs.detect-affected.outputs.has-packages == 'true'
+    if: needs.check-release.outputs.is-release == 'false' && needs.detect-affected.outputs.has-lint-packages == 'true'
     strategy:
       matrix:
         package: ${{ fromJSON(needs.detect-affected.outputs.lint-packages) }}
