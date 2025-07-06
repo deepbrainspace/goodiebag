@@ -263,7 +263,7 @@ jobs:
               if [[ "$lint_success" == "true" && "$test_success" == "true" && "$build_success" == "true" ]]; then
                 echo "✅ Build pipeline completed successfully"
                 echo "📋 All affected packages passed their respective targets"
-                echo "🔍 Lint packages: ${{ needs.detect-affected.outputs.lint-packages }}"
+                echo "🔍 Lint packages: ${{ needs.detect-affected.outputs.lint }}"
                 echo "🧪 Test packages: ${{ needs.detect-affected.outputs.test-packages }}"
                 echo "🏗️ Build packages: ${{ needs.detect-affected.outputs.build-packages }}"
               else
