@@ -27,7 +27,7 @@
     "install:dotfiles": "cd dotfiles && ./install.sh"
   },
   "devDependencies": {
-    "@deepbrainspace/nx-surrealdb": "0.4.0",
+    "@deepbrainspace/nx-surrealdb": "0.4.1",
     "@goodiebag/nx-rust": "3.1.0",
     "@goodiebag/nx-toolkit": "0.2.0",
     "@nx/esbuild": "21.2.0",
