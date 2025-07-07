@@ -55,30 +55,38 @@ release.
 - [ ] **Monitor CI builds**: Wait for all checks to pass
 - [ ] **Review PR**: Ensure all changes are correct
 
+### 7. User Approval and Merge
+
+- [ ] **Request user approval**: Ask user to review and approve the PR
+- [ ] **Wait for user confirmation**: User confirms PR is ready to merge
+- [ ] **Merge PR**: `gh pr merge [PR_NUMBER] --merge` (regular merge, not
+      squash)
+- [ ] **Switch to main**: `git checkout main && git pull origin main`
+
 ## Publishing
 
-### 7. Publish to NPM
+### 8. Publish to NPM
 
 - [ ] **Build package**: `nx build [package-name]`
 - [ ] **Publish from dist**:
       `cd dist/packages/[package-name] && pnpm publish --access=public --no-git-checks`
 - [ ] **Verify publication**: Check on npmjs.com that new version is available
 
-### 8. Git Tagging
+### 9. Git Tagging
 
 - [ ] **Create git tag**: `git tag [package-name]@[version]`
 - [ ] **Push tag**: `git push origin [package-name]@[version]`
 
 ## Post-Release Updates
 
-### 9. Update Internal Dependencies
+### 10. Update Internal Dependencies
 
 - [ ] **Update root package.json**: Update devDependency version to new release
 - [ ] **Update lockfile**: `pnpm install`
 - [ ] **Commit dependency update**:
       `git commit -m "chore: update [package-name] to v[version]"`
 
-### 10. Merge and Cleanup
+### 11. Merge and Cleanup
 
 - [ ] **Merge PR**: After CI passes and review approval
 - [ ] **Switch to main**: `git checkout main && git pull origin main`
@@ -89,7 +97,7 @@ release.
 
 ## Verification
 
-### 11. Final Checks
+### 12. Final Checks
 
 - [ ] **Verify npm package**:
       `npm view @deepbrainspace/[package-name]@[version]`
