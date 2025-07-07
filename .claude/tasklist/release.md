@@ -1,14 +1,14 @@
-# Release Process Checklist
+# Release Process ToDoList
 
-This checklist outlines the complete process for releasing packages in the
-goodiebag monorepo using NX release commands.
+Create the following ToDoList in a Plan then confirm with the user to create a
+release.
 
 ## Pre-Release Preparation
 
 ### 1. Code Quality Verification
 
-- [ ] **Run tests**: `nx test [package-name]`
 - [ ] **Run linting**: `nx lint [package-name]`
+- [ ] **Run tests**: `nx test [package-name]`
 - [ ] **Build package**: `nx build [package-name]`
 - [ ] **Verify all checks pass**: No failing tests or lint errors
 

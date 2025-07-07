@@ -9,6 +9,7 @@
 - **NEVER run git commands that modify history** (e.g. `git rebase`,
   `git reset`) without explicit user approval
 - NEVER use the force flag without explicit user approval.
+- do not add "> Generated with Claude Code"
 
 ## Husky
 
