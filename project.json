@@ -40,6 +40,7 @@
           "echo '🏗️  Building workspace artifacts...'",
           "mkdir -p dist/packages/goodiebag",
           "nx graph --file=dist/packages/goodiebag/dependency-graph.json",
+          "cp -r .claude dist/packages/goodiebag/",
           "cp -r .github dist/packages/goodiebag/",
           "cp -r docs dist/packages/goodiebag/",
           "cp -r dotfiles dist/packages/goodiebag/",
