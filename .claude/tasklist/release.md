@@ -3,16 +3,25 @@
 Create the following ToDoList in a Plan then confirm with the user to create a
 release.
 
+## Branch Strategy
+
+### 1. Create Release Branch
+
+- [ ] **Check current branch**: `git branch --show-current`
+- [ ] **Ensure on main**: `git checkout main && git pull origin main`
+- [ ] **Create release branch**:
+      `git checkout -b release/[package-name]-v[version]`
+
 ## Pre-Release Preparation
 
-### 1. Code Quality Verification
+### 2. Code Quality Verification
 
 - [ ] **Run linting**: `nx lint [package-name]`
 - [ ] **Run tests**: `nx test [package-name]`
 - [ ] **Build package**: `nx build [package-name]`
 - [ ] **Verify all checks pass**: No failing tests or lint errors
 
-### 2. Version Planning
+### 3. Version Planning
 
 - [ ] **Determine version type**:
   - `patch` for bug fixes (0.1.0 → 0.1.1)
@@ -21,15 +30,6 @@ release.
 - [ ] **Check current version**: Review `package.json` in the target package
 - [ ] **Review commit history**: Use conventional commits to determine
       appropriate bump
-
-## Branch Strategy
-
-### 3. Create Release Branch
-
-- [ ] **Check current branch**: `git branch --show-current`
-- [ ] **Ensure on main**: `git checkout main && git pull origin main`
-- [ ] **Create release branch**:
-      `git checkout -b release/[package-name]-v[version]`
 
 ## Release Execution
 
