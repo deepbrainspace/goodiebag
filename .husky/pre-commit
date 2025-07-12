@@ -25,15 +25,22 @@ debug_echo "Staged files for secret check: '$STAGED_FILES'"
 
 # Filter out git-crypt encrypted files from secret detection
 UNENCRYPTED_FILES=""
+ENCRYPTED_FILES=""
 if [ -n "$STAGED_FILES" ] && command -v git-crypt >/dev/null 2>&1; then
   for file in $STAGED_FILES; do
     # Check if file is encrypted by git-crypt
     if git-crypt status "$file" 2>/dev/null | grep -q "encrypted"; then
+      ENCRYPTED_FILES="$ENCRYPTED_FILES $file"
       debug_echo "Skipping secret detection for encrypted file: $file"
     else
       UNENCRYPTED_FILES="$UNENCRYPTED_FILES $file"
     fi
   done
+  
+  # Show encrypted files being skipped (always visible, not just debug)
+  if [ -n "$ENCRYPTED_FILES" ]; then
+    echo "🔐 Skipping secret detection for git-crypt encrypted files:$ENCRYPTED_FILES"
+  fi
 else
   UNENCRYPTED_FILES="$STAGED_FILES"
 fi
