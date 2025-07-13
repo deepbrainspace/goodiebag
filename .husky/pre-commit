@@ -8,14 +8,16 @@ debug_echo() {
 }
 
 # Block direct commits to main branch
+echo "🔍 Checking branch protection..."
 debug_echo "Checking branch name..."
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 debug_echo "Current branch is: $CURRENT_BRANCH"
 if [ "$CURRENT_BRANCH" = "main" ]; then
-  echo "❌ Direct commits to main branch are not allowed"
+  echo "❌ Branch protection: Direct commits to main branch are not allowed"
   echo "💡 Create a feature branch: git checkout -b feature/your-feature"
   exit 1
 fi
+echo "✅ Branch protection: Feature branch detected ($CURRENT_BRANCH)"
 debug_echo "Branch check passed"
 
 # Check for actual secret values (long strings that look like tokens/keys)
@@ -37,9 +39,9 @@ if [ -n "$STAGED_FILES" ] && command -v git-crypt >/dev/null 2>&1; then
     fi
   done
   
-  # Show encrypted files being skipped (always visible, not just debug)
+  # Show encrypted files being skipped (debug info)
   if [ -n "$ENCRYPTED_FILES" ]; then
-    echo "🔐 Skipping secret detection for git-crypt encrypted files:$ENCRYPTED_FILES"
+    debug_echo "⚠️ Skipping secret detection for git-crypt encrypted files:$ENCRYPTED_FILES"
   fi
 else
   UNENCRYPTED_FILES="$STAGED_FILES"
@@ -53,7 +55,7 @@ if [ -n "$UNENCRYPTED_FILES" ]; then
   # - JWT tokens (starting with ey)
   SECRET_MATCHES=$(echo "$UNENCRYPTED_FILES" | xargs grep -n -E "(sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{20,}|ey[a-zA-Z0-9]{20,}|['\"][a-zA-Z0-9+/]{32,}['\"])" 2>/dev/null || true)
   if [ -n "$SECRET_MATCHES" ]; then
-    echo "⚠️  Potential secret values detected in staged files!"
+    echo "❌ Secret detection: Potential secret values detected!"
     echo "🔍 Found the following matches:"
     echo "$SECRET_MATCHES"
     echo ""
@@ -64,9 +66,13 @@ if [ -n "$UNENCRYPTED_FILES" ]; then
       echo "🚫 Commit aborted"
       exit 1
     fi
+    echo "⚠️ Secret detection: Proceeding with user override"
+  else
+    echo "✅ Secret detection: No secrets found"
   fi
 else
   debug_echo "No unencrypted files to check for secrets (encrypted files excluded)"
+  echo "⚠️ Secret detection: Only encrypted files found, skipping scan"
 fi
 debug_echo "Secret detection completed"
 
@@ -92,7 +98,7 @@ if command -v git-crypt >/dev/null 2>&1; then
       done
       
       if [ -n "$CRYPT_ISSUES" ]; then
-        echo "🔐 Git-crypt warning: Staged files have encryption issues!"
+        echo "❌ Git-crypt: Staged files have encryption issues!"
         echo -e "$CRYPT_ISSUES"
         echo "💡 Run 'git-crypt status <file>' to check specific files"
         echo "❓ Continue anyway? (y/N)"
@@ -101,28 +107,40 @@ if command -v git-crypt >/dev/null 2>&1; then
           echo "🚫 Commit aborted"
           exit 1
         fi
+        echo "⚠️ Git-crypt: Proceeding with encryption issues"
+      else
+        echo "✅ Git-crypt: All required files properly encrypted"
       fi
+    else
+      debug_echo "No staged files to check for encryption"
+      echo "✅ Git-crypt: No files requiring encryption"
     fi
+  else
+    debug_echo "git-crypt not initialized"
+    echo "⚠️ Git-crypt: Not initialized, skipping encryption check"
   fi
 else
   debug_echo "git-crypt not found"
+  echo "⚠️ Git-crypt: Not installed, skipping encryption check"
 fi
 debug_echo "git-crypt check completed"
 
 # Format affected files with NX
 debug_echo "Starting code formatting..."
-echo "🔍 Checking code formatting..."
+debug_echo "Running NX format on uncommitted changes..."
 nx format:write --uncommitted
 
 # Check if any files were formatted
+debug_echo "Checking if any files were modified during formatting..."
 if ! git diff --quiet; then
-  echo "📝 Files were automatically formatted:"
+  debug_echo "Files were modified during formatting process"
+  echo "❌ Code formatting: Files were automatically formatted:"
   git diff --name-only
   echo ""
   echo "💡 Please review the changes and re-run your commit"
   echo "   git add . && git commit"
   exit 1
 else
-  echo "✅ Code formatting is already up to date"
+  echo "✅ Code formatting: All files already properly formatted"
 fi
 debug_echo "Pre-commit hook completed successfully"
