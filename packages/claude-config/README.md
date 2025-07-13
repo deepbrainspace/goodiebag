@@ -94,23 +94,52 @@ cp packages/claude-config/src/local/templates/nx-monorepo/CLAUDE.md .claude/
 
 ## 🔌 MCP Server Setup
 
-### Quick MCP Setup
+### Quick Setup
+
+1. **Copy configuration:**
+
+   ```bash
+   cp packages/claude-config/src/global/.claude.json.example ~/.claude.json
+   ```
+
+2. **Get API keys (all have free tiers):**
+
+   - **Serper:** [serper.dev](https://serper.dev/) → API Keys (2,500
+     searches/month)
+   - **Brave:** [api.search.brave.com](https://api.search.brave.com/) (1,000
+     searches/month)
+   - **Firecrawl:** [firecrawl.dev](https://firecrawl.dev/) → Dashboard → API
+     Keys
+
+3. **Edit configuration:**
+
+   ```bash
+   editor ~/.claude.json
+   # Replace: "your-serper-api-key", "your-brave-api-key", "fc-your-firecrawl-api-key"
+   ```
+
+4. **Test:** `claude mcp list` should show 7 configured servers
+
+### Included Servers
+
+| Server            | Purpose          | API Key Required  |
+| ----------------- | ---------------- | ----------------- |
+| **search-serper** | Google search    | SERPER_API_KEY    |
+| **brave-search**  | Privacy search   | BRAVE_API_KEY     |
+| **firecrawl**     | Web scraping     | FIRECRAWL_API_KEY |
+| **gmail**         | Email management | OAuth (automatic) |
+| **context7**      | Vector search    | None              |
+| **Bright Data**   | Web data         | Account-based     |
+| **reddit**        | Social content   | None              |
+
+### Usage
 
 ```bash
-# Add all 9 working MCP servers
-claude mcp add firecrawl "npx firecrawl-mcp"
-claude mcp add search-serper "npx -y @deepbrainspace/serper-search-mcp@0.2.1"
-claude mcp add brave-search "npx -y brave-search-mcp"
-claude mcp add gmail "npx @gongrzhe/server-gmail-autoauth-mcp"
-claude mcp add brightdata "npx @brightdata/mcp"
-claude mcp add context7 "npx -y @upstash/context7-mcp"
-claude mcp add yt-dlp "npx -y @kevinwatt/yt-dlp-mcp"
-claude mcp add airtable "npx -y airtable-mcp-server"
-claude mcp add reddit "npx -y mcp-server-reddit"
+# In Claude Code:
+"Search for latest Node.js release"     # → search-serper
+"Scrape content from example.com"       # → firecrawl
+"Check my recent emails"               # → gmail
 ```
-
-**Complete MCP Guide:** See [MCP_SETUP.md](./docs/MCP_SETUP.md) for API keys,
-troubleshooting, and detailed setup.
 
 ## 🎯 Usage
 

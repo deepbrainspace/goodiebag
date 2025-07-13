@@ -1,0 +1,198 @@
+{
+  "numStartups": 28,
+  "installMethod": "unknown",
+  "autoUpdates": true,
+  "tipsHistory": {
+    "ide-hotkey": 1,
+    "new-user-warmup": 3,
+    "memory-command": 4,
+    "shift-enter": 12,
+    "theme-command": 13,
+    "prompt-queue": 25,
+    "enter-to-steer-in-relatime": 15,
+    "todo-list": 16,
+    "# for memory": 17,
+    "install-github-app": 18,
+    "permissions": 19,
+    "drag-and-drop-images": 20,
+    "double-esc": 21,
+    "continue": 22,
+    "custom-commands": 23,
+    "shift-tab": 24
+  },
+  "promptQueueUseCount": 2,
+  "projects": {
+    "/home/nsm": {
+      "allowedTools": [],
+      "history": [],
+      "mcpContextUris": [],
+      "mcpServers": {},
+      "enabledMcpjsonServers": [],
+      "disabledMcpjsonServers": [],
+      "hasTrustDialogAccepted": false,
+      "projectOnboardingSeenCount": 3,
+      "hasClaudeMdExternalIncludesApproved": false,
+      "hasClaudeMdExternalIncludesWarningShown": false,
+      "lastTotalWebSearchRequests": 0,
+      "lastCost": 0,
+      "lastAPIDuration": 1074,
+      "lastDuration": 16386,
+      "lastLinesAdded": 0,
+      "lastLinesRemoved": 0,
+      "lastTotalInputTokens": 505,
+      "lastTotalOutputTokens": 17,
+      "lastTotalCacheCreationInputTokens": 0,
+      "lastTotalCacheReadInputTokens": 0,
+      "lastSessionId": "example-session-id"
+    },
+    "/home/username/code/project": {
+      "allowedTools": [],
+      "history": [],
+      "mcpContextUris": [],
+      "mcpServers": [],
+      "enabledMcpjsonServers": [],
+      "disabledMcpjsonServers": [],
+      "hasTrustDialogAccepted": true,
+      "projectOnboardingSeenCount": 0,
+      "hasClaudeMdExternalIncludesApproved": false,
+      "hasClaudeMdExternalIncludesWarningShown": false,
+      "exampleFiles": [
+        "README.md",
+        "package.json",
+        "src/index.ts"
+      ],
+      "exampleFilesGeneratedAt": 1752389462042,
+      "hasCompletedProjectOnboarding": true,
+      "lastTotalWebSearchRequests": 0,
+      "lastCost": 0,
+      "lastAPIDuration": 87335,
+      "lastDuration": 526908,
+      "lastLinesAdded": 0,
+      "lastLinesRemoved": 0,
+      "lastTotalInputTokens": 1735,
+      "lastTotalOutputTokens": 1995,
+      "lastTotalCacheCreationInputTokens": 92339,
+      "lastTotalCacheReadInputTokens": 869097,
+      "lastSessionId": "example-session-id-2"
+    }
+  },
+  "firstStartTime": "2025-07-13T06:49:05.744Z",
+  "userID": "example-user-id-hash",
+  "oauthAccount": {
+    "accountUuid": "example-account-uuid",
+    "emailAddress": "user@example.com",
+    "organizationUuid": "example-org-uuid",
+    "organizationRole": "admin",
+    "workspaceRole": null,
+    "organizationName": "User's Organization"
+  },
+  "shiftEnterKeyBindingInstalled": true,
+  "hasCompletedOnboarding": true,
+  "lastOnboardingVersion": "1.0.51",
+  "cachedChangelog": "# Changelog\n\n## 1.0.51\n\n- Added support for native Windows (requires Git for Windows)...",
+  "changelogLastFetched": 1752389462268,
+  "fallbackAvailableWarningThreshold": 0.2,
+  "subscriptionNoticeCount": 0,
+  "hasAvailableSubscription": false,
+  "lastReleaseNotesSeen": "1.0.51",
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"],
+      "alwaysAllow": ["resolve-library-id", "get-library-docs"]
+    },
+    "Bright Data": {
+      "command": "npx",
+      "args": ["@brightdata/mcp"],
+      "env": {
+        "API_TOKEN": "your-brightdata-api-token",
+        "WEB_UNLOCKER_ZONE": "mcp_unlocker",
+        "BROWSER_AUTH": "your-browser-auth-string"
+      },
+      "alwaysAllow": [
+        "search_engine",
+        "scrape_as_html",
+        "web_data_amazon_product",
+        "web_data_linkedin_company_profile"
+      ],
+      "disabled": false
+    },
+    "search-serper": {
+      "command": "npx",
+      "args": ["-y", "@deepbrainspace/serper-search-mcp@0.2.1"],
+      "alwaysAllow": ["serper-google-search"],
+      "env": {
+        "SERPER_API_KEY": "your-serper-api-key",
+        "SERPER_LLM_API_KEY": "your-google-api-key-optional"
+      },
+      "disabled": false
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": ["-y", "brave-search-mcp"],
+      "env": {
+        "BRAVE_API_KEY": "your-brave-api-key"
+      },
+      "alwaysAllow": ["brave_web_search"],
+      "disabled": false
+    },
+    "firecrawl": {
+      "command": "npx",
+      "args": ["-y", "firecrawl-mcp"],
+      "env": {
+        "FIRECRAWL_API_KEY": "fc-your-firecrawl-api-key"
+      },
+      "alwaysAllow": [
+        "firecrawl_scrape",
+        "firecrawl_search",
+        "firecrawl_deep_research"
+      ]
+    },
+    "gmail": {
+      "command": "npx",
+      "args": ["@gongrzhe/server-gmail-autoauth-mcp"],
+      "alwaysAllow": [
+        "send_email",
+        "draft_email",
+        "read_email",
+        "search_emails",
+        "modify_email",
+        "delete_email",
+        "list_email_labels",
+        "batch_modify_emails",
+        "batch_delete_emails",
+        "create_label",
+        "update_label",
+        "delete_label",
+        "get_or_create_label"
+      ],
+      "disabled": false
+    },
+    "airtable": {
+      "command": "npx",
+      "args": ["-y", "airtable-mcp-server"],
+      "env": {
+        "AIRTABLE_API_KEY": "your-airtable-api-key"
+      },
+      "alwaysAllow": ["list_bases"],
+      "disabled": true
+    },
+    "reddit": {
+      "command": "uvx",
+      "args": ["reddit-mcp"],
+      "env": {
+        "REDDIT_CLIENT_ID": "your-reddit-client-id",
+        "REDDIT_CLIENT_SECRET": "your-reddit-client-secret"
+      },
+      "alwaysAllow": [
+        "search_subreddits",
+        "search_posts",
+        "get_comment_by_id",
+        "get_comments_by_submission",
+        "get_subreddit",
+        "get_submission"
+      ],
+      "disabled": false
+    }
+  }
+}
