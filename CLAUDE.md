@@ -112,6 +112,18 @@ merge.
 - ✅ If using cargo directly, always `cd packages/claude-code-toolkit` first
 - Keep build artifacts in package directories only
 
+## Gmail MCP Authentication
+
+**Reauthentication Command**: If Gmail MCP returns `invalid_grant` error:
+
+```bash
+npx @gongrzhe/server-gmail-autoauth-mcp auth
+```
+
+- Requires `gcp-oauth.keys.json` in current directory or `~/.gmail-mcp/`
+- Opens browser for Google authentication
+- Saves credentials to `~/.gmail-mcp/credentials.json`
+
 ## Conventional Commits
 
 Use format: `type: description` or `type(scope): description` Types: feat, fix,
