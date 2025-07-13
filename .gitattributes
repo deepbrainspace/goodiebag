@@ -7,6 +7,7 @@
 .env.local filter=git-crypt diff=git-crypt
 .env.production filter=git-crypt diff=git-crypt
 .env.staging filter=git-crypt diff=git-crypt
+.claude.json filter=git-crypt diff=git-crypt
 secrets/** filter=git-crypt diff=git-crypt
 
 # Line endings

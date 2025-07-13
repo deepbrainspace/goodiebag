@@ -7,7 +7,11 @@
       "WebFetch",
       "mcp__ccusage__daily",
       "mcp__firecrawl__firecrawl_search",
-      "mcp__firecrawl__firecrawl_scrape"
+      "mcp__firecrawl__firecrawl_scrape",
+      "mcp__gmail__search_emails",
+      "mcp__gmail__list_email_labels",
+      "mcp__gmail__create_label",
+      "mcp__gmail__batch_modify_emails"
     ],
     "deny": []
   }
