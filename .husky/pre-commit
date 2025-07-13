@@ -20,6 +20,32 @@ fi
 echo "✅ Branch protection: Feature branch detected ($CURRENT_BRANCH)"
 debug_echo "Branch check passed"
 
+# Check for unstaged changes
+echo "🔍 Checking for unstaged changes..."
+debug_echo "Checking for unstaged changes to tracked files..."
+if ! git diff-files --quiet; then
+  echo "❌ Unstaged changes: You have unstaged changes to tracked files!"
+  echo "🔧 Please stage all changes before committing:"
+  git diff --name-only
+  echo ""
+  echo "💡 Run: git add . && git commit"
+  exit 1
+fi
+
+debug_echo "Checking for untracked files..."
+UNTRACKED_FILES=$(git ls-files --others --exclude-standard)
+if [ -n "$UNTRACKED_FILES" ]; then
+  echo "❌ Untracked files: You have untracked files!"
+  echo "🔧 Please add or ignore these files before committing:"
+  echo "$UNTRACKED_FILES"
+  echo ""
+  echo "💡 Run: git add . && git commit"
+  echo "💡 Or add to .gitignore if they should be ignored"
+  exit 1
+fi
+echo "✅ Working tree clean: No unstaged or untracked files"
+debug_echo "Unstaged check passed"
+
 # Check for actual secret values (long strings that look like tokens/keys)
 debug_echo "Starting secret detection..."
 STAGED_FILES=$(git diff --cached --name-only | grep -v "^\.husky/" | grep -v "pnpm-lock.yaml" || true)
