@@ -39,9 +39,9 @@ if [ -n "$STAGED_FILES" ] && command -v git-crypt >/dev/null 2>&1; then
     fi
   done
   
-  # Show encrypted files being skipped (debug info)
+  # Show encrypted files being skipped (important user info)
   if [ -n "$ENCRYPTED_FILES" ]; then
-    debug_echo "⚠️ Skipping secret detection for git-crypt encrypted files:$ENCRYPTED_FILES"
+    echo "⚠️ Skipping secret detection for git-crypt encrypted files:$ENCRYPTED_FILES"
   fi
 else
   UNENCRYPTED_FILES="$STAGED_FILES"
