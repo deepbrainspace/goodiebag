@@ -1,14 +1,17 @@
+# Source utility functions
+. "$(dirname "$0")/utils.sh"
+
 # Check lockfile sync before pushing
-echo "🔍 Testing frozen lockfile check..."
+info "Testing frozen lockfile check..."
 pnpm install --frozen-lockfile --ignore-scripts
 EXIT_CODE=$?
 echo "Exit code: $EXIT_CODE"
 
 if [ $EXIT_CODE -ne 0 ]; then
-  echo "❌ Lockfile is out of sync!"
-  echo "🔧 Please run 'pnpm install' to update lockfiles and commit the changes"
-  echo "📝 Then try pushing again"
+  error "Lockfile is out of sync!"
+  fix "Please run 'pnpm install' to update lockfiles and commit the changes"
+  tip "Then try pushing again"
   exit 1
 fi
 
-echo "✅ Lockfile check passed"
+success "Lockfile check passed"
