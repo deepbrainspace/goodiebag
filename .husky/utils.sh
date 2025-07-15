@@ -1,33 +1,43 @@
 #!/bin/bash
 # Shared utility functions for husky hooks
+# Inspired by lint-staged's polished output design
 
-# Color output functions
+# Professional status symbols and colors (lint-staged style)
 info() {
-  printf "\033[36m[i]\033[0m %s\n" "$1"
+  printf "\033[36mℹ\033[0m %s\n" "$1"
 }
 
 success() {
-  printf "\033[32m[✓]\033[0m %s\n" "$1"
+  printf "\033[32m✔\033[0m %s\n" "$1"
 }
 
 error() {
-  printf "\033[31m[✗]\033[0m %s\n" "$1"
+  printf "\033[31m✖\033[0m %s\n" "$1"
 }
 
 warning() {
-  printf "\033[33m[!]\033[0m %s\n" "$1"
+  printf "\033[33m⚠\033[0m %s\n" "$1"
 }
 
+skip() {
+  printf "\033[33m↩\033[0m %s\n" "$1"
+}
+
+pointer() {
+  printf "\033[33m❯\033[0m %s\n" "$1"
+}
+
+# Legacy aliases for backward compatibility
 tip() {
-  printf "\033[36m[?]\033[0m %s\n" "$1"
+  info "$1"
 }
 
 fix() {
-  printf "\033[33m[🔧]\033[0m %s\n" "$1"
+  warning "$1"
 }
 
 stop() {
-  printf "\033[31m[■]\033[0m %s\n" "$1"
+  error "$1"
 }
 
 # Debug function - only outputs when HUSKY_DEBUG=1

@@ -1,23 +1,29 @@
 # Source utility functions
 . "$(dirname "$0")/utils.sh"
 
+info "Validating commit message format..."
+
 # Validate conventional commit format
 commit_regex='^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert|wip)(\(.+\))?: .{1,50}'
 
 if ! grep -qE "$commit_regex" "$1"; then
   error "Invalid commit message format!"
   echo ""
-  info "Conventional commit format required:"
+  pointer "Conventional commit format required:"
   echo "   <type>[optional scope]: <description>"
   echo ""
-  success "Valid types: feat, fix, docs, style, refactor, test, chore, perf, ci, build, revert"
+  pointer "Valid types:"
+  echo "   feat, fix, docs, style, refactor, test, chore, perf, ci, build, revert"
   echo ""
-  info "Examples:"
+  pointer "Examples:"
   echo "   feat: add new user authentication"
-  echo "   fix(api): resolve login timeout issue"
+  echo "   fix(api): resolve login timeout issue" 
   echo "   docs: update README with new examples"
   echo "   feat(nx-rust): add cargo build support"
   echo ""
-  tip "Your commit: $(cat "$1")"
+  warning "Your commit message:"
+  echo "   $(cat "$1")"
   exit 1
 fi
+
+success "Commit message format is valid"

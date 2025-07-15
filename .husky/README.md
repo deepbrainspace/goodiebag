@@ -64,19 +64,28 @@ accessible messaging and common functions.
 ### Available Functions
 
 ```bash
-info "message"     # Cyan [i] - Informational messages
-success "message"  # Green [✓] - Success confirmations
-error "message"    # Red [✗] - Error messages
-warning "message"  # Yellow [!] - Warning messages
-tip "message"      # Cyan [?] - Helpful tips
-fix "message"      # Yellow [🔧] - Fix suggestions
-stop "message"     # Red [■] - Abort messages
+info "message"     # Cyan ℹ - Informational messages
+success "message"  # Green ✔ - Success confirmations
+error "message"    # Red ✖ - Error messages
+warning "message"  # Yellow ⚠ - Warning messages
+skip "message"     # Yellow ↩ - Skipped operations
+pointer "message"  # Yellow ❯ - Directional pointers
 debug_echo "msg"   # Debug output (only when HUSKY_DEBUG=1)
+```
+
+### Legacy Aliases (Deprecated)
+
+```bash
+tip "message"      # Alias for info()
+fix "message"      # Alias for warning()
+stop "message"     # Alias for error()
 ```
 
 ### Benefits
 
-- **Accessibility**: No emoji dependency, works in all terminals
+- **Professional Design**: Inspired by lint-staged's polished output
+- **Unicode Symbols**: Clean, modern status indicators
+- **Accessibility**: Works in all modern terminals
 - **Consistency**: Standardized color coding across all hooks
 - **Readability**: Clear semantic function names
 - **Maintainability**: Centralized styling system
